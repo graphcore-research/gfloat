@@ -27,8 +27,8 @@ handling various current and proposed floating point types:
  - `IEEE WG P3109 <https://github.com/awf/P3109-Public/blob/main/Shared%20Reports/P3109%20WG%20Interim%20report.pdf>`_: P{p} for p in 1..7
 
 
-API: Classes
-============
+API
+===
 
 .. autoclass:: gfloat.FormatInfo()
    :members:
@@ -36,12 +36,7 @@ API: Classes
    :members:
 .. autoclass:: gfloat.FloatValue()
    :members:
-
-API: Functions
-============
-
 .. autofunction:: gfloat.decode_float
-.. autofunction:: gfloat.round_float
 
 Defined Formats
 ===============
