@@ -38,25 +38,18 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
 
     expBias = fi.expBias
 
-    isnormal = exp != 0
-    if isnormal:
-        expval = exp - expBias
-        fsignificand = 1.0 + significand * 2**-t
-    else:
+    iszero = exp == 0 and significand == 0
+    issubnormal = fi.has_subnormals and (exp == 0) and (significand != 0)
+    isnormal = not iszero and not issubnormal
+    if iszero or issubnormal:
         expval = 1 - expBias
         fsignificand = significand * 2**-t
+    else:
+        expval = exp - expBias
+        fsignificand = 1.0 + significand * 2**-t
 
     # val: the raw value excluding specials
     val = sign * fsignificand * 2**expval
-
-    # valstr: string representation of value in base 10
-    # If the representation does not roundtrip to the value,
-    # it is preceded by a "~" to indicate "approximately equal to"
-    valstr = f"{val}"
-    if len(valstr) > 14:
-        valstr = f"{val:.8}"
-    if float(valstr) != val:
-        valstr = "~" + valstr
 
     # Now overwrite the raw value with specials: Infs, NaN, -0, NaN_0
     signed_infinity = -np.inf if signbit else np.inf
@@ -91,19 +84,6 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
     else:
         fclass = FloatClass.INFINITE
 
-    # update valstr if a special value
-    if fclass not in (FloatClass.ZERO, FloatClass.SUBNORMAL, FloatClass.NORMAL):
-        valstr = str(fval)
-
     return FloatValue(
-        i,
-        fval,
-        valstr,
-        exp,
-        expval,
-        significand,
-        fsignificand,
-        signbit,
-        fclass,
-        fi,
+        i, fval, val, exp, expval, significand, fsignificand, signbit, fclass, fi
     )

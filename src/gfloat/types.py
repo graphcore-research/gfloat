@@ -37,6 +37,9 @@ class FormatInfo:
     #: Number of NaNs that are encoded in the highest encodings for each sign
     num_high_nans: int
 
+    #: Set if format encodes subnormals
+    has_subnormals: bool
+
     #: ## Derived values
 
     @property
@@ -98,7 +101,7 @@ class FloatValue:
     #: This is true for all <64bit formats known in 2023.
     fval: float
 
-    valstr: str  #: Value as string, assuming all code points finite
+    val_raw: float  #: Value, assuming all code points finite
     exp: int  #: Raw exponent without bias
     expval: int  #: Exponent, bias subtracted
     significand: int  #: Significand as an integer
