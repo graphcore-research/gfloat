@@ -17,7 +17,7 @@ of:
   * Maximum exponent (emax)
 
 with additional fields defining the encoding of infinities, Not-a-number (NaN) values, 
-and negative zero. 
+and negative zero.
 
 This allows an implementation of generic floating point encode/decode logic,
 handling various current and proposed floating point types:
@@ -37,6 +37,7 @@ API
 .. autoclass:: gfloat.FloatValue()
    :members:
 .. autofunction:: gfloat.decode_float
+.. autofunction:: gfloat.round_float
 
 Defined Formats
 ===============

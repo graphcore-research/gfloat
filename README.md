@@ -9,7 +9,16 @@ handling various current and proposed floating point types:
 
 See https://gfloat.readthedocs.io for documentation.
 
-## TODO:
+## BUILDING
+
+```
+pip install -e .
+cd docs 
+make html
+cd ..
+```
+
+#### Notes
 
 All NaNs are the same, with no distinction between signalling or quiet, 
 or between differently encoded NaNs.
