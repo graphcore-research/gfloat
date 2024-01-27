@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 from .types import FormatInfo, FloatValue, FloatClass
 
 import numpy as np

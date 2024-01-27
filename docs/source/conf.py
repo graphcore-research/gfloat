@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information

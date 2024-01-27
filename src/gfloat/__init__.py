@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 from .decode import decode_float
 from .round import round_float
 from .types import FormatInfo, FloatClass, FloatValue

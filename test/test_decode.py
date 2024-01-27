@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 import pytest
 import numpy as np
 import ml_dtypes

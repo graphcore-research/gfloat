@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
