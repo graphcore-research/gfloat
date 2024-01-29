@@ -113,4 +113,4 @@ class FloatValue:
     @property
     def signstr(self):
         """Return "+" or "-" according to signbit"""
-        return "+" if self.signbit else "-"
+        return "-" if self.signbit else "+"
