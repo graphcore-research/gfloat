@@ -76,6 +76,9 @@ class FormatInfo:
         """The number of code points which decode to NaN"""
         return (0 if self.has_nz else 1) + 2 * self.num_high_nans
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class FloatClass(Enum):
     """

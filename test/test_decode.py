@@ -85,14 +85,17 @@ def test_spot_check_bfloat16():
 
 
 @pytest.mark.parametrize(
-    "fmt,npfmt",
+    "fmt,npfmt,int_dtype",
     [
-        (format_info_binary16, np.float16),
-        (format_info_bfloat16, ml_dtypes.bfloat16),
+        (format_info_binary16, np.float16, np.uint16),
+        (format_info_bfloat16, ml_dtypes.bfloat16, np.uint16),
+        (format_info_ocp_e4m3, ml_dtypes.float8_e4m3fn, np.uint8),
     ],
 )
-def test_float16s(fmt, npfmt):
-    npivals = np.arange(0xFFFF, dtype=np.uint16)
+def test_consistent_decodes_all_values(fmt, npfmt, int_dtype):
+    npivals = np.arange(
+        np.iinfo(int_dtype).min, int(np.iinfo(int_dtype).max) + 1, dtype=int_dtype
+    )
     npfvals = npivals.view(dtype=npfmt)
     for i, npfval in zip(npivals, npfvals):
         val = decode_float(fmt, int(i))

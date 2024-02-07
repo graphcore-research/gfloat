@@ -22,40 +22,43 @@ def round_float(fi: FormatInfo, v: float) -> float:
     # Extract bitfield components
     sign = np.signbit(v)
 
+    if v != 0:
+        if np.isnan(v):
+            if fi.num_nans == 0:
+                raise ValueError(f"No NaN in format {fi}")
+            return np.nan
+
+        if np.isinf(v):
+            if not fi.has_infs:
+                raise ValueError(f"No Infs in format {fi}")
+            return v
+
+        fsignificand, expval = np.frexp(np.abs(v))
+
+        assert fsignificand >= 0.5 and fsignificand < 1.0
+        # move significand to [1.0, 2.0)
+        fsignificand *= 2
+        expval -= 1
+
+        # Effective precision, accounting for right shift for subnormal values
+        biased_exp = expval + bias - 1
+        effective_precision = t + min(biased_exp, 0)
+
+        # Lift to "integer * 2^e"
+        fsignificand *= 2.0**effective_precision
+        expval -= effective_precision
+
+        # round to nearest even -- use python round because numpy round is
+        # "fast but sometimes inexact"
+        # https://numpy.org/doc/stable/reference/generated/numpy.round.html
+        fsignificand = round(fsignificand)
+
+        v = fsignificand * (2.0**expval)
+
     if v == 0:
-        if fi.has_nz and sign:
+        if sign and fi.has_nz:
             return -0.0
         else:
             return 0.0
-
-    if np.isnan(v):
-        if fi.num_nans == 0:
-            raise ValueError(f"No NaN in format {fi}")
-        return np.nan
-
-    if np.isinf(v):
-        if not fi.has_infs:
-            raise ValueError(f"No Infs in format {fi}")
-        return v
-
-    fsignificand, expval = np.frexp(np.abs(v))
-
-    # fSignificand is in [0.5,1), so if normal,
-    # would be multiplied by 2 and expval reduced by 1
-    fsignificand *= 2
-    assert fsignificand >= 1.0 and fsignificand < 2.0
-    expval -= 1
-
-    effective_precision = t + min(expval + bias - 1, 0)
-
-    fsignificand *= 2.0**effective_precision
-    expval -= effective_precision
-
-    # round to nearest even -- use python round because numpy round is
-    # "fast but sometimes inexact"
-    # https://numpy.org/doc/stable/reference/generated/numpy.round.html
-    fsignificand = round(fsignificand)
-
-    val = fsignificand * (2.0**expval)
-
-    return val
+    else:
+        return -v if sign else v
