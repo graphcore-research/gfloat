@@ -79,6 +79,148 @@ class FormatInfo:
     def __str__(self):
         return f"{self.name}"
 
+    # numpy finfo properties
+    @property
+    def bits(self) -> int:
+        """
+        The number of bits occupied by the type.
+        """
+        return self.k
+
+    # @property
+    # def dtype(self) -> np.dtype:
+    #     """
+    #     Returns the dtype for which `finfo` returns information. For complex
+    #     input, the returned dtype is the associated ``float*`` dtype for its
+    #     real and complex components.
+    #     """
+
+    @property
+    def eps(self) -> float:
+        """
+        The difference between 1.0 and the next smallest representable float
+        larger than 1.0. For example, for 64-bit binary floats in the IEEE-754
+        standard, ``eps = 2**-52``, approximately 2.22e-16.
+        """
+        # TODO: Check if 1.0 is subnormal for any reasonable format, e.g. p3109(7)?
+        return 2**self.machep
+
+    @property
+    def epsneg(self) -> float:
+        """
+        The difference between 1.0 and the next smallest representable float
+        less than 1.0. For example, for 64-bit binary floats in the IEEE-754
+        standard, ``epsneg = 2**-53``, approximately 1.11e-16.
+        """
+        return self.eps / 2
+
+    @property
+    def iexp(self) -> int:
+        """
+        The number of bits in the exponent portion of the floating point
+        representation.
+        """
+        return self.expBits
+
+    @property
+    def machep(self) -> int:
+        """
+        The exponent that yields `eps`.
+        """
+        return -self.tSignificandBits
+
+    @property
+    def max(self) -> float:
+        """
+        The largest representable number.
+        """
+        # todo use maxexp
+        num_posinfs = 1 if self.has_infs else 0
+        num_non_finites = self.num_high_nans + num_posinfs
+        if num_non_finites == 2**self.tSignificandBits:
+            # All-bits-one exponent field is full, value is in the
+            # binade below, so significand is 0xFFF..F
+            isig = 2**self.tSignificandBits - 1
+        else:
+            # All-bits-one exponent field is not full, value is in the
+            # final binade, so significand is 0xFFF..F - num_non_finites
+            isig = 2**self.tSignificandBits - 1 - num_non_finites
+
+        return 2**self.emax * (1.0 + isig * 2**-self.tSignificandBits)
+
+    @property
+    def maxexp(self) -> int:
+        """
+        The smallest positive power of the base (2) that causes overflow.
+        """
+        return self.emax + 1
+
+    @property
+    def min(self) -> float:
+        """
+        The smallest representable number, typically ``-max``.
+        """
+        return -self.max
+
+    # @property
+    # def minexp(self) -> int:
+    #     """
+    #     The most negative power of the base (2) consistent with there
+    #     being no leading 0's in the mantissa.
+    #     """
+
+    # @property
+    # def negep(self) -> int:
+    #     """
+    #     The exponent that yields `epsneg`.
+    #     """
+
+    # @property
+    # def nexp(self) -> int:
+    #     """
+    #     The number of bits in the exponent including its sign and bias.
+    #     """
+
+    # @property
+    # def nmant(self) -> int:
+    #     """
+    #     The number of bits in the mantissa.
+    #     """
+
+    # @property
+    # def precision(self) -> int:
+    #     """
+    #     The approximate number of decimal digits to which this kind of
+    #     float is precise.
+    #     """
+
+    # @property
+    # def resolution(self) -> float:
+    #     """
+    #     The approximate decimal resolution of this type, i.e.,
+    #     ``10**-precision``.
+    #     """
+
+    # @property
+    # def tiny(self) -> float:
+    #     """
+    #     An alias for `smallest_normal`, kept for backwards compatibility.
+    #     """
+
+    # @property
+    # def smallest_normal(self) -> float:
+    #     """
+    #     The smallest positive floating point number with 1 as leading bit in
+    #     the mantissa following IEEE-754 (see Notes).
+    #     """
+
+    # @property
+    # def smallest_subnormal(self) -> float:
+    #     """
+    #     The smallest positive floating point number with 0 as leading bit in
+    #     the mantissa following IEEE-754.
+    #     """
+
 
 class FloatClass(Enum):
     """
