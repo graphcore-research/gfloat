@@ -134,7 +134,6 @@ class FormatInfo:
         """
         The largest representable number.
         """
-        # todo use maxexp
         num_posinfs = 1 if self.has_infs else 0
         num_non_finites = self.num_high_nans + num_posinfs
         if num_non_finites == 2**self.tSignificandBits:
