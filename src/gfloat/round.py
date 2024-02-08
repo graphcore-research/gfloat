@@ -53,12 +53,25 @@ def round_float(fi: FormatInfo, v: float) -> float:
         # https://numpy.org/doc/stable/reference/generated/numpy.round.html
         fsignificand = round(fsignificand)
 
-        v = fsignificand * (2.0**expval)
+        result = fsignificand * (2.0**expval)
+    else:
+        result = 0
 
-    if v == 0:
+    if result == 0:
         if sign and fi.has_nz:
             return -0.0
         else:
             return 0.0
-    else:
-        return -v if sign else v
+
+    # Overflow
+    if result > fi.max:
+        if fi.has_infs:
+            result = np.inf
+        else:
+            result = fi.max
+
+    # Set sign
+    if sign:
+        result = -result
+
+    return result
