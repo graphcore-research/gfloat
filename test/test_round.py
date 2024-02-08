@@ -12,6 +12,9 @@ def test_round_p3109():
     fi = format_info_p3109(4)
     assert round_float(fi, 0.0029296875) == 0.0029296875
     assert round_float(fi, 224.0) == 224.0
+    assert round_float(fi, 240.0) == np.inf
+    assert round_float(fi, 232.0) == 224.0
+    assert round_float(fi, 232.1) == np.inf
 
 
 def mlround(v, dty):
