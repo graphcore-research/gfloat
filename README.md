@@ -18,6 +18,13 @@ make html
 cd ..
 ```
 
+#### Pushing
+```
+rm -rf dist
+python3 -m build
+echo __token__ | twine upload --repository pypi dist/* --verbose
+```
+
 #### Notes
 
 All NaNs are the same, with no distinction between signalling or quiet, 
