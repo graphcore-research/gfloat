@@ -75,11 +75,11 @@ def format_info_p3109(precision: int) -> FormatInfo:
 
     :raise ValueError: If p is not in 1..7
     """
-    if precision < 1 or precision > 8:
+    if precision < 1 or precision > 7:
         raise ValueError(f"P3109 format not defined for p={precision}")
 
     name = f"p3109_p{precision}"
-    emax = int(2 ** (7 - precision) - 1)
+    emax = 2 ** (7 - precision) - 1
 
     return FormatInfo(
         name,
