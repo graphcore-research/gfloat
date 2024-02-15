@@ -41,8 +41,8 @@ def round_float(fi: FormatInfo, v: float) -> float:
         expval -= 1
 
         # Effective precision, accounting for right shift for subnormal values
-        biased_exp = expval + bias - 1
-        effective_precision = t + min(biased_exp, 0)
+        biased_exp = expval + bias
+        effective_precision = t + min(biased_exp - 1, 0)
 
         # Lift to "integer * 2^e"
         fsignificand *= 2.0**effective_precision
