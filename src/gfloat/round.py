@@ -1,13 +1,37 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from enum import Enum
 import numpy as np
+import math
 
 from .types import FormatInfo
 
 
-def round_float(fi: FormatInfo, v: float) -> float:
+def isodd(v: int):
+    return v & 0x1 == 1
+
+
+def iseven(v: int):
+    return v & 0x1 == 0
+
+
+class RoundMode(Enum):
     """
-    Round input (as float) to the given FormatInfo.
+    Enum for the classification of a FloatValue.
+
+    Result r is obtained from input v as follows
+    """
+
+    TowardZero = 1  #: max{r s.t. |r| <= |v|}
+    TowardNegative = 2  #: max{r s.t. r <= v}
+    TowardPositive = 3  #: min{r s.t. r >= v}
+    TiesToEven = 4  #: See [Note]
+    TiesToAway = 5  #: See [Note]
+
+
+def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven) -> float:
+    """
+    Round input (as float, representing "infinite precision") to the given FormatInfo.
 
     Returns a float which exactly equals one of the code points.
     """
@@ -48,12 +72,27 @@ def round_float(fi: FormatInfo, v: float) -> float:
         fsignificand *= 2.0**effective_precision
         expval -= effective_precision
 
-        # round to nearest even -- use python round because numpy round is
-        # "fast but sometimes inexact"
-        # https://numpy.org/doc/stable/reference/generated/numpy.round.html
-        fsignificand = round(fsignificand)
+        # round
+        isignificand = math.floor(fsignificand)
+        if isignificand != fsignificand:
+            # Need to round
+            if rnd == RoundMode.TowardZero:
+                pass
+            elif rnd == RoundMode.TowardPositive:
+                isignificand += 1 if not sign else 0
+            elif rnd == RoundMode.TowardNegative:
+                isignificand += 1 if sign else 0
+            else:
+                d = fsignificand - isignificand
+                if d > 0.5:
+                    isignificand += 1
+                elif d == 0.5:
+                    if (rnd == RoundMode.TiesToAway) or (
+                        rnd == RoundMode.TiesToEven and isodd(isignificand)
+                    ):
+                        isignificand += 1
 
-        result = fsignificand * (2.0**expval)
+        result = isignificand * (2.0**expval)
     else:
         result = 0
 
