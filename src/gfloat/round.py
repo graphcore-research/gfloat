@@ -17,9 +17,9 @@ def iseven(v: int):
 
 class RoundMode(Enum):
     """
-    Enum for the classification of a FloatValue.
+    Enum for IEEE-754 rounding modes.
 
-    Result r is obtained from input v as follows
+    Result r is obtained from input v depending on rounding mode as follows
     """
 
     TowardZero = 1  #: max{r s.t. |r| <= |v|}
