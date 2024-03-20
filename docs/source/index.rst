@@ -34,6 +34,8 @@ API
    :members:
 .. autoclass:: gfloat.FloatClass()
    :members:
+.. autoclass:: gfloat.RoundMode()
+   :members:
 .. autoclass:: gfloat.FloatValue()
    :members:
 .. autofunction:: gfloat.decode_float
