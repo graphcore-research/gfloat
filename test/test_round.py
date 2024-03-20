@@ -8,6 +8,13 @@ from gfloat import decode_float, round_float, RoundMode
 from gfloat.formats import *
 
 
+def _mlround(v, dty):
+    """
+    Round `v` using ml_dtypes library
+    """
+    return np.array([v]).astype(dty).astype(float).item()
+
+
 def test_round_p3109():
     fi = format_info_p3109(4)
     assert round_float(fi, 0.0029296875) == 0.0029296875
@@ -31,12 +38,36 @@ def test_round_p3109():
     assert round_float(fi, 232.1) == np.inf
 
 
-def mlround(v, dty):
-    return np.array([v]).astype(dty).astype(float).item()
+def test_round_e5m2():
+    fi = format_info_ocp_e5m2
+    assert round_float(fi, 1.5258789e-05) == 2**-16
+    assert round_float(fi, 57344) == 57344
+    assert round_float(fi, 57341) == 57344
+    assert round_float(fi, 61439.9) == 57344
+    assert round_float(fi, 61440.0) == np.inf
 
 
-def linterp(a, b, t):
-    return a * (1 - t) + b * t
+def test_ml_dtype_spot():
+    fi = format_info_ocp_e5m2
+    # Default IEEE-like rounding
+    assert round_float(fi, 57344.0) == 57344
+    assert round_float(fi, 57344.1) == 57344
+    assert round_float(fi, 61439.9) == 57344
+    assert round_float(fi, 61440.0) == np.inf
+
+    # OCP rounding
+    rnd = RoundMode.OCP_NONSAT
+    assert round_float(fi, 57344.0, rnd) == 57344
+    assert round_float(fi, 57344.1, rnd) == np.inf
+    assert round_float(fi, 61439.9, rnd) == np.inf
+    assert round_float(fi, 61440.0, rnd) == np.inf
+
+    # OCP rounding
+    rnd = RoundMode.OCP_SAT
+    assert round_float(fi, 57344.0, rnd) == 57344
+    assert round_float(fi, 57344.1, rnd) == 57344
+    assert round_float(fi, 61439.9, rnd) == 57344
+    assert round_float(fi, 61440.0, rnd) == 57344
 
 
 p3109_formats = [format_info_p3109(p) for p in range(2, 7)]
@@ -99,23 +130,27 @@ test_formats = [
 ]
 
 
+def _linterp(a, b, t):
+    return a * (1 - t) + b * t
+
+
 @pytest.mark.parametrize("fi,mldtype", test_formats)
 def test_ml_dtype_compatible(fi, mldtype):
     """
-    Test that rounding is compatible with ml_dtypes
+    Test that rounding is compatible with ml_dtypes, assuming IEEE-like rounding
     """
     for i in range(255):
         v0 = decode_float(fi, i + 0).fval
         v1 = decode_float(fi, i + 1).fval
 
-        for alpha in np.arange(0, 1, 0.3):
-            v = linterp(v0, v1, alpha)
+        for alpha in np.arange(0, 1.3, 0.3):
+            v = _linterp(v0, v1, alpha)
+            if np.isfinite(v):
+                print(i)
+                val = round_float(fi, v, RoundMode.TiesToEven)
 
-            print(i)
-            val = round_float(fi, v)
-
-            mlval = mlround(v, mldtype)
-            np.testing.assert_equal(val, mlval)
+                mlval = _mlround(v, mldtype)
+                np.testing.assert_equal(val, mlval)
 
 
 @pytest.mark.parametrize("fi,mldtype", test_formats)
@@ -123,5 +158,5 @@ def test_round_ints(fi, mldtype):
     for v in np.arange(289).astype(float):
         val = round_float(fi, v)
 
-        mlval = mlround(v, mldtype)
+        mlval = _mlround(v, mldtype)
         np.testing.assert_equal(val, mlval)

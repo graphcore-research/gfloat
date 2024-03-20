@@ -4,32 +4,14 @@ from enum import Enum
 import numpy as np
 import math
 
-from .types import FormatInfo
+from .types import FormatInfo, RoundMode
 
 
-def isodd(v: int):
+def _isodd(v: int):
     return v & 0x1 == 1
 
 
-def iseven(v: int):
-    return v & 0x1 == 0
-
-
-class RoundMode(Enum):
-    """
-    Enum for IEEE-754 rounding modes.
-
-    Result r is obtained from input v depending on rounding mode as follows
-    """
-
-    TowardZero = 1  #: max{r s.t. |r| <= |v|}
-    TowardNegative = 2  #: max{r s.t. r <= v}
-    TowardPositive = 3  #: min{r s.t. r >= v}
-    TiesToEven = 4  #: See [Note]
-    TiesToAway = 5  #: See [Note]
-
-
-def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven) -> float:
+def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
     """
     Round input (as float, representing "infinite precision") to the given FormatInfo.
 
@@ -42,6 +24,9 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven) -> float:
     w = fi.expBits
     bias = fi.expBias
     t = p - 1
+    rnd = rnd or fi.preferred_rounding
+
+    assert np.isfinite(v)
 
     # Extract bitfield components
     sign = np.signbit(v)
@@ -88,7 +73,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven) -> float:
                     isignificand += 1
                 elif d == 0.5:
                     if (rnd == RoundMode.TiesToAway) or (
-                        rnd == RoundMode.TiesToEven and isodd(isignificand)
+                        rnd == RoundMode.TiesToEven and _isodd(isignificand)
                     ):
                         isignificand += 1
 
@@ -103,11 +88,20 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven) -> float:
             return 0.0
 
     # Overflow
-    if result > fi.max:
-        if fi.has_infs:
-            result = np.inf
-        else:
+    if rnd == RoundMode.OCP_NONSAT:
+        if v > fi.max:
+            result = np.inf if fi.has_infs else np.nan
+    elif rnd == RoundMode.OCP_SAT:
+        if v > fi.max:
             result = fi.max
+    else:
+        # Compare rounded result to fi.max, so the values between
+        # fi.max and halfup(fi.max) round to fi.max
+        if result > fi.max:
+            if fi.has_infs:
+                result = np.inf
+            else:
+                result = fi.max
 
     # Set sign
     if sign:

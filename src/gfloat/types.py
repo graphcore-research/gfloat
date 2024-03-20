@@ -5,6 +5,22 @@ from enum import Enum
 import numpy as np
 
 
+class RoundMode(Enum):
+    """
+    Enum for IEEE-754 rounding modes.
+
+    Result r is obtained from input v depending on rounding mode as follows
+    """
+
+    TowardZero = 1  #: max{r s.t. |r| <= |v|}
+    TowardNegative = 2  #: max{r s.t. r <= v}
+    TowardPositive = 3  #: min{r s.t. r >= v}
+    TiesToEven = 4  #: Round to nearest, ties to even
+    TiesToAway = 5  #: Round to nearest, ties away from zero
+    OCP_SAT = 6  #: OCP FP8 Spec Saturating mode
+    OCP_NONSAT = 7  #: OCP FP8 Spec Non-saturating mode
+
+
 @dataclass
 class FormatInfo:
     """
@@ -39,6 +55,9 @@ class FormatInfo:
 
     #: Set if format encodes subnormals
     has_subnormals: bool
+
+    #: Format's preferred rounding mode
+    preferred_rounding: RoundMode
 
     #: ## Derived values
 
