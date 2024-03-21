@@ -68,14 +68,18 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
             elif rnd == RoundMode.TowardNegative:
                 isignificand += 1 if sign else 0
             else:
+                # Round to nearest
                 d = fsignificand - isignificand
                 if d > 0.5:
                     isignificand += 1
                 elif d == 0.5:
-                    if (rnd == RoundMode.TiesToAway) or (
-                        rnd == RoundMode.TiesToEven and _isodd(isignificand)
-                    ):
+                    # Tie
+                    if rnd == RoundMode.TiesToAway:
                         isignificand += 1
+                    else:
+                        # All other modes tie to even
+                        if _isodd(isignificand):
+                            isignificand += 1
 
         result = isignificand * (2.0**expval)
     else:
@@ -89,6 +93,7 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
 
     # Overflow
     if rnd == RoundMode.OCP_NONSAT:
+        # Check v, not result, as the spec says all values > fi.max should become inf
         if v > fi.max:
             result = np.inf if fi.has_infs else np.nan
     elif rnd == RoundMode.OCP_SAT:

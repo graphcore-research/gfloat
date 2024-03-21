@@ -40,34 +40,28 @@ def test_round_p3109():
 
 def test_round_e5m2():
     fi = format_info_ocp_e5m2
+
     assert round_float(fi, 1.5258789e-05) == 2**-16
-    assert round_float(fi, 57344) == 57344
-    assert round_float(fi, 57341) == 57344
-    assert round_float(fi, 61439.9) == 57344
-    assert round_float(fi, 61440.0) == np.inf
 
-
-def test_ml_dtype_spot():
-    fi = format_info_ocp_e5m2
-    # Default IEEE-like rounding
+    # Default OCP_NONSAT rounding
     assert round_float(fi, 57344.0) == 57344
-    assert round_float(fi, 57344.1) == 57344
-    assert round_float(fi, 61439.9) == 57344
+    assert round_float(fi, 57344.1) == np.inf
+    assert round_float(fi, 61439.9) == np.inf
     assert round_float(fi, 61440.0) == np.inf
 
-    # OCP rounding
-    rnd = RoundMode.OCP_NONSAT
-    assert round_float(fi, 57344.0, rnd) == 57344
-    assert round_float(fi, 57344.1, rnd) == np.inf
-    assert round_float(fi, 61439.9, rnd) == np.inf
-    assert round_float(fi, 61440.0, rnd) == np.inf
-
-    # OCP rounding
+    # OCP_SAT rounding
     rnd = RoundMode.OCP_SAT
     assert round_float(fi, 57344.0, rnd) == 57344
     assert round_float(fi, 57344.1, rnd) == 57344
     assert round_float(fi, 61439.9, rnd) == 57344
     assert round_float(fi, 61440.0, rnd) == 57344
+
+    # ml_dtypes IEEE-like rounding
+    rnd = RoundMode.TiesToEven
+    assert round_float(fi, 57344.0, rnd) == 57344
+    assert round_float(fi, 57344.1, rnd) == 57344
+    assert round_float(fi, 61439.9, rnd) == 57344
+    assert round_float(fi, 61440.0, rnd) == np.inf
 
 
 p3109_formats = [format_info_p3109(p) for p in range(2, 7)]
