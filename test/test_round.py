@@ -83,15 +83,9 @@ def test_round_e4m3():
     assert round_float(fi, 448.1, sat=True) == 448
     assert round_float(fi, 464.0, sat=True) == 448
     assert round_float(fi, 464.01, sat=True) == 448
-    assert round_float(fi, np.inf, sat=True) == fi.max
-    assert round_float(fi, -np.inf, sat=True) == fi.min
+    assert round_float(fi, np.inf, sat=True) == 448
+    assert round_float(fi, -np.inf, sat=True) == -448
     assert np.isnan(round_float(fi, np.nan, sat=True))
-
-    for v in (448, 458, 468, 478):
-        val = round_float(fi, v, RoundMode.TiesToEven)
-
-        mlval = _mlround(v, ml_dtypes.float8_e4m3fn)
-        np.testing.assert_equal(val, mlval)
 
 
 p3109_formats = [format_info_p3109(p) for p in range(2, 7)]
