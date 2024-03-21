@@ -29,11 +29,11 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     :param rnd: Rounding mode to use
     :type rnd: RoundMode
 
-    :param sat: Saturation flag: if True, round overflowed values to |fi|.max
+    :param sat: Saturation flag: if True, round overflowed values to `fi.max`
     :type sat: bool
 
     :raises ValueError: The target format cannot represent the input
-       (e.g. converting a NaN, or an Inf when the target has no Inf or NaN, and ¬|sat|)
+       (e.g. converting a NaN, or an Inf when the target has no Inf or NaN, and `¬sat`)
 
     :return: A float which equals (inc. nan) one of the values in the format
     :rtype: float
