@@ -41,27 +41,57 @@ def test_round_p3109():
 def test_round_e5m2():
     fi = format_info_ocp_e5m2
 
+    assert fi.max == 57344
+
     assert round_float(fi, 1.5258789e-05) == 2**-16
 
-    # Default OCP_NONSAT rounding
+    # Default NONSAT rounding
     assert round_float(fi, 57344.0) == 57344
     assert round_float(fi, 57344.1) == 57344
     assert round_float(fi, 61439.9) == 57344
     assert round_float(fi, 61440.0) == np.inf
+    assert round_float(fi, np.inf, sat=False) == np.inf
+    assert round_float(fi, -np.inf, sat=False) == -np.inf
+    assert np.isnan(round_float(fi, np.nan, sat=False))
 
-    # OCP_SAT rounding
-    rnd = RoundMode.OCP_SAT
-    assert round_float(fi, 57344.0, rnd) == 57344
-    assert round_float(fi, 57344.1, rnd) == 57344
-    assert round_float(fi, 61439.9, rnd) == 57344
-    assert round_float(fi, 61440.0, rnd) == 57344
+    # SAT rounding
+    assert round_float(fi, 57344.0, sat=True) == 57344
+    assert round_float(fi, 57344.1, sat=True) == 57344
+    assert round_float(fi, 61439.9, sat=True) == 57344
+    assert round_float(fi, 61440.0, sat=True) == 57344
+    assert round_float(fi, np.inf, sat=True) == 57344
+    assert round_float(fi, -np.inf, sat=True) == 57344
+    assert np.isnan(round_float(fi, np.nan, sat=True))
 
-    # ml_dtypes IEEE-like rounding
-    rnd = RoundMode.TiesToEven
-    assert round_float(fi, 57344.0, rnd) == 57344
-    assert round_float(fi, 57344.1, rnd) == 57344
-    assert round_float(fi, 61439.9, rnd) == 57344
-    assert round_float(fi, 61440.0, rnd) == np.inf
+
+def test_round_e4m3():
+    fi = format_info_ocp_e4m3
+
+    assert fi.max == 448
+
+    # Default NONSAT rounding
+    assert round_float(fi, 448.0) == 448
+    assert round_float(fi, 448.1) == 448
+    assert round_float(fi, 464.0) == 448
+    assert np.isnan(round_float(fi, 464.01))
+    assert np.isnan(round_float(fi, np.inf, sat=False))
+    assert np.isnan(round_float(fi, -np.inf, sat=False))
+    assert np.isnan(round_float(fi, np.nan, sat=False))
+
+    # SAT rounding
+    assert round_float(fi, 448.0, sat=True) == 448
+    assert round_float(fi, 448.1, sat=True) == 448
+    assert round_float(fi, 464.0, sat=True) == 448
+    assert round_float(fi, 464.01, sat=True) == 448
+    assert round_float(fi, np.inf, sat=True) == fi.max
+    assert round_float(fi, -np.inf, sat=True) == fi.min
+    assert np.isnan(round_float(fi, np.nan, sat=True))
+
+    for v in (448, 458, 468, 478):
+        val = round_float(fi, v, RoundMode.TiesToEven)
+
+        mlval = _mlround(v, ml_dtypes.float8_e4m3fn)
+        np.testing.assert_equal(val, mlval)
 
 
 p3109_formats = [format_info_p3109(p) for p in range(2, 7)]

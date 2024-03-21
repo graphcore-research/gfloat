@@ -11,11 +11,32 @@ def _isodd(v: int):
     return v & 0x1 == 1
 
 
-def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
+def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -> float:
     """
-    Round input (as float, representing "infinite precision") to the given FormatInfo.
+    Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
 
-    Returns a float which exactly equals one of the code points.
+    An input NaN will convert to a NaN in the target.
+    An input Infinity will convert to the largest float if |sat|,
+    otherwise to an Inf, if present, otherwise to a NaN.
+    Negative zero will be returned if the format has negative zero.
+
+    :param fi: FormatInfo describing the target format
+    :type fi: FormatInfo
+
+    :param v: Input float
+    :type v: float
+
+    :param rnd: Rounding mode to use
+    :type rnd: RoundMode
+
+    :param sat: Saturation flag: if True, round overflowed values to |fi|.max
+    :type sat: bool
+
+    :raises ValueError: The target format cannot represent the input
+       (e.g. converting a NaN, or an Inf when the target has no Inf or NaN, and ¬|sat|)
+
+    :return: A float which equals (inc. nan) one of the values in the format
+    :rtype: float
     """
 
     # Constants
@@ -24,24 +45,25 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
     w = fi.expBits
     bias = fi.expBias
     t = p - 1
-    rnd = rnd or fi.preferred_rounding
 
-    assert np.isfinite(v)
+    if np.isnan(v):
+        if fi.num_nans == 0:
+            raise ValueError(f"No NaN in format {fi}")
 
-    # Extract bitfield components
+        # Note that this does not preserve the NaN payload
+        return np.nan
+
+    # Extract sign
     sign = np.signbit(v)
 
-    if v != 0:
-        if np.isnan(v):
-            if fi.num_nans == 0:
-                raise ValueError(f"No NaN in format {fi}")
-            return np.nan
+    if v == 0:
+        result = 0
 
-        if np.isinf(v):
-            if not fi.has_infs:
-                raise ValueError(f"No Infs in format {fi}")
-            return v
+    elif np.isinf(v):
+        result = np.inf
 
+    else:
+        # Extract significand (mantissa) and exponent
         fsignificand, expval = np.frexp(np.abs(v))
 
         assert fsignificand >= 0.5 and fsignificand < 1.0
@@ -82,8 +104,6 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
                             isignificand += 1
 
         result = isignificand * (2.0**expval)
-    else:
-        result = 0
 
     if result == 0:
         if sign and fi.has_nz:
@@ -92,15 +112,16 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
             return 0.0
 
     # Overflow
-    # Compare rounded result to fi.max, so the values between
-    # fi.max and halfup(fi.max) round to fi.max
     if result > fi.max:
-        if rnd == RoundMode.OCP_SAT:
+        if sat:
             result = fi.max
-        elif rnd == RoundMode.OCP_NONSAT:
-            result = np.inf if fi.has_infs else np.nan
         else:
-            result = np.inf if fi.has_infs else fi.max
+            if fi.has_infs:
+                result = np.inf
+            elif fi.num_nans > 0:
+                result = np.nan
+            else:
+                raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
 
     # Set sign
     if sign:

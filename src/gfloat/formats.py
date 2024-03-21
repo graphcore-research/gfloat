@@ -12,7 +12,6 @@ format_info_binary32 = FormatInfo(
     has_infs=True,
     num_high_nans=2**23 - 1,
     has_subnormals=True,
-    preferred_rounding=RoundMode.TiesToEven,
 )
 
 #: FormatInfo for IEEE-754 Binary16 format
@@ -25,7 +24,6 @@ format_info_binary16 = FormatInfo(
     has_infs=True,
     num_high_nans=2**10 - 1,
     has_subnormals=True,
-    preferred_rounding=RoundMode.TiesToEven,
 )
 
 #: FormatInfo for Google BFloat16 format
@@ -38,7 +36,6 @@ format_info_bfloat16 = FormatInfo(
     has_infs=True,
     num_high_nans=2**7 - 1,
     has_subnormals=True,
-    preferred_rounding=RoundMode.TiesToEven,
 )
 
 #: FormatInfo for OCP E5M2 format
@@ -51,7 +48,6 @@ format_info_ocp_e5m2 = FormatInfo(
     has_infs=True,
     num_high_nans=2**2 - 1,
     has_subnormals=True,
-    preferred_rounding=RoundMode.OCP_NONSAT,
 )
 
 #: FormatInfo for OCP E4M3 format
@@ -64,7 +60,6 @@ format_info_ocp_e4m3 = FormatInfo(
     has_infs=False,
     num_high_nans=1,
     has_subnormals=True,
-    preferred_rounding=RoundMode.OCP_NONSAT,
 )
 
 
@@ -95,5 +90,4 @@ def format_info_p3109(precision: int) -> FormatInfo:
         has_infs=True,
         num_high_nans=0,
         has_subnormals=True,
-        preferred_rounding=RoundMode.TiesToEven,
     )
