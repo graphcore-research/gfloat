@@ -45,8 +45,8 @@ def test_round_e5m2():
 
     # Default OCP_NONSAT rounding
     assert round_float(fi, 57344.0) == 57344
-    assert round_float(fi, 57344.1) == np.inf
-    assert round_float(fi, 61439.9) == np.inf
+    assert round_float(fi, 57344.1) == 57344
+    assert round_float(fi, 61439.9) == 57344
     assert round_float(fi, 61440.0) == np.inf
 
     # OCP_SAT rounding

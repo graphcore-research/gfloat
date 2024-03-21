@@ -92,21 +92,15 @@ def round_float(fi: FormatInfo, v: float, rnd=None) -> float:
             return 0.0
 
     # Overflow
-    if rnd == RoundMode.OCP_NONSAT:
-        # Check v, not result, as the spec says all values > fi.max should become inf
-        if v > fi.max:
-            result = np.inf if fi.has_infs else np.nan
-    elif rnd == RoundMode.OCP_SAT:
-        if v > fi.max:
+    # Compare rounded result to fi.max, so the values between
+    # fi.max and halfup(fi.max) round to fi.max
+    if result > fi.max:
+        if rnd == RoundMode.OCP_SAT:
             result = fi.max
-    else:
-        # Compare rounded result to fi.max, so the values between
-        # fi.max and halfup(fi.max) round to fi.max
-        if result > fi.max:
-            if fi.has_infs:
-                result = np.inf
-            else:
-                result = fi.max
+        elif rnd == RoundMode.OCP_NONSAT:
+            result = np.inf if fi.has_infs else np.nan
+        else:
+            result = np.inf if fi.has_infs else fi.max
 
     # Set sign
     if sign:
