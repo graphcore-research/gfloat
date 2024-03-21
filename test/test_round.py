@@ -60,7 +60,7 @@ def test_round_e5m2():
     assert round_float(fi, 61439.9, sat=True) == 57344
     assert round_float(fi, 61440.0, sat=True) == 57344
     assert round_float(fi, np.inf, sat=True) == 57344
-    assert round_float(fi, -np.inf, sat=True) == 57344
+    assert round_float(fi, -np.inf, sat=True) == -57344
     assert np.isnan(round_float(fi, np.nan, sat=True))
 
 
