@@ -30,6 +30,8 @@ handling various current and proposed floating point types:
 API
 ===
 
+.. autofunction:: gfloat.decode_float
+.. autofunction:: gfloat.round_float
 .. autoclass:: gfloat.FormatInfo()
    :members:
 .. autoclass:: gfloat.FloatClass()
@@ -38,8 +40,6 @@ API
    :members:
 .. autoclass:: gfloat.FloatValue()
    :members:
-.. autofunction:: gfloat.decode_float
-.. autofunction:: gfloat.round_float
 
 Defined Formats
 ===============
