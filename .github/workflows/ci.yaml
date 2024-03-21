@@ -19,6 +19,7 @@ jobs:
         run: |
           pip install -U pip
           pip install .[test]
+          pip install -r docs/requirements.txt
 
       - name: Log installed environment
         run: |
