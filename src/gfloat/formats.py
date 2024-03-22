@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from gfloat import FormatInfo
+from gfloat import FormatInfo, RoundMode
 
 #: FormatInfo for IEEE-754 Binary32 format
 format_info_binary32 = FormatInfo(

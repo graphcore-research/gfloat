@@ -1,5 +1,4 @@
 
-
 GFloat: Generic floating point formats in Python
 ================================================
 
@@ -30,24 +29,30 @@ handling various current and proposed floating point types:
 API
 ===
 
-.. autoclass:: gfloat.FormatInfo()
+.. module:: gfloat
+
+.. autofunction:: decode_float
+.. autofunction:: round_float
+.. autoclass:: FormatInfo()
    :members:
-.. autoclass:: gfloat.FloatClass()
+.. autoclass:: FloatClass()
    :members:
-.. autoclass:: gfloat.FloatValue()
+.. autoclass:: RoundMode()
    :members:
-.. autofunction:: gfloat.decode_float
-.. autofunction:: gfloat.round_float
+.. autoclass:: FloatValue()
+   :members:
 
 Defined Formats
 ===============
 
-.. autodata:: gfloat.formats.format_info_binary32
-.. autodata:: gfloat.formats.format_info_binary16
-.. autodata:: gfloat.formats.format_info_bfloat16
-.. autodata:: gfloat.formats.format_info_ocp_e5m2
-.. autodata:: gfloat.formats.format_info_ocp_e4m3
-.. autofunction:: gfloat.formats.format_info_p3109
+.. module:: gfloat.formats
+
+.. autodata:: format_info_binary32
+.. autodata:: format_info_binary16
+.. autodata:: format_info_bfloat16
+.. autodata:: format_info_ocp_e5m2
+.. autodata:: format_info_ocp_e4m3
+.. autofunction:: format_info_p3109
 
 Index and Search
 ================

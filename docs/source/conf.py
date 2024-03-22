@@ -7,8 +7,8 @@
 project = "GFloat"
 copyright = "2023, Andrew Fitzgibbon"
 author = "Andrew Fitzgibbon"
-release = "0.0.3"
-version = "0.0.3"
+release = "0.0.4"
+version = "0.0.4"
 
 # -- General configuration
 

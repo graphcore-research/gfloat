@@ -5,6 +5,20 @@ from enum import Enum
 import numpy as np
 
 
+class RoundMode(Enum):
+    """
+    Enum for IEEE-754 rounding modes.
+
+    Result r is obtained from input v depending on rounding mode as follows
+    """
+
+    TowardZero = 1  #: :math:`\max \{ r ~ s.t. ~ |r| \le |v| \}`
+    TowardNegative = 2  #: :math:`\max \{ r ~ s.t. ~ r \le v \}`
+    TowardPositive = 3  #: :math:`\min \{ r ~ s.t. ~ r \ge v \}`
+    TiesToEven = 4  #: Round to nearest, ties to even
+    TiesToAway = 5  #: Round to nearest, ties away from zero
+
+
 @dataclass
 class FormatInfo:
     """
