@@ -84,6 +84,4 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
     else:
         fclass = FloatClass.INFINITE
 
-    return FloatValue(
-        i, fval, val, exp, expval, significand, fsignificand, signbit, fclass, fi
-    )
+    return FloatValue(i, fval, exp, expval, significand, fsignificand, signbit, fclass)

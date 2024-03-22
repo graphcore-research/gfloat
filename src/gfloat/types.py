@@ -19,6 +19,38 @@ class RoundMode(Enum):
     TiesToAway = 5  #: Round to nearest, ties away from zero
 
 
+class FloatClass(Enum):
+    """
+    Enum for the classification of a FloatValue.
+    """
+
+    NORMAL = 1  #: A positive or negative normalized non-zero value
+    SUBNORMAL = 2  #: A positive or negative subnormal value
+    ZERO = 3  #: A positive or negative zero value
+    INFINITE = 4  #: A positive or negative infinity (+/-Inf)
+    NAN = 5  #: Not a Number (NaN)
+
+
+@dataclass
+class FloatValue:
+    """
+    A floating-point value decoded in great detail.
+    """
+
+    ival: int  #: Integer code point
+
+    #: Value. Assumed to be exactly round-trippable to python float.
+    #: This is true for all <64bit formats known in 2023.
+    fval: float
+
+    exp: int  #: Raw exponent without bias
+    expval: int  #: Exponent, bias subtracted
+    significand: int  #: Significand as an integer
+    fsignificand: float  #: Significand as a float in the range [0,2)
+    signbit: int  #: Sign bit: 1 => negative, 0 => positive
+    fclass: FloatClass  #: See FloatClass
+
+
 @dataclass
 class FormatInfo:
     """
@@ -233,42 +265,3 @@ class FormatInfo:
     #     The smallest positive floating point number with 0 as leading bit in
     #     the mantissa following IEEE-754.
     #     """
-
-
-class FloatClass(Enum):
-    """
-    Enum for the classification of a FloatValue.
-    """
-
-    NORMAL = 1  #: A positive or negative normalized non-zero value
-    SUBNORMAL = 2  #: A positive or negative subnormal value
-    ZERO = 3  #: A positive or negative zero value
-    INFINITE = 4  #: A positive or negative infinity (+/-Inf)
-    NAN = 5  #: Not a Number (NaN)
-
-
-@dataclass
-class FloatValue:
-    """
-    A floating-point value decoded in great detail.
-    """
-
-    ival: int  #: Integer code point
-
-    #: Value. Assumed to be exactly round-trippable to python float.
-    #: This is true for all <64bit formats known in 2023.
-    fval: float
-
-    val_raw: float  #: Value, assuming all code points finite
-    exp: int  #: Raw exponent without bias
-    expval: int  #: Exponent, bias subtracted
-    significand: int  #: Significand as an integer
-    fsignificand: float  #: Significand as a float in the range [0,2)
-    signbit: int  #: Sign bit: 1 => negative, 0 => positive
-    fclass: FloatClass  #: See FloatClass
-    fi: FormatInfo  # Backlink to FormatInfo
-
-    @property
-    def signstr(self):
-        """Return "+" or "-" according to signbit"""
-        return "-" if self.signbit else "+"
