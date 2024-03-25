@@ -91,3 +91,24 @@ def format_info_p3109(precision: int) -> FormatInfo:
         num_high_nans=0,
         has_subnormals=True,
     )
+
+
+## Collections of formats
+p3109_formats = [format_info_p3109(p) for p in range(1, 7)]
+
+fp8_formats = [
+    format_info_ocp_e4m3,
+    format_info_ocp_e5m2,
+    *p3109_formats,
+]
+
+fp16_formats = [
+    format_info_binary16,
+    format_info_bfloat16,
+]
+
+all_formats = [
+    *fp8_formats,
+    *fp16_formats,
+    format_info_binary32,
+]

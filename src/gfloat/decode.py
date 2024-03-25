@@ -49,13 +49,13 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
         fsignificand = 1.0 + significand * 2**-t
 
     # val: the raw value excluding specials
-    val = sign * fsignificand * 2**expval
+    val = sign * fsignificand * 2.0**expval
 
     # Now overwrite the raw value with specials: Infs, NaN, -0, NaN_0
     signed_infinity = -np.inf if signbit else np.inf
 
     fval = val
-    # All-bits-one exponent (ABOE)
+    # All-bits-special exponent (ABSE)
     if exp == 2**w - 1:
         min_i_with_nan = 2 ** (p - 1) - fi.num_high_nans
         if significand >= min_i_with_nan:

@@ -24,3 +24,9 @@ def test_finfo(fmt, npfmt):
     assert fmt.epsneg == ml_dtypes.finfo(npfmt).epsneg
     assert fmt.max == ml_dtypes.finfo(npfmt).max
     assert fmt.maxexp == ml_dtypes.finfo(npfmt).maxexp
+
+
+def test_constants():
+    assert format_info_p3109(1).smallest_subnormal == 2.0**-62
+    assert format_info_p3109(4).smallest_subnormal == 2.0**-10
+    assert format_info_p3109(7).smallest_subnormal == 2.0**-6
