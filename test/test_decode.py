@@ -84,6 +84,34 @@ def test_spot_check_bfloat16():
     assert np.isnan(dec(0x7FFF))
 
 
+@pytest.mark.parametrize("fi", p3109_formats, ids=str)
+def test_specials(fi):
+    assert fi.code_of_nan == 0x80
+    assert fi.code_of_zero == 0x00
+    assert fi.code_of_posinf == 0x7F
+    assert fi.code_of_neginf == 0xFF
+
+
+@pytest.mark.parametrize("fi", all_formats, ids=str)
+def test_specials_decode(fi):
+    dec = lambda v: decode_float(fi, v).fval
+
+    assert dec(fi.code_of_zero) == 0
+
+    if fi.num_nans > 0:
+        assert np.isnan(dec(fi.code_of_nan))
+
+    if fi.has_infs:
+        assert dec(fi.code_of_posinf) == np.inf
+        assert dec(fi.code_of_neginf) == -np.inf
+
+    assert dec(fi.code_of_max) == fi.max
+    assert dec(fi.code_of_min) == fi.min
+
+    if fi.has_subnormals:
+        assert dec(1) == fi.smallest_subnormal
+
+
 @pytest.mark.parametrize(
     "fmt,npfmt,int_dtype",
     [
