@@ -2,7 +2,7 @@
 
 from .types import FormatInfo, FloatClass, FloatValue, RoundMode
 from .decode import decode_float
-from .round import round_float
+from .round import round_float, encode_float
 import gfloat.formats
 
 # Don't automatically import from .formats.

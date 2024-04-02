@@ -33,6 +33,8 @@ API
 
 .. autofunction:: decode_float
 .. autofunction:: round_float
+.. autofunction:: encode_float
+
 .. autoclass:: FormatInfo()
    :members:
 .. autoclass:: FloatClass()

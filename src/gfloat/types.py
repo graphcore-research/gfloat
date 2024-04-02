@@ -19,6 +19,38 @@ class RoundMode(Enum):
     TiesToAway = 5  #: Round to nearest, ties away from zero
 
 
+class FloatClass(Enum):
+    """
+    Enum for the classification of a FloatValue.
+    """
+
+    NORMAL = 1  #: A positive or negative normalized non-zero value
+    SUBNORMAL = 2  #: A positive or negative subnormal value
+    ZERO = 3  #: A positive or negative zero value
+    INFINITE = 4  #: A positive or negative infinity (+/-Inf)
+    NAN = 5  #: Not a Number (NaN)
+
+
+@dataclass
+class FloatValue:
+    """
+    A floating-point value decoded in great detail.
+    """
+
+    ival: int  #: Integer code point
+
+    #: Value. Assumed to be exactly round-trippable to python float.
+    #: This is true for all <64bit formats known in 2023.
+    fval: float
+
+    exp: int  #: Raw exponent without bias
+    expval: int  #: Exponent, bias subtracted
+    significand: int  #: Significand as an integer
+    fsignificand: float  #: Significand as a float in the range [0,2)
+    signbit: int  #: Sign bit: 1 => negative, 0 => positive
+    fclass: FloatClass  #: See FloatClass
+
+
 @dataclass
 class FormatInfo:
     """
@@ -84,14 +116,6 @@ class FormatInfo:
         # Compute exponent bias.
         exp_for_emax = 2**self.expBits - (2 if all_bits_one_full else 1)
         return exp_for_emax - self.emax
-
-    @property
-    def num_nans(self):
-        """The number of code points which decode to NaN"""
-        return (0 if self.has_nz else 1) + 2 * self.num_high_nans
-
-    def __str__(self):
-        return f"{self.name}"
 
     # numpy finfo properties
     @property
@@ -175,6 +199,75 @@ class FormatInfo:
         """
         return -self.max
 
+    @property
+    def num_nans(self):
+        """
+        The number of code points which decode to NaN
+        """
+        return (0 if self.has_nz else 1) + 2 * self.num_high_nans
+
+    @property
+    def code_of_nan(self) -> int:
+        """
+        Return a codepoint for a NaN
+        """
+        if self.num_high_nans > 0:
+            return 2 ** (self.k) - 1
+        if not self.has_nz:
+            return 2 ** (self.k - 1)
+        raise ValueError(f"No NaN in {self}")
+
+    @property
+    def code_of_posinf(self) -> int:
+        """
+        Return a codepoint for positive infinity
+        """
+        if not self.has_infs:
+            raise ValueError(f"No Inf in {self}")
+
+        return 2 ** (self.k - 1) - 1 - self.num_high_nans
+
+    @property
+    def code_of_neginf(self) -> int:
+        """
+        Return a codepoint for negative infinity
+        """
+        if not self.has_infs:
+            raise ValueError(f"No Inf in {self}")
+
+        return 2**self.k - 1 - self.num_high_nans
+
+    @property
+    def code_of_zero(self) -> int:
+        """
+        Return a codepoint for (non-negative) zero
+        """
+        return 0
+
+    @property
+    def code_of_negzero(self) -> int:
+        """
+        Return a codepoint for negative zero
+        """
+        if not self.has_nz:
+            raise ValueError(f"No negative zero in {self}")
+
+        return 2 ** (self.k - 1)
+
+    @property
+    def code_of_max(self) -> int:
+        """
+        Return a codepoint for fi.max
+        """
+        return 2 ** (self.k - 1) - self.num_high_nans - self.has_infs - 1
+
+    @property
+    def code_of_min(self) -> int:
+        """
+        Return a codepoint for fi.max
+        """
+        return 2**self.k - self.num_high_nans - self.has_infs - 1
+
     # @property
     # def minexp(self) -> int:
     #     """
@@ -227,48 +320,14 @@ class FormatInfo:
     #     the mantissa following IEEE-754 (see Notes).
     #     """
 
-    # @property
-    # def smallest_subnormal(self) -> float:
-    #     """
-    #     The smallest positive floating point number with 0 as leading bit in
-    #     the mantissa following IEEE-754.
-    #     """
-
-
-class FloatClass(Enum):
-    """
-    Enum for the classification of a FloatValue.
-    """
-
-    NORMAL = 1  #: A positive or negative normalized non-zero value
-    SUBNORMAL = 2  #: A positive or negative subnormal value
-    ZERO = 3  #: A positive or negative zero value
-    INFINITE = 4  #: A positive or negative infinity (+/-Inf)
-    NAN = 5  #: Not a Number (NaN)
-
-
-@dataclass
-class FloatValue:
-    """
-    A floating-point value decoded in great detail.
-    """
-
-    ival: int  #: Integer code point
-
-    #: Value. Assumed to be exactly round-trippable to python float.
-    #: This is true for all <64bit formats known in 2023.
-    fval: float
-
-    val_raw: float  #: Value, assuming all code points finite
-    exp: int  #: Raw exponent without bias
-    expval: int  #: Exponent, bias subtracted
-    significand: int  #: Significand as an integer
-    fsignificand: float  #: Significand as a float in the range [0,2)
-    signbit: int  #: Sign bit: 1 => negative, 0 => positive
-    fclass: FloatClass  #: See FloatClass
-    fi: FormatInfo  # Backlink to FormatInfo
-
     @property
-    def signstr(self):
-        """Return "+" or "-" according to signbit"""
-        return "-" if self.signbit else "+"
+    def smallest_subnormal(self) -> float:
+        """
+        The smallest positive floating point number with 0 as leading bit in
+        the mantissa following IEEE-754.
+        """
+        assert self.has_subnormals, "not implemented"
+        return 2 ** -(self.expBias + self.tSignificandBits - 1)
+
+    def __str__(self):
+        return f"{self.name}"

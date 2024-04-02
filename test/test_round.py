@@ -17,7 +17,10 @@ def _mlround(v, dty):
 
 def test_round_p3109():
     fi = format_info_p3109(4)
+    assert round_float(fi, 0.0068359375) == 0.0068359375
     assert round_float(fi, 0.0029296875) == 0.0029296875
+    assert round_float(fi, 0.0078125) == 0.0078125
+    assert round_float(fi, 0.017578125) == 0.017578125
     assert round_float(fi, 224.0) == 224.0
     assert round_float(fi, 240.0) == np.inf
 
@@ -87,8 +90,6 @@ def test_round_e4m3():
     assert round_float(fi, -np.inf, sat=True) == -448
     assert np.isnan(round_float(fi, np.nan, sat=True))
 
-
-p3109_formats = [format_info_p3109(p) for p in range(2, 7)]
 
 some_positive_codepoints = (
     0x00,

@@ -21,7 +21,8 @@ cd ..
 #### Pushing
 ```
 rm -rf dist
-python3 -m build
+pip install build twine
+python -m build
 echo __token__ | twine upload --repository pypi dist/* --verbose
 ```
 
