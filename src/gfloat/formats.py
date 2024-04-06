@@ -62,6 +62,42 @@ format_info_ocp_e4m3 = FormatInfo(
     has_subnormals=True,
 )
 
+#: FormatInfo for OCP MX E2M3 format
+format_info_ocp_e2m3 = FormatInfo(
+    name="ocp_e2m3",
+    k=6,
+    precision=4,
+    emax=2,
+    has_nz=True,
+    has_infs=False,
+    num_high_nans=0,
+    has_subnormals=True,
+)
+
+#: FormatInfo for OCP MX E3M2 format
+format_info_ocp_e3m2 = FormatInfo(
+    name="ocp_e3m2",
+    k=6,
+    precision=3,
+    emax=4,
+    has_nz=True,
+    has_infs=False,
+    num_high_nans=0,
+    has_subnormals=True,
+)
+
+#: FormatInfo for OCP MX E2M1 format
+format_info_ocp_e2m1 = FormatInfo(
+    name="ocp_e2m1",
+    k=4,
+    precision=2,
+    emax=2,
+    has_nz=True,
+    has_infs=False,
+    num_high_nans=0,
+    has_subnormals=True,
+)
+
 
 def format_info_p3109(precision: int) -> FormatInfo:
     """
@@ -94,6 +130,12 @@ def format_info_p3109(precision: int) -> FormatInfo:
 
 
 ## Collections of formats
+tiny_formats = [
+    format_info_ocp_e2m3,
+    format_info_ocp_e3m2,
+    format_info_ocp_e2m1,
+]
+
 p3109_formats = [format_info_p3109(p) for p in range(1, 7)]
 
 fp8_formats = [

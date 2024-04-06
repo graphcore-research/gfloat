@@ -7,6 +7,10 @@ from gfloat import decode_float, FloatClass
 from gfloat.formats import *
 
 
+def _isnegzero(x):
+    return (x == 0) and (np.signbit(x) == 1)
+
+
 def test_spot_check_ocp_e5m2():
     fi = format_info_ocp_e5m2
     dec = lambda ival: decode_float(fi, ival).fval
@@ -82,6 +86,54 @@ def test_spot_check_bfloat16():
     assert np.isinf(dec(0x7F80))
     assert np.isnan(dec(0x7F81))
     assert np.isnan(dec(0x7FFF))
+
+
+def test_spot_check_ocp_e2m3():
+    # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
+    fi = format_info_ocp_e2m3
+    dec = lambda ival: decode_float(fi, ival).fval
+    fclass = lambda ival: decode_float(fi, ival).fclass
+    assert fi.max == 7.5
+    assert fi.smallest_subnormal == 0.125
+    assert fi.smallest_normal == 1.0
+
+    assert dec(0b000000) == 0
+    assert dec(0b011111) == 7.5
+    assert _isnegzero(dec(0b100000))
+
+
+def test_spot_check_ocp_e3m2():
+    # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
+    fi = format_info_ocp_e3m2
+    dec = lambda ival: decode_float(fi, ival).fval
+    fclass = lambda ival: decode_float(fi, ival).fclass
+    assert fi.max == 28.0
+    assert fi.smallest_subnormal == 0.0625
+    assert fi.smallest_normal == 0.25
+
+    assert dec(0b000000) == 0
+    assert dec(0b011111) == 28.0
+    assert _isnegzero(dec(0b100000))
+
+
+def test_spot_check_ocp_e2m1():
+    # Test against Table 5 in "OCP Microscaling Formats (MX) v1.0 Spec"
+    fi = format_info_ocp_e2m1
+    dec = lambda ival: decode_float(fi, ival).fval
+    fclass = lambda ival: decode_float(fi, ival).fclass
+    assert fi.max == 6.0
+    assert fi.smallest_subnormal == 0.5
+    assert fi.smallest_normal == 1.0
+
+    assert dec(0b0000) == 0
+    assert dec(0b0001) == 0.5
+    assert dec(0b0010) == 1.0
+    assert dec(0b0011) == 1.5
+    assert dec(0b0100) == 2.0
+    assert dec(0b0101) == 3.0
+    assert dec(0b0110) == 4.0
+    assert dec(0b0111) == 6.0
+    assert _isnegzero(dec(0b1000))
 
 
 @pytest.mark.parametrize("fi", p3109_formats, ids=str)
