@@ -150,6 +150,7 @@ fp16_formats = [
 ]
 
 all_formats = [
+    *tiny_formats,
     *fp8_formats,
     *fp16_formats,
     format_info_binary32,
