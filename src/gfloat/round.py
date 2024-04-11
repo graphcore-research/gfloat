@@ -19,7 +19,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     An input NaN will convert to a NaN in the target.
     An input Infinity will convert to the largest float if |sat|,
     otherwise to an Inf, if present, otherwise to a NaN.
-    Negative zero will be returned if the format has negative zero.
+    Negative zero will be returned if the format has negative zero, otherwise zero.
 
     :param fi: FormatInfo describing the target format
     :type fi: FormatInfo
