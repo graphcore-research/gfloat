@@ -87,6 +87,9 @@ class FormatInfo:
     #: Set if format encodes subnormals
     has_subnormals: bool
 
+    #: Set if the format has a sign bit
+    is_signed: bool
+
     #: ## Derived values
 
     @property
@@ -97,7 +100,7 @@ class FormatInfo:
     @property
     def expBits(self):
         """The number of exponent bits, w"""
-        return self.k - self.precision
+        return self.k - self.precision + (0 if self.is_signed else 1)
 
     @property
     def expBias(self):

@@ -23,22 +23,29 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
     """
     k = fi.k
     p = fi.precision
-    t = p - 1  # trailing significand field width
-    w = k - p
+    t = p - 1  # Trailing significand field width
+    num_signbits = 1 if fi.is_signed else 0
+    w = k - t - num_signbits  # Exponent field width
 
     if i < 0 or i >= 2**k:
         raise ValueError(f"Code point {i} not in range [0, 2**{k})")
 
-    signmask = 1 << (k - 1)
-    signbit = 1 if i & signmask else 0
-    sign = -1 if signbit else 1
+    if fi.is_signed:
+        signmask = 1 << (k - 1)
+        signbit = 1 if i & signmask else 0
+        sign = -1 if signbit else 1
+    else:
+        signmask = None
+        signbit = None
+        sign = 1
 
-    exp = (i & (signmask - 1)) >> t
+    exp = (i >> t) & ((1 << w) - 1)
     significand = i & ((1 << t) - 1)
 
     expBias = fi.expBias
 
-    iszero = exp == 0 and significand == 0
+    # t == 0 means zero mantissa bits, assume = 1 (otherwise all values are zero)
+    iszero = exp == 0 and significand == 0 and t > 0
     issubnormal = fi.has_subnormals and (exp == 0) and (significand != 0)
     isnormal = not iszero and not issubnormal
     if iszero or issubnormal:
@@ -64,7 +71,7 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
             fval = signed_infinity
 
     # Negative zero or NaN
-    if i == signmask:
+    if iszero and i == signmask:
         if fi.has_nz:
             fval = -0.0
         else:

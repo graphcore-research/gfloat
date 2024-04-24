@@ -18,7 +18,7 @@ def test_spot_check_ocp_e5m2():
     fclass = lambda ival: decode_float(fi, ival).fclass
     assert dec(0x01) == 2.0**-16
     assert dec(0x40) == 2.0
-    assert dec(0x80) == 0.0 and np.signbit(dec(0x80))
+    assert _isnegzero(dec(0x80))
     assert dec(0x7B) == 57344.0
     assert dec(0x7C) == np.inf
     assert np.floor(np.log2(dec(0x7B))) == fi.emax
@@ -34,7 +34,7 @@ def test_spot_check_ocp_e4m3():
     fclass = lambda ival: decode_float(fi, ival).fclass
     assert dec(0x40) == 2.0
     assert dec(0x01) == 2.0**-9
-    assert dec(0x80) == 0.0 and np.signbit(dec(0x80))
+    assert _isnegzero(dec(0x80))
     assert np.isnan(dec(0x7F))
     assert dec(0x7E) == 448.0
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
@@ -135,6 +135,19 @@ def test_spot_check_ocp_e2m1():
     assert dec(0b0110) == 4.0
     assert dec(0b0111) == 6.0
     assert _isnegzero(dec(0b1000))
+
+
+def test_spot_check_ocp_e8m0():
+    fi = format_info_ocp_e8m0
+    dec = lambda ival: decode_float(fi, ival).fval
+    fclass = lambda ival: decode_float(fi, ival).fclass
+    assert dec(0x00) == 2.0**-127
+    assert dec(0x01) == 2.0**-126
+    assert dec(0x7F) == 1.0
+    assert np.isnan(dec(0xFF))
+    assert fclass(0x80) == FloatClass.NORMAL
+    assert fclass(0x00) == FloatClass.NORMAL
+    assert fi.max == 2.0**127
 
 
 @pytest.mark.parametrize("fi", p3109_formats, ids=str)
