@@ -56,16 +56,16 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
         return np.nan
 
     # Extract sign
-    sign = np.signbit(v)
+    sign = np.signbit(v) and fi.is_signed
     vpos = -v if sign else v
 
-    if vpos < fi.smallest_subnormal / 2:
+    if np.isinf(vpos):
+        result = np.inf
+
+    elif fi.has_subnormals and vpos < fi.smallest_subnormal / 2:
         # Test against smallest_subnormal to avoid subnormals in frexp below
         # Note that this restricts us to types narrower than float64
         result = 0.0
-
-    elif np.isinf(vpos):
-        result = np.inf
 
     else:
         # Extract significand (mantissa) and exponent
@@ -77,13 +77,16 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
 
         # Effective precision, accounting for right shift for subnormal values
         biased_exp = expval + bias
-        effective_precision = t + min(biased_exp - 1, 0)
+        if fi.has_subnormals:
+            effective_precision = t + min(biased_exp - 1, 0)
+        else:
+            effective_precision = t
 
         # Lift to "integer * 2^e"
         fsignificand *= 2.0**effective_precision
         expval -= effective_precision
 
-        # round
+        # Round
         isignificand = math.floor(fsignificand)
         if isignificand != fsignificand:
             # Need to round
@@ -178,10 +181,10 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         return fi.code_of_min
 
     # Finite values
-    sign = np.signbit(v)
+    sign = fi.is_signed and np.signbit(v)
     vpos = -v if sign else v
 
-    if vpos <= fi.smallest_subnormal / 2:
+    if fi.has_subnormals and vpos <= fi.smallest_subnormal / 2:
         isig = 0
         biased_exp = 0
     else:
@@ -193,7 +196,7 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         # now sig in range [1, 2)
 
         biased_exp = exp + fi.expBias
-        if biased_exp < 1:
+        if biased_exp < 1 and fi.has_subnormals:
             # subnormal
             sig *= 2.0 ** (biased_exp - 1)
             biased_exp = 0
@@ -205,7 +208,7 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         isig = math.floor(sig * 2**t)
 
     # Zero
-    if isig == 0 and biased_exp == 0:
+    if isig == 0 and biased_exp == 0 and fi.has_zero:
         if sign and fi.has_nz:
             return fi.code_of_negzero
         else:

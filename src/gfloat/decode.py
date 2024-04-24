@@ -44,8 +44,7 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
 
     expBias = fi.expBias
 
-    # t == 0 means zero mantissa bits, assume = 1 (otherwise all values are zero)
-    iszero = exp == 0 and significand == 0 and t > 0
+    iszero = exp == 0 and significand == 0 and fi.has_zero
     issubnormal = fi.has_subnormals and (exp == 0) and (significand != 0)
     isnormal = not iszero and not issubnormal
     if iszero or issubnormal:

@@ -103,6 +103,11 @@ class FormatInfo:
         return self.k - self.precision + (0 if self.is_signed else 1)
 
     @property
+    def signBits(self):
+        """The number of sign bits, s"""
+        return 1 if self.is_signed else 0
+
+    @property
     def expBias(self):
         """The exponent bias derived from (p,emax)
 
@@ -201,7 +206,12 @@ class FormatInfo:
         """
         The smallest representable number, typically ``-max``.
         """
-        return -self.max
+        if self.is_signed:
+            return -self.max
+        elif self.has_zero:
+            return 0.0
+        else:
+            return 2**-self.expBias
 
     @property
     def num_nans(self):
@@ -246,7 +256,20 @@ class FormatInfo:
         """
         Return a codepoint for (non-negative) zero
         """
+        assert self.has_zero
         return 0
+
+    @property
+    def has_zero(self) -> bool:
+        """
+        Does the format have zero?
+
+        This is false if the mantissa is 0 width and we don't have subnormals -
+        essentially the mantissa is always decoded as 1.
+        If we have subnormals, the only subnormal is zero, and the mantissa is
+        always decoded as 0.
+        """
+        return self.precision > 1 or self.has_subnormals
 
     @property
     def code_of_negzero(self) -> int:
@@ -263,14 +286,17 @@ class FormatInfo:
         """
         Return a codepoint for fi.max
         """
-        return 2 ** (self.k - 1) - self.num_high_nans - self.has_infs - 1
+        return 2 ** (self.k - self.signBits) - self.num_high_nans - self.has_infs - 1
 
     @property
     def code_of_min(self) -> int:
         """
-        Return a codepoint for fi.max
+        Return a codepoint for fi.min
         """
-        return 2**self.k - self.num_high_nans - self.has_infs - 1
+        if self.is_signed:
+            return 2**self.k - self.num_high_nans - self.has_infs - 1
+        else:
+            return 0  # codepoint of smallest value, whether 0 or 2^-expBias
 
     # @property
     # def minexp(self) -> int:

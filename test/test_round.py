@@ -179,3 +179,20 @@ def test_round_ints(fi, mldtype):
 
         mlval = _mlround(v, mldtype)
         np.testing.assert_equal(val, mlval)
+
+
+@pytest.mark.parametrize("fi", all_formats, ids=str)
+def test_round_roundtrip(fi):
+    dec = lambda v: decode_float(fi, v).fval
+
+    if fi.bits <= 8:
+        step = 1
+    elif fi.bits <= 16:
+        step = 13
+    elif fi.bits <= 32:
+        step = 73013
+
+    for i in range(0, 2**fi.bits, step):
+        fv = decode_float(fi, i)
+        fval2 = round_float(fi, fv.fval)
+        np.testing.assert_equal(fval2, fv.fval)

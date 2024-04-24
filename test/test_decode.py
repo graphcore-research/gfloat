@@ -162,7 +162,8 @@ def test_specials(fi):
 def test_specials_decode(fi):
     dec = lambda v: decode_float(fi, v).fval
 
-    assert dec(fi.code_of_zero) == 0
+    if fi.has_zero:
+        assert dec(fi.code_of_zero) == 0
 
     if fi.num_nans > 0:
         assert np.isnan(dec(fi.code_of_nan))
