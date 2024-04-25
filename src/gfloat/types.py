@@ -313,18 +313,20 @@ class FormatInfo:
     #     An alias for `smallest_normal`, kept for backwards compatibility.
     #     """
 
-    # @property
-    # def smallest_normal(self) -> float:
-    #     """
-    #     The smallest positive floating point number with 1 as leading bit in
-    #     the mantissa following IEEE-754 (see Notes).
-    #     """
+    @property
+    def smallest_normal(self) -> float:
+        """
+        The smallest positive floating point number with 1 as leading bit in
+        the significand following IEEE-754.
+        """
+        assert self.has_subnormals, "not implemented"
+        return 2 ** (1 - self.expBias)
 
     @property
     def smallest_subnormal(self) -> float:
         """
         The smallest positive floating point number with 0 as leading bit in
-        the mantissa following IEEE-754.
+        the significand following IEEE-754.
         """
         assert self.has_subnormals, "not implemented"
         return 2 ** -(self.expBias + self.tSignificandBits - 1)
