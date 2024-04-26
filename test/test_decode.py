@@ -1,9 +1,10 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-import pytest
-import numpy as np
 import ml_dtypes
-from gfloat import decode_float, FloatClass
+import numpy as np
+import pytest
+
+from gfloat import FloatClass, decode_float
 from gfloat.formats import *
 
 
@@ -160,8 +161,7 @@ def test_specials_decode(fi):
     assert dec(fi.code_of_max) == fi.max
     assert dec(fi.code_of_min) == fi.min
 
-    if fi.has_subnormals:
-        assert dec(1) == fi.smallest_subnormal
+    assert dec(1) == fi.smallest
 
 
 @pytest.mark.parametrize(

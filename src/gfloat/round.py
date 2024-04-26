@@ -1,11 +1,12 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from enum import Enum
-import numpy as np
 import math
+from enum import Enum
 
-from .types import FormatInfo, RoundMode, FloatValue
+import numpy as np
+
 from .decode import decode_float
+from .types import FloatValue, FormatInfo, RoundMode
 
 
 def _isodd(v: int):
@@ -17,7 +18,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
 
     An input NaN will convert to a NaN in the target.
-    An input Infinity will convert to the largest float if |sat|,
+    An input Infinity will convert to the largest float if :paramref:`sat`,
     otherwise to an Inf, if present, otherwise to a NaN.
     Negative zero will be returned if the format has negative zero, otherwise zero.
 
@@ -61,7 +62,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     if vpos < fi.smallest_subnormal / 2:
         # Test against smallest_subnormal to avoid subnormals in frexp below
         # Note that this restricts us to types narrower than float64
-        result = 0
+        result = 0.0
 
     elif np.isinf(vpos):
         result = np.inf
@@ -163,17 +164,18 @@ def encode_float(fi: FormatInfo, v: float) -> int:
 
     # Overflow/underflow
     if v > fi.max:
-        return (
-            fi.code_of_posinf
-            if fi.has_infs
-            else fi.code_of_nan if fi.num_nans > 0 else fi.max
-        )
+        if fi.has_infs:
+            return fi.code_of_posinf
+        if fi.num_nans > 0:
+            return fi.code_of_nan
+        return fi.code_of_max
+
     if v < fi.min:
-        return (
-            fi.code_of_neginf
-            if fi.has_infs
-            else fi.code_of_nan if fi.num_nans > 0 else fi.min
-        )
+        if fi.has_infs:
+            return fi.code_of_neginf
+        if fi.num_nans > 0:
+            return fi.code_of_nan
+        return fi.code_of_min
 
     # Finite values
     sign = np.signbit(v)
