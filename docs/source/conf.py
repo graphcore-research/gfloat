@@ -5,7 +5,7 @@
 # -- Project information
 
 project = "GFloat"
-copyright = "2023, Andrew Fitzgibbon"
+copyright = "2024, Graphcore Ltd"
 author = "Andrew Fitzgibbon"
 release = "0.0.5"
 version = "0.0.5"
@@ -19,6 +19,8 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_paramlinks",
+    "myst_nb",
 ]
 
 autodoc_default_options = {

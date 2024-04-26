@@ -18,7 +18,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
 
     An input NaN will convert to a NaN in the target.
-    An input Infinity will convert to the largest float if |sat|,
+    An input Infinity will convert to the largest float if :paramref:`sat`,
     otherwise to an Inf, if present, otherwise to a NaN.
     Negative zero will be returned if the format has negative zero, otherwise zero.
 

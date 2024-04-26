@@ -3,10 +3,6 @@ GFloat: Generic floating point formats in Python
 ================================================
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
 GFloat is designed to allow experimentation with a variety of floating-point
 formats in Python.  Formats are parameterized by the primary IEEE-754 parameters
 of:
@@ -16,7 +12,7 @@ of:
   * Maximum exponent (emax)
 
 with additional fields defining the encoding of infinities, Not-a-number (NaN) values,
-and negative zero.
+and negative zero, among others.
 
 This allows an implementation of generic floating point encode/decode logic,
 handling various current and proposed floating point types:
@@ -25,39 +21,26 @@ handling various current and proposed floating point types:
  - `OCP Float8 <https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf>`_: E5M2, E4M3
  - `IEEE WG P3109 <https://github.com/awf/P3109-Public/blob/main/Shared%20Reports/P3109%20WG%20Interim%20report.pdf>`_: P{p} for p in 1..7
 
+The library strongly favours readability and extensibility over speed - for fast
+implementations of these datatypes see, for example,
+`ml_dtypes <https://github.com/jax-ml/ml_dtypes>`_,
+`bitstring <https://github.com/scott-griffiths/bitstring>`_,
+`MX PyTorch Emulation Library <https://github.com/microsoft/microxcaling>`_.
 
-API
-===
+To get started with the library, we recommend perusing the notebooks,
+otherwise you may wish to jump straight into the API.
 
-.. module:: gfloat
+.. toctree::
+   :hidden:
 
-.. autofunction:: decode_float
-.. autofunction:: round_float
-.. autofunction:: encode_float
+   self
 
-.. autoclass:: FormatInfo()
-   :members:
-.. autoclass:: FloatClass()
-   :members:
-.. autoclass:: RoundMode()
-   :members:
-.. autoclass:: FloatValue()
-   :members:
+.. toctree::
 
-Defined Formats
-===============
+   notebooks
+   api
+   formats
 
-.. module:: gfloat.formats
-
-.. autodata:: format_info_binary32
-.. autodata:: format_info_binary16
-.. autodata:: format_info_bfloat16
-.. autodata:: format_info_ocp_e5m2
-.. autodata:: format_info_ocp_e4m3
-.. autofunction:: format_info_p3109
-.. autodata:: format_info_ocp_e3m2
-.. autodata:: format_info_ocp_e2m3
-.. autodata:: format_info_ocp_e2m1
 
 Index and Search
 ================
