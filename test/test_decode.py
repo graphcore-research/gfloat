@@ -97,6 +97,9 @@ def test_spot_check_ocp_e2m3():
     assert fi.max == 7.5
     assert fi.smallest_subnormal == 0.125
     assert fi.smallest_normal == 1.0
+    assert not fi.has_infs
+    assert fi.num_nans == 0
+    assert fi.has_nz
 
     assert dec(0b000000) == 0
     assert dec(0b011111) == 7.5
@@ -111,6 +114,9 @@ def test_spot_check_ocp_e3m2():
     assert fi.max == 28.0
     assert fi.smallest_subnormal == 0.0625
     assert fi.smallest_normal == 0.25
+    assert not fi.has_infs
+    assert fi.num_nans == 0
+    assert fi.has_nz
 
     assert dec(0b000000) == 0
     assert dec(0b011111) == 28.0
@@ -125,6 +131,9 @@ def test_spot_check_ocp_e2m1():
     assert fi.max == 6.0
     assert fi.smallest_subnormal == 0.5
     assert fi.smallest_normal == 1.0
+    assert not fi.has_infs
+    assert fi.num_nans == 0
+    assert fi.has_nz
 
     assert dec(0b0000) == 0
     assert dec(0b0001) == 0.5
@@ -138,16 +147,22 @@ def test_spot_check_ocp_e2m1():
 
 
 def test_spot_check_ocp_e8m0():
+    # Test against Table 7 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e8m0
     dec = lambda ival: decode_float(fi, ival).fval
     fclass = lambda ival: decode_float(fi, ival).fclass
+    assert fi.expBias == 127
+    assert fi.max == 2.0**127
+    assert fi.smallest == 2.0**-127
+    assert not fi.has_infs
+    assert fi.num_nans == 1
+
     assert dec(0x00) == 2.0**-127
     assert dec(0x01) == 2.0**-126
     assert dec(0x7F) == 1.0
     assert np.isnan(dec(0xFF))
     assert fclass(0x80) == FloatClass.NORMAL
     assert fclass(0x00) == FloatClass.NORMAL
-    assert fi.max == 2.0**127
 
 
 @pytest.mark.parametrize("fi", p3109_formats, ids=str)
@@ -175,7 +190,10 @@ def test_specials_decode(fi):
     assert dec(fi.code_of_max) == fi.max
     assert dec(fi.code_of_min) == fi.min
 
-    assert dec(1) == fi.smallest
+    if fi.has_zero:
+        assert dec(1) == fi.smallest
+    else:
+        assert dec(0) == fi.smallest
 
 
 @pytest.mark.parametrize(

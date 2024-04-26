@@ -37,8 +37,9 @@ def test_encode_edges(fi):
         else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_max
     )
 
-    assert encode_float(fi, fi.min * 1.25) == (
-        fi.code_of_neginf
-        if fi.has_infs
-        else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
-    )
+    if fi.is_signed:
+        assert encode_float(fi, fi.min * 1.25) == (
+            fi.code_of_neginf
+            if fi.has_infs
+            else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
+        )

@@ -218,7 +218,10 @@ class FormatInfo:
         """
         The number of code points which decode to NaN
         """
-        return (0 if self.has_nz else 1) + 2 * self.num_high_nans
+        if not self.is_signed:
+            return self.num_high_nans
+        else:
+            return (0 if self.has_nz else 1) + 2 * self.num_high_nans
 
     @property
     def code_of_nan(self) -> int:
@@ -351,8 +354,10 @@ class FormatInfo:
         """
         if self.has_subnormals:
             return 2 ** (1 - self.expBias)
-        else:
+        elif self.has_zero:
             return 2**-self.expBias + 2 ** (-self.expBias - self.tSignificandBits)
+        else:
+            return 2**-self.expBias
 
     @property
     def smallest_subnormal(self) -> float:
