@@ -161,8 +161,7 @@ def test_specials_decode(fi):
     assert dec(fi.code_of_max) == fi.max
     assert dec(fi.code_of_min) == fi.min
 
-    if fi.has_subnormals:
-        assert dec(1) == fi.smallest_subnormal
+    assert dec(1) == fi.smallest
 
 
 @pytest.mark.parametrize(

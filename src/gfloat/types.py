@@ -320,8 +320,10 @@ class FormatInfo:
         The smallest positive floating point number with 1 as leading bit in
         the significand following IEEE-754.
         """
-        assert self.has_subnormals, "not implemented"
-        return 2 ** (1 - self.expBias)
+        if self.has_subnormals:
+            return 2 ** (1 - self.expBias)
+        else:
+            return 2**-self.expBias + 2 ** (-self.expBias - self.tSignificandBits)
 
     @property
     def smallest_subnormal(self) -> float:
@@ -331,6 +333,16 @@ class FormatInfo:
         """
         assert self.has_subnormals, "not implemented"
         return 2 ** -(self.expBias + self.tSignificandBits - 1)
+
+    @property
+    def smallest(self) -> float:
+        """
+        The smallest positive floating point number.
+        """
+        if self.has_subnormals:
+            return self.smallest_subnormal
+        else:
+            return self.smallest_normal
 
     def __str__(self):
         return f"{self.name}"
