@@ -1,8 +1,8 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-import pytest
 import ml_dtypes
 import numpy as np
+import pytest
 
 from gfloat import decode_float, encode_float
 from gfloat.formats import *

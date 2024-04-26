@@ -1,8 +1,8 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from .types import FormatInfo, FloatValue, FloatClass
-
 import numpy as np
+
+from .types import FloatClass, FloatValue, FormatInfo
 
 
 def decode_float(fi: FormatInfo, i: int) -> FloatValue:

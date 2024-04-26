@@ -2,9 +2,9 @@
 
 # Test that finfo methods on FloatFormat agree with numpy/ml_dtypes
 
-import pytest
 import ml_dtypes
 import numpy as np
+import pytest
 
 from gfloat import decode_float, round_float
 from gfloat.formats import *

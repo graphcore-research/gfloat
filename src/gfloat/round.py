@@ -1,11 +1,12 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from enum import Enum
-import numpy as np
 import math
+from enum import Enum
 
-from .types import FormatInfo, RoundMode, FloatValue
+import numpy as np
+
 from .decode import decode_float
+from .types import FloatValue, FormatInfo, RoundMode
 
 
 def _isodd(v: int):
