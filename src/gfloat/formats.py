@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from gfloat import FormatInfo, RoundMode
+from .types import FormatInfo
+from .block import BlockFormatInfo
 
 #: FormatInfo for IEEE-754 Binary32 format
 format_info_binary32 = FormatInfo(
@@ -177,4 +178,40 @@ all_formats = [
     *fp8_formats,
     *fp16_formats,
     format_info_binary32,
+]
+
+# ------
+# Block formats
+
+format_info_mxfp8_e5m2 = BlockFormatInfo(
+    "ocp_mxfp8_e5m2", format_info_ocp_e5m2, 32, format_info_ocp_e8m0
+)
+
+format_info_mxfp8_e4m3 = BlockFormatInfo(
+    "ocp_mxfp8_e4m3", format_info_ocp_e4m3, 32, format_info_ocp_e8m0
+)
+
+format_info_mxfp6_e3m2 = BlockFormatInfo(
+    "format_info_mxfp6_e3m2", format_info_ocp_e3m2, 32, format_info_ocp_e8m0
+)
+
+format_info_mxfp6_e2m3 = BlockFormatInfo(
+    "format_info_mxfp6_e2m3", format_info_ocp_e2m3, 32, format_info_ocp_e8m0
+)
+
+format_info_mxfp4_e2m1 = BlockFormatInfo(
+    "format_info_mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
+)
+
+format_info_mxfp4_e2m1 = BlockFormatInfo(
+    "format_info_mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
+)
+
+all_block_formats = [
+    format_info_mxfp8_e5m2,
+    format_info_mxfp8_e4m3,
+    format_info_mxfp6_e3m2,
+    format_info_mxfp6_e2m3,
+    format_info_mxfp4_e2m1,
+    format_info_mxfp4_e2m1,
 ]
