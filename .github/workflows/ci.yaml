@@ -32,4 +32,3 @@ jobs:
       - name: Ensure that docs build
         run: |
           cd docs && make html
-

@@ -15,7 +15,7 @@ of:
   * Precision (p)
   * Maximum exponent (emax)
 
-with additional fields defining the encoding of infinities, Not-a-number (NaN) values, 
+with additional fields defining the encoding of infinities, Not-a-number (NaN) values,
 and negative zero.
 
 This allows an implementation of generic floating point encode/decode logic,
