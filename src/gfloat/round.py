@@ -164,17 +164,18 @@ def encode_float(fi: FormatInfo, v: float) -> int:
 
     # Overflow/underflow
     if v > fi.max:
-        return (
-            fi.code_of_posinf
-            if fi.has_infs
-            else fi.code_of_nan if fi.num_nans > 0 else fi.max
-        )
+        if fi.has_infs:
+            return fi.code_of_posinf
+        if fi.num_nans > 0:
+            return fi.code_of_nan
+        return fi.code_of_max
+
     if v < fi.min:
-        return (
-            fi.code_of_neginf
-            if fi.has_infs
-            else fi.code_of_nan if fi.num_nans > 0 else fi.min
-        )
+        if fi.has_infs:
+            return fi.code_of_neginf
+        if fi.num_nans > 0:
+            return fi.code_of_nan
+        return fi.code_of_min
 
     # Finite values
     sign = np.signbit(v)
