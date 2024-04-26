@@ -62,7 +62,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     if vpos < fi.smallest_subnormal / 2:
         # Test against smallest_subnormal to avoid subnormals in frexp below
         # Note that this restricts us to types narrower than float64
-        result = 0
+        result = 0.0
 
     elif np.isinf(vpos):
         result = np.inf
