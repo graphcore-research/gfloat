@@ -90,6 +90,9 @@ class FormatInfo:
     #: Set if the format has a sign bit
     is_signed: bool
 
+    #: Set if the format encodes its significand as two's complement
+    is_twos_complement: bool
+
     #: ## Derived values
 
     @property
@@ -192,7 +195,10 @@ class FormatInfo:
             # final binade, so significand is 0xFFF..F - num_non_finites
             isig = 2**self.tSignificandBits - 1 - num_non_finites
 
-        return 2**self.emax * (1.0 + isig * 2**-self.tSignificandBits)
+        if self.is_all_subnormal:
+            return 2**self.emax * (isig * 2 ** (1 - self.tSignificandBits))
+        else:
+            return 2**self.emax * (1.0 + isig * 2**-self.tSignificandBits)
 
     @property
     def maxexp(self) -> int:
@@ -296,8 +302,10 @@ class FormatInfo:
         """
         Return a codepoint for fi.min
         """
-        if self.is_signed:
+        if self.is_signed and not self.is_twos_complement:
             return 2**self.k - self.num_high_nans - self.has_infs - 1
+        elif self.is_signed and self.is_twos_complement:
+            return 2 ** (self.k - 1) + 1
         else:
             return 0  # codepoint of smallest value, whether 0 or 2^-expBias
 
@@ -377,6 +385,13 @@ class FormatInfo:
             return self.smallest_subnormal
         else:
             return self.smallest_normal
+
+    @property
+    def is_all_subnormal(self) -> bool:
+        """
+        Are all encoded values subnormal?
+        """
+        return (self.expBits == 0) and self.has_subnormals
 
     def __str__(self):
         return f"{self.name}"

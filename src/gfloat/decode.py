@@ -36,11 +36,13 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
         sign = -1 if signbit else 1
     else:
         signmask = None
-        signbit = None
+        signbit = 0
         sign = 1
 
     exp = (i >> t) & ((1 << w) - 1)
     significand = i & ((1 << t) - 1)
+    if fi.is_twos_complement and signbit:
+        significand = (1 << t) - significand
 
     expBias = fi.expBias
 

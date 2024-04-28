@@ -14,6 +14,7 @@ format_info_binary32 = FormatInfo(
     num_high_nans=2**23 - 1,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for IEEE-754 Binary16 format
@@ -27,6 +28,7 @@ format_info_binary16 = FormatInfo(
     num_high_nans=2**10 - 1,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for Google BFloat16 format
@@ -40,6 +42,7 @@ format_info_bfloat16 = FormatInfo(
     num_high_nans=2**7 - 1,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP E5M2 format
@@ -53,6 +56,7 @@ format_info_ocp_e5m2 = FormatInfo(
     num_high_nans=2**2 - 1,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP E4M3 format
@@ -66,6 +70,7 @@ format_info_ocp_e4m3 = FormatInfo(
     num_high_nans=1,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP MX E2M3 format
@@ -79,6 +84,7 @@ format_info_ocp_e2m3 = FormatInfo(
     num_high_nans=0,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP MX E3M2 format
@@ -92,6 +98,7 @@ format_info_ocp_e3m2 = FormatInfo(
     num_high_nans=0,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP MX E2M1 format
@@ -105,6 +112,7 @@ format_info_ocp_e2m1 = FormatInfo(
     num_high_nans=0,
     has_subnormals=True,
     is_signed=True,
+    is_twos_complement=False,
 )
 
 #: FormatInfo for OCP MX E8M0 format
@@ -118,6 +126,21 @@ format_info_ocp_e8m0 = FormatInfo(
     num_high_nans=1,
     has_subnormals=False,
     is_signed=False,
+    is_twos_complement=False,
+)
+
+#: FormatInfo for OCP MX INT8 format
+format_info_ocp_int8 = FormatInfo(
+    name="ocp_int8",
+    k=8,
+    precision=8,
+    emax=0,
+    has_nz=False,
+    has_infs=False,
+    num_high_nans=0,
+    has_subnormals=True,
+    is_signed=True,
+    is_twos_complement=True,
 )
 
 
@@ -149,6 +172,7 @@ def format_info_p3109(precision: int) -> FormatInfo:
         num_high_nans=0,
         has_subnormals=True,
         is_signed=True,
+        is_twos_complement=False,
     )
 
 
@@ -174,6 +198,7 @@ fp16_formats = [
 
 all_formats = [
     format_info_ocp_e8m0,
+    format_info_ocp_int8,
     *tiny_formats,
     *fp8_formats,
     *fp16_formats,

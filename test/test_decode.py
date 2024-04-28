@@ -165,6 +165,23 @@ def test_spot_check_ocp_e8m0():
     assert fclass(0x00) == FloatClass.NORMAL
 
 
+def test_spot_check_ocp_int8():
+    # Test against Table TODO in "OCP Microscaling Formats (MX) v1.0 Spec"
+    fi = format_info_ocp_int8
+    dec = lambda ival: decode_float(fi, ival).fval
+    fclass = lambda ival: decode_float(fi, ival).fclass
+    assert fi.max == 1.0 + 63.0 / 64
+    assert fi.smallest == 2.0**-6
+    assert not fi.has_infs
+    assert fi.num_nans == 1
+
+    assert dec(0x00) == 0.0
+    assert dec(0x01) == fi.smallest
+    assert dec(0x7F) == fi.max
+    assert dec(0x81) == fi.min
+    assert dec(0xFF) == -fi.smallest
+
+
 @pytest.mark.parametrize("fi", p3109_formats, ids=str)
 def test_specials(fi):
     assert fi.code_of_nan == 0x80
