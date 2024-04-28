@@ -90,7 +90,7 @@ class FormatInfo:
     #: Set if the format has a sign bit
     is_signed: bool
 
-    #: Set if the format encodes its significand as two's complement
+    #: Set if the format uses two's complement encoding for the significand
     is_twos_complement: bool
 
     #: ## Derived values

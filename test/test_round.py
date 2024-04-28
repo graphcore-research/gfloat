@@ -159,13 +159,14 @@ def test_ml_dtype_compatible(fi, mldtype):
     Test that rounding is compatible with ml_dtypes, assuming IEEE-like rounding
     """
     for i in range(255):
+        # For each float v, check values at various interpolations
+        # between v and nextUp(v)
         v0 = decode_float(fi, i + 0).fval
         v1 = decode_float(fi, i + 1).fval
 
-        for alpha in np.arange(0, 1.3, 0.3):
+        for alpha in (0, 0.3, 0.5, 0.6, 0.9, 1.25):
             v = _linterp(v0, v1, alpha)
             if np.isfinite(v):
-                print(i)
                 val = round_float(fi, v, RoundMode.TiesToEven)
 
                 mlval = _mlround(v, mldtype)

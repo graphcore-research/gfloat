@@ -13,3 +13,4 @@ Defined Formats
 .. autodata:: format_info_ocp_e2m3
 .. autodata:: format_info_ocp_e2m1
 .. autodata:: format_info_ocp_e8m0
+.. autodata:: format_info_ocp_int8

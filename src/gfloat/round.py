@@ -218,10 +218,11 @@ def encode_float(fi: FormatInfo, v: float) -> int:
     assert isig < 2**t
     assert biased_exp < 2**fi.expBits
 
-    # Handle two's complement # TODO spelling of twos?
+    # Handle two's complement encoding
     if fi.is_twos_complement and sign:
         isig = (1 << t) - isig
 
+    # Pack values into a single integer
     ival = (sign << (k - 1)) | (biased_exp << t) | (isig << 0)
 
     return ival

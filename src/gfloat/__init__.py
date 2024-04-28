@@ -1,9 +1,9 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from .types import FloatClass, FormatInfo, RoundMode
+from .block import BlockFormatInfo, decode_block, encode_block
 from .decode import decode_float
-from .round import round_float, encode_float
-from .block import BlockFormatInfo, encode_block, decode_block
+from .round import encode_float, round_float
+from .types import FloatClass, FloatValue, FormatInfo, RoundMode
 
 # Don't automatically import from .formats.
 # If the user wants them in their namespace, they can explicitly import

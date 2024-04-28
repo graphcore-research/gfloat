@@ -51,9 +51,21 @@ class BlockFormatInfo:
 
 def decode_block(fi: BlockFormatInfo, block: Iterable[int]) -> Iterable[float]:
     """
-    Decode a `param:block` of integer codepoints in Block Format `param:fi`
+    Decode a :paramref:`block` of integer codepoints in Block Format :paramref:`fi`
 
-    The scale is assumed to be at the front of the block
+    The scale is encoded in the first value of :paramref:`block`,
+    with the remaining values encoding the block elements.
+
+    The size of the iterable is not checked against the format descriptor.
+
+    :param fi: Describes the block format
+    :type fi: BlockFormatInfo
+
+    :param block: Input block
+    :type block: Iterable[int]
+
+    :return: A sequence of floats representing the encoded values.
+    :rtype: Iterable[float]
     """
     it = iter(block)
 
@@ -71,12 +83,28 @@ def encode_block(
     fi: BlockFormatInfo, scale: float, vals: Iterable[float]
 ) -> Iterable[int]:
     """
-    Encode a `param:block` of bytes into Block Format `param:fi`
+    Encode a :paramref:`block` of bytes into block Format descibed by :paramref:`fi`
 
-    The desired scale is explicitly passed, and is converted to 1/(1/scale)
+    The :paramref:`scale` is explicitly passed, and is converted to `1/(1/scale)`
     before rounding to the target format.
+
     It is checked for overflow in the target format,
     and will raise an exception if it does.
+
+    :param fi: Describes the target block format
+    :type fi: BlockFormatInfo
+
+    :param scale: Scale to be recorded in the block
+    :type scale: float
+
+    :param vals: Input block
+    :type vals: Iterable[int]
+
+    :return: A sequence of ints representing the encoded values.
+    :rtype: Iterable[int]
+
+    :raises ValueError: The scale overflows the target scale encoding format.
+
     """
     recip_scale = 1 / scale
     scale = 1 / recip_scale

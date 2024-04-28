@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from .types import FormatInfo
 from .block import BlockFormatInfo
+from .types import FormatInfo
 
 #: FormatInfo for IEEE-754 Binary32 format
 format_info_binary32 = FormatInfo(
