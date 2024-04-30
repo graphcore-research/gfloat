@@ -50,22 +50,6 @@ Stats collected for each format are:
 
 
 
-## BUILDING
-
-```
-pip install -e .
-cd docs
-make html
-cd ..
-```
-
-#### Pushing
-```
-rm -rf dist
-pip install build twine
-python -m build
-echo __token__ | twine upload --repository pypi dist/* --verbose
-```
 
 #### Notes
 
