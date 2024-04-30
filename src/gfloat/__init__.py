@@ -2,9 +2,9 @@
 
 from .block import BlockFormatInfo, decode_block, encode_block
 from .decode import decode_float
+from .printing import float_pow2str, float_tilde_unless_roundtrip_str
 from .round import encode_float, round_float
 from .types import FloatClass, FloatValue, FormatInfo, RoundMode
-from .printing import float_pow2str
 
 # Don't automatically import from .formats.
 # If the user wants them in their namespace, they can explicitly import

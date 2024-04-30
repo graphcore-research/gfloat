@@ -1,4 +1,5 @@
 import fractions
+
 import numpy as np
 
 
@@ -28,3 +29,25 @@ def float_pow2str(v, min_exponent=-np.inf):
 
     significand = fractions.Fraction(sig)
     return ("-" if s < 0 else "") + f"{significand}*2^{e:d}"
+
+
+def float_tilde_unless_roundtrip_str(v: float, width=14, d=8) -> str:
+    """
+    Return a string representation of :paramref:`v`, in base 10,
+    with maximum width :paramref:`width` and decimal digits :paramref:`d`
+
+
+    """
+    # valstr: string representation of value in base 10
+    # If the representation does not roundtrip to the value,
+    # it is preceded by a "~" to indicate "approximately equal to"
+    s = f"{v}"
+    if len(s) > width:
+        if abs(v) < 1 and not "e" in s:
+            s = f"{v:.{d}f}"
+        else:
+            s = f"{v:.{d}}"
+    if np.isfinite(v) and float(s) != v:
+        s = "~" + s
+
+    return s

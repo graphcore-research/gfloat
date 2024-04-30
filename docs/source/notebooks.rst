@@ -8,3 +8,4 @@ Some notebooks to illustrate uses of the library
 
    01-decode.ipynb
    02-value-stats.ipynb
+   03-value-tables.ipynb
