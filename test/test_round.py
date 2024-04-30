@@ -184,8 +184,6 @@ def test_round_ints(fi, mldtype):
 
 @pytest.mark.parametrize("fi", all_formats, ids=str)
 def test_round_roundtrip(fi):
-    dec = lambda v: decode_float(fi, v).fval
-
     if fi.bits <= 8:
         step = 1
     elif fi.bits <= 16:
