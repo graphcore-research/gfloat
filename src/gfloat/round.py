@@ -125,7 +125,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
             return 0.0
 
     # Overflow
-    if result > fi.max:
+    if result > (-fi.min if sign else fi.max):
         if sat:
             result = fi.max
         else:
@@ -216,7 +216,7 @@ def encode_float(fi: FormatInfo, v: float) -> int:
 
     # Nonzero
     assert isig < 2**t
-    assert biased_exp < 2**fi.expBits
+    assert biased_exp < 2**fi.expBits or fi.is_twos_complement
 
     # Handle two's complement encoding
     if fi.is_twos_complement and sign:

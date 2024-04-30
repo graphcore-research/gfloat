@@ -213,7 +213,11 @@ class FormatInfo:
         The smallest representable number, typically ``-max``.
         """
         if self.is_signed:
-            return -self.max
+            if not self.is_twos_complement:
+                return -self.max
+            else:
+                assert not self.has_infs and self.num_high_nans == 0 and not self.has_nz
+                return -(2 ** (self.emax + 1))
         elif self.has_zero:
             return 0.0
         else:
@@ -226,8 +230,13 @@ class FormatInfo:
         """
         if not self.is_signed:
             return self.num_high_nans
-        else:
-            return (0 if self.has_nz else 1) + 2 * self.num_high_nans
+
+        # Signed
+        if self.is_twos_complement:
+            assert not self.has_infs and self.num_high_nans == 0 and not self.has_nz
+            return 0
+
+        return (0 if self.has_nz else 1) + 2 * self.num_high_nans
 
     @property
     def code_of_nan(self) -> int:
@@ -305,7 +314,7 @@ class FormatInfo:
         if self.is_signed and not self.is_twos_complement:
             return 2**self.k - self.num_high_nans - self.has_infs - 1
         elif self.is_signed and self.is_twos_complement:
-            return 2 ** (self.k - 1) + 1
+            return 2 ** (self.k - 1)
         else:
             return 0  # codepoint of smallest value, whether 0 or 2^-expBias
 

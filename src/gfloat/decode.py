@@ -64,7 +64,7 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
 
     fval = val
     # All-bits-special exponent (ABSE)
-    if exp == 2**w - 1:
+    if w > 0 and exp == 2**w - 1:
         min_i_with_nan = 2 ** (p - 1) - fi.num_high_nans
         if significand >= min_i_with_nan:
             fval = np.nan
@@ -72,7 +72,7 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
             fval = signed_infinity
 
     # Negative zero or NaN
-    if iszero and i == signmask:
+    if iszero and i == signmask and not fi.is_twos_complement:
         if fi.has_nz:
             fval = -0.0
         else:
