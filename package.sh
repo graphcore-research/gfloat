@@ -1,4 +1,7 @@
 # Set version numbers, make package, and publish
+
+set -o errexit
+
 VERSION="0.1"
 perl -pi -e 's/^(release|version) = "([\d.]+)"/$1 = "'$VERSION'"/' docs/source/conf.py
 perl -pi -e 's/^version = "([\d.]+)"/$1 = "'$VERSION'"/' pyproject.toml
