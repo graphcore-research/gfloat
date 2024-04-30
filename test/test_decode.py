@@ -235,3 +235,14 @@ def test_consistent_decodes_all_values(fmt, npfmt, int_dtype):
 def test_except(v):
     with pytest.raises(ValueError):
         decode_float(format_info_binary16, v)
+
+
+@pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8], ids=str)
+def test_dense(fi: FormatInfo):
+    dec = lambda v: decode_float(fi, v).fval
+
+    vals = np.array([dec(i) for i in range(0, 2**fi.bits)])
+
+    assert np.min(vals[np.isfinite(vals)]) == fi.min
+    assert np.max(vals[np.isfinite(vals)]) == fi.max
+    assert np.min(vals[np.isfinite(vals) & (vals > 0)]) == fi.smallest
