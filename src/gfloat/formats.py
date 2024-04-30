@@ -178,9 +178,9 @@ def format_info_p3109(precision: int) -> FormatInfo:
 
 ## Collections of formats
 tiny_formats = [
+    format_info_ocp_e2m1,
     format_info_ocp_e2m3,
     format_info_ocp_e3m2,
-    format_info_ocp_e2m1,
 ]
 
 p3109_formats = [format_info_p3109(p) for p in range(1, 7)]
