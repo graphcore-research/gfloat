@@ -239,10 +239,18 @@ def test_except(v):
 
 @pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8], ids=str)
 def test_dense(fi: FormatInfo):
-    dec = lambda v: decode_float(fi, v).fval
+    fvs = [decode_float(fi, i) for i in range(0, 2**fi.bits)]
 
-    vals = np.array([dec(i) for i in range(0, 2**fi.bits)])
+    vals = np.array([fv.fval for fv in fvs])
 
     assert np.min(vals[np.isfinite(vals)]) == fi.min
     assert np.max(vals[np.isfinite(vals)]) == fi.max
     assert np.min(vals[np.isfinite(vals) & (vals > 0)]) == fi.smallest
+
+    if fi.has_subnormals:
+        vals_subnormal = np.array(
+            [fv.fval for fv in fvs if fv.fclass == FloatClass.SUBNORMAL and fv.fval > 0]
+        )
+        if len(vals_subnormal):
+            # In some formats, zero is the only "subnormal"
+            assert np.min(vals_subnormal) == fi.smallest_subnormal
