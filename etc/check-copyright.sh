@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# Copyright (c) 2024 Graphcore Ltd. All rights reserved.x
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 echo "x $@" 1>&2
 PATTERN='Copyright \(c\) 202[0-9] Graphcore Ltd\. +All rights reserved\.'
