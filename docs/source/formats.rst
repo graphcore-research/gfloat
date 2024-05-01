@@ -3,12 +3,29 @@ Defined Formats
 
 .. module:: gfloat.formats
 
+IEEE 754 Formats
+----------------
+
 .. autodata:: format_info_binary32
 .. autodata:: format_info_binary16
+
+BFloat16
+----------------
+
 .. autodata:: format_info_bfloat16
+
+Open Compute Platform (OCP) Formats
+-----------------------------------
+
 .. autodata:: format_info_ocp_e5m2
 .. autodata:: format_info_ocp_e4m3
-.. autofunction:: format_info_p3109
 .. autodata:: format_info_ocp_e3m2
 .. autodata:: format_info_ocp_e2m3
 .. autodata:: format_info_ocp_e2m1
+.. autodata:: format_info_ocp_e8m0
+.. autodata:: format_info_ocp_int8
+
+IEEE WG P3109 Formats
+---------------------
+
+.. autofunction:: format_info_p3109

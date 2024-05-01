@@ -87,6 +87,12 @@ class FormatInfo:
     #: Set if format encodes subnormals
     has_subnormals: bool
 
+    #: Set if the format has a sign bit
+    is_signed: bool
+
+    #: Set if the format uses two's complement encoding for the significand
+    is_twos_complement: bool
+
     #: ## Derived values
 
     @property
@@ -97,7 +103,12 @@ class FormatInfo:
     @property
     def expBits(self):
         """The number of exponent bits, w"""
-        return self.k - self.precision
+        return self.k - self.precision + (0 if self.is_signed else 1)
+
+    @property
+    def signBits(self):
+        """The number of sign bits, s"""
+        return 1 if self.is_signed else 0
 
     @property
     def expBias(self):
@@ -184,7 +195,10 @@ class FormatInfo:
             # final binade, so significand is 0xFFF..F - num_non_finites
             isig = 2**self.tSignificandBits - 1 - num_non_finites
 
-        return 2**self.emax * (1.0 + isig * 2**-self.tSignificandBits)
+        if self.is_all_subnormal:
+            return 2**self.emax * (isig * 2 ** (1 - self.tSignificandBits))
+        else:
+            return 2**self.emax * (1.0 + isig * 2**-self.tSignificandBits)
 
     @property
     def maxexp(self) -> int:
@@ -198,13 +212,30 @@ class FormatInfo:
         """
         The smallest representable number, typically ``-max``.
         """
-        return -self.max
+        if self.is_signed:
+            if not self.is_twos_complement:
+                return -self.max
+            else:
+                assert not self.has_infs and self.num_high_nans == 0 and not self.has_nz
+                return -(2 ** (self.emax + 1))
+        elif self.has_zero:
+            return 0.0
+        else:
+            return 2**-self.expBias
 
     @property
     def num_nans(self):
         """
         The number of code points which decode to NaN
         """
+        if not self.is_signed:
+            return self.num_high_nans
+
+        # Signed
+        if self.is_twos_complement:
+            assert not self.has_infs and self.num_high_nans == 0 and not self.has_nz
+            return 0
+
         return (0 if self.has_nz else 1) + 2 * self.num_high_nans
 
     @property
@@ -243,7 +274,20 @@ class FormatInfo:
         """
         Return a codepoint for (non-negative) zero
         """
+        assert self.has_zero
         return 0
+
+    @property
+    def has_zero(self) -> bool:
+        """
+        Does the format have zero?
+
+        This is false if the mantissa is 0 width and we don't have subnormals -
+        essentially the mantissa is always decoded as 1.
+        If we have subnormals, the only subnormal is zero, and the mantissa is
+        always decoded as 0.
+        """
+        return self.precision > 1 or self.has_subnormals
 
     @property
     def code_of_negzero(self) -> int:
@@ -260,14 +304,19 @@ class FormatInfo:
         """
         Return a codepoint for fi.max
         """
-        return 2 ** (self.k - 1) - self.num_high_nans - self.has_infs - 1
+        return 2 ** (self.k - self.signBits) - self.num_high_nans - self.has_infs - 1
 
     @property
     def code_of_min(self) -> int:
         """
-        Return a codepoint for fi.max
+        Return a codepoint for fi.min
         """
-        return 2**self.k - self.num_high_nans - self.has_infs - 1
+        if self.is_signed and not self.is_twos_complement:
+            return 2**self.k - self.num_high_nans - self.has_infs - 1
+        elif self.is_signed and self.is_twos_complement:
+            return 2 ** (self.k - 1)
+        else:
+            return 0  # codepoint of smallest value, whether 0 or 2^-expBias
 
     # @property
     # def minexp(self) -> int:
@@ -322,8 +371,10 @@ class FormatInfo:
         """
         if self.has_subnormals:
             return 2 ** (1 - self.expBias)
-        else:
+        elif self.has_zero:
             return 2**-self.expBias + 2 ** (-self.expBias - self.tSignificandBits)
+        else:
+            return 2**-self.expBias
 
     @property
     def smallest_subnormal(self) -> float:
@@ -343,6 +394,13 @@ class FormatInfo:
             return self.smallest_subnormal
         else:
             return self.smallest_normal
+
+    @property
+    def is_all_subnormal(self) -> bool:
+        """
+        Are all encoded values subnormal?
+        """
+        return (self.expBits == 0) and self.has_subnormals
 
     def __str__(self):
         return f"{self.name}"

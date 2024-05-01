@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from .block import BlockFormatInfo, decode_block, encode_block
 from .decode import decode_float
 from .round import encode_float, round_float
 from .types import FloatClass, FloatValue, FormatInfo, RoundMode

@@ -22,8 +22,8 @@ def test_encode(fi):
     for i in range(0, 2**fi.bits, step):
         fv = decode_float(fi, i)
         ival = encode_float(fi, fv.fval)
-        fv2 = decode_float(fi, ival)
         assert (i == ival) or np.isnan(fv.fval)
+        fv2 = decode_float(fi, ival)
         np.testing.assert_equal(fv2.fval, fv.fval)
 
 
@@ -37,8 +37,9 @@ def test_encode_edges(fi):
         else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_max
     )
 
-    assert encode_float(fi, fi.min * 1.25) == (
-        fi.code_of_neginf
-        if fi.has_infs
-        else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
-    )
+    if fi.is_signed:
+        assert encode_float(fi, fi.min * 1.25) == (
+            fi.code_of_neginf
+            if fi.has_infs
+            else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
+        )
