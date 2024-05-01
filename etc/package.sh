@@ -6,7 +6,7 @@ set -o errexit
 
 VERSION="0.0.5"
 perl -pi -e 's/^(release|version) = "([\d.]+)"/$1 = "'$VERSION'"/' docs/source/conf.py
-perl -pi -e 's/^version = "([\d.]+)"/$1 = "'$VERSION'"/' pyproject.toml
+perl -pi -e 's/^version = "([\d.]+)"/version = "'$VERSION'"/' pyproject.toml
 
 ( cd docs && make html )
 
