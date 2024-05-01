@@ -19,3 +19,10 @@ repos:
       name: check copyright
       entry: etc/check-copyright.sh
       language: script
+      exclude: |
+            (?x)^(
+                docs/Makefile|
+                docs/make.bat|
+                .*\.md|
+                (.*/|)requirements.*\.txt
+            )$
