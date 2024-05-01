@@ -58,14 +58,12 @@ def decode_block(fi: BlockFormatInfo, block: Iterable[int]) -> Iterable[float]:
 
     The size of the iterable is not checked against the format descriptor.
 
-    :param fi: Describes the block format
-    :type fi: BlockFormatInfo
+    Args:
+      fi (BlockFormatInfo): Describes the block format
+      block (Iterable[int]): Input block
 
-    :param block: Input block
-    :type block: Iterable[int]
-
-    :return: A sequence of floats representing the encoded values.
-    :rtype: Iterable[float]
+    Returns:
+      A sequence of floats representing the encoded values.
     """
     it = iter(block)
 
@@ -91,21 +89,18 @@ def encode_block(
     It is checked for overflow in the target format,
     and will raise an exception if it does.
 
-    :param fi: Describes the target block format
-    :type fi: BlockFormatInfo
+    Args:
+      fi (BlockFormatInfo): Describes the target block format
+      scale (float): Scale to be recorded in the block
+      vals (Iterable[float]): Input block
 
-    :param scale: Scale to be recorded in the block
-    :type scale: float
+    Returns:
+      A sequence of ints representing the encoded values.
 
-    :param vals: Input block
-    :type vals: Iterable[int]
-
-    :return: A sequence of ints representing the encoded values.
-    :rtype: Iterable[int]
-
-    :raises ValueError: The scale overflows the target scale encoding format.
-
+    Raises:
+      ValueError: The scale overflows the target scale encoding format.
     """
+    # TODO: this should not do any multiplication - the scale is to be recorded not applied.
     recip_scale = 1 / scale
     scale = 1 / recip_scale
 

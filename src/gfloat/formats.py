@@ -148,13 +148,14 @@ def format_info_p3109(precision: int) -> FormatInfo:
     """
     FormatInfo for P3109 P{p} formats
 
-    :param p: Precision in bits
-    :type p: int
+    Args:
+      p (int): Precision in bits
 
-    :return: FormatInfo class describing the format
-    :rtype: FormatInfo
+    Returns:
+       FormatInfo class describing the format
 
-    :raise ValueError: If p is not in 1..7
+    Raises:
+       ValueError: If p is not in 1..7
     """
     if precision < 1 or precision > 7:
         raise ValueError(f"P3109 format not defined for p={precision}")
