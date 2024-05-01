@@ -3,3 +3,4 @@ pandas
 ipykernel
 black[jupyter]
 ml_dtypes
+mypy
