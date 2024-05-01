@@ -7,5 +7,5 @@ pip install -e .
 
 #### Pushing
 ```
-sh ./package.sh
+sh etc/package.sh
 ```
