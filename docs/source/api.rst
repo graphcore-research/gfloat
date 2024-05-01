@@ -3,6 +3,9 @@ API
 
 .. module:: gfloat
 
+Functions
+---------
+
 .. autofunction:: decode_float
 .. autofunction:: round_float
 .. autofunction:: encode_float
@@ -10,6 +13,8 @@ API
 .. autofunction:: decode_block
 .. autofunction:: encode_block
 
+Classes
+-------
 
 .. autoclass:: FormatInfo()
    :members:
@@ -19,3 +24,9 @@ API
    :members:
 .. autoclass:: FloatValue()
    :members:
+
+Pretty printers
+---------------
+
+.. autofunction:: float_pow2str
+.. autofunction:: float_tilde_unless_roundtrip_str
