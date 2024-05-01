@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 import numpy as np
 
 from gfloat import float_pow2str, float_tilde_unless_roundtrip_str
