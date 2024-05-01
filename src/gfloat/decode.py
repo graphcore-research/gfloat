@@ -10,9 +10,9 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
     Given :py:class:`FormatInfo` and integer code point, decode to a :py:class:`FloatValue`
 
     Args:
-      fi: Floating point format descriptor.
-      i:  Integer code point, in the range :math:`0 \le i < 2^{k}`,
-          where :math:`k` = ``fi.k``
+      fi (FormatInfo): Floating point format descriptor.
+      i (int):  Integer code point, in the range :math:`0 \le i < 2^{k}`,
+                where :math:`k` = ``fi.k``
 
     Returns:
       Decoded float value
