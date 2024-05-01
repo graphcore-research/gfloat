@@ -26,6 +26,8 @@ Classes
    :members:
 .. autoclass:: FloatValue()
    :members:
+.. autoclass:: BlockFormatInfo()
+   :members:
 
 Pretty printers
 ---------------
