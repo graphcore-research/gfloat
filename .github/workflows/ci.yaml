@@ -33,7 +33,7 @@ jobs:
 
       - name: MyPy
         run: |
-          mypy src/gfloat
+          mypy  --disallow-untyped-defs --enable-error-code redundant-expr src test
 
       - name: Ensure that docs build
         run: |

@@ -8,11 +8,11 @@ from gfloat import FloatClass, decode_float
 from gfloat.formats import *
 
 
-def _isnegzero(x):
+def _isnegzero(x: float) -> bool:
     return (x == 0) and (np.signbit(x) == 1)
 
 
-def test_spot_check_ocp_e5m2():
+def test_spot_check_ocp_e5m2() -> None:
     fi = format_info_ocp_e5m2
     dec = lambda ival: decode_float(fi, ival).fval
     fclass = lambda ival: decode_float(fi, ival).fclass
@@ -28,7 +28,7 @@ def test_spot_check_ocp_e5m2():
     assert fclass(0x00) == FloatClass.ZERO
 
 
-def test_spot_check_ocp_e4m3():
+def test_spot_check_ocp_e4m3() -> None:
     fi = format_info_ocp_e4m3
     dec = lambda ival: decode_float(fi, ival).fval
 
@@ -40,7 +40,7 @@ def test_spot_check_ocp_e4m3():
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_p3109_p3():
+def test_spot_check_p3109_p3() -> None:
     fi = format_info_p3109(3)
     dec = lambda ival: decode_float(fi, ival).fval
 
@@ -51,7 +51,7 @@ def test_spot_check_p3109_p3():
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_p3109_p1():
+def test_spot_check_p3109_p1() -> None:
     fi = format_info_p3109(1)
     dec = lambda ival: decode_float(fi, ival).fval
 
@@ -62,7 +62,7 @@ def test_spot_check_p3109_p1():
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_binary16():
+def test_spot_check_binary16() -> None:
     fi = format_info_binary16
     dec = lambda ival: decode_float(fi, ival).fval
 
@@ -76,7 +76,7 @@ def test_spot_check_binary16():
     assert np.isnan(dec(0x7FFF))
 
 
-def test_spot_check_bfloat16():
+def test_spot_check_bfloat16() -> None:
     fi = format_info_bfloat16
     dec = lambda ival: decode_float(fi, ival).fval
 
@@ -89,7 +89,7 @@ def test_spot_check_bfloat16():
     assert np.isnan(dec(0x7FFF))
 
 
-def test_spot_check_ocp_e2m3():
+def test_spot_check_ocp_e2m3() -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m3
     dec = lambda ival: decode_float(fi, ival).fval
@@ -106,7 +106,7 @@ def test_spot_check_ocp_e2m3():
     assert _isnegzero(dec(0b100000))
 
 
-def test_spot_check_ocp_e3m2():
+def test_spot_check_ocp_e3m2() -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e3m2
     dec = lambda ival: decode_float(fi, ival).fval
@@ -123,7 +123,7 @@ def test_spot_check_ocp_e3m2():
     assert _isnegzero(dec(0b100000))
 
 
-def test_spot_check_ocp_e2m1():
+def test_spot_check_ocp_e2m1() -> None:
     # Test against Table 5 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m1
     dec = lambda ival: decode_float(fi, ival).fval
@@ -146,7 +146,7 @@ def test_spot_check_ocp_e2m1():
     assert _isnegzero(dec(0b1000))
 
 
-def test_spot_check_ocp_e8m0():
+def test_spot_check_ocp_e8m0() -> None:
     # Test against Table 7 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e8m0
     dec = lambda ival: decode_float(fi, ival).fval
@@ -165,7 +165,7 @@ def test_spot_check_ocp_e8m0():
     assert fclass(0x00) == FloatClass.NORMAL
 
 
-def test_spot_check_ocp_int8():
+def test_spot_check_ocp_int8() -> None:
     # Test against Table TODO in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_int8
     dec = lambda ival: decode_float(fi, ival).fval
@@ -184,7 +184,7 @@ def test_spot_check_ocp_int8():
 
 
 @pytest.mark.parametrize("fi", p3109_formats, ids=str)
-def test_specials(fi):
+def test_specials(fi: FormatInfo) -> None:
     assert fi.code_of_nan == 0x80
     assert fi.code_of_zero == 0x00
     assert fi.code_of_posinf == 0x7F
@@ -192,7 +192,7 @@ def test_specials(fi):
 
 
 @pytest.mark.parametrize("fi", all_formats, ids=str)
-def test_specials_decode(fi):
+def test_specials_decode(fi: FormatInfo) -> None:
     dec = lambda v: decode_float(fi, v).fval
 
     if fi.has_zero:
@@ -222,7 +222,9 @@ def test_specials_decode(fi):
         (format_info_ocp_e4m3, ml_dtypes.float8_e4m3fn, np.uint8),
     ],
 )
-def test_consistent_decodes_all_values(fmt, npfmt, int_dtype):
+def test_consistent_decodes_all_values(
+    fmt: FormatInfo, npfmt: np.dtype, int_dtype: np.dtype
+) -> None:
     npivals = np.arange(
         np.iinfo(int_dtype).min, int(np.iinfo(int_dtype).max) + 1, dtype=int_dtype
     )
@@ -233,13 +235,13 @@ def test_consistent_decodes_all_values(fmt, npfmt, int_dtype):
 
 
 @pytest.mark.parametrize("v", [-1, 0x10000])
-def test_except(v):
+def test_except(v: int) -> None:
     with pytest.raises(ValueError):
         decode_float(format_info_binary16, v)
 
 
 @pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8], ids=str)
-def test_dense(fi: FormatInfo):
+def test_dense(fi: FormatInfo) -> None:
     fvs = [decode_float(fi, i) for i in range(0, 2**fi.bits)]
 
     vals = np.array([fv.fval for fv in fvs])

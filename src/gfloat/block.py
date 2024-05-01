@@ -4,11 +4,11 @@
 # https://en.wikipedia.org/wiki/Block_floating_point
 
 from dataclasses import dataclass
-from typing import Iterable, Iterator
+from typing import Iterable
 
 from .decode import decode_float
 from .round import encode_float, round_float
-from .types import FloatValue, FormatInfo
+from .types import FormatInfo
 
 
 @dataclass
@@ -45,7 +45,7 @@ class BlockFormatInfo:
         assert bits % 8 == 0
         return bits // 8
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}"
 
 
@@ -112,7 +112,8 @@ def encode_block(
     if scale > fi.stype.max:
         raise ValueError(f"Scaled {scale} too large for {fi.stype}")
 
-    enc = lambda ty, x: encode_float(ty, round_float(ty, x))
+    def enc(ty: FormatInfo, x: float) -> int:
+        return encode_float(ty, round_float(ty, x))
 
     yield enc(fi.stype, scale)
 

@@ -1,19 +1,19 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 import math
-from enum import Enum
 
 import numpy as np
 
-from .decode import decode_float
-from .types import FloatValue, FormatInfo, RoundMode
+from .types import FormatInfo, RoundMode
 
 
-def _isodd(v: int):
+def _isodd(v: int) -> bool:
     return v & 0x1 == 1
 
 
-def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -> float:
+def round_float(
+    fi: FormatInfo, v: float, rnd: RoundMode = RoundMode.TiesToEven, sat: bool = False
+) -> float:
     """
     Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
 
@@ -42,9 +42,7 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     """
 
     # Constants
-    k = fi.k
     p = fi.precision
-    w = fi.expBits
     bias = fi.expBias
     t = p - 1
 

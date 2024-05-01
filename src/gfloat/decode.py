@@ -6,7 +6,7 @@ from .types import FloatClass, FloatValue, FormatInfo
 
 
 def decode_float(fi: FormatInfo, i: int) -> FloatValue:
-    """
+    r"""
     Given :py:class:`FormatInfo` and integer code point, decode to a :py:class:`FloatValue`
 
     :param fi: Foating point format descriptor.

@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 from enum import Enum
 
-import numpy as np
-
 
 class RoundMode(Enum):
     """
@@ -96,22 +94,22 @@ class FormatInfo:
     #: ## Derived values
 
     @property
-    def tSignificandBits(self):
+    def tSignificandBits(self) -> int:
         """The number of trailing significand bits, t"""
         return self.precision - 1
 
     @property
-    def expBits(self):
+    def expBits(self) -> int:
         """The number of exponent bits, w"""
         return self.k - self.precision + (0 if self.is_signed else 1)
 
     @property
-    def signBits(self):
+    def signBits(self) -> int:
         """The number of sign bits, s"""
         return 1 if self.is_signed else 0
 
     @property
-    def expBias(self):
+    def expBias(self) -> int:
         """The exponent bias derived from (p,emax)
 
         This is the bias that should be applied so that
@@ -224,7 +222,7 @@ class FormatInfo:
             return 2**-self.expBias
 
     @property
-    def num_nans(self):
+    def num_nans(self) -> int:
         """
         The number of code points which decode to NaN
         """
@@ -402,5 +400,5 @@ class FormatInfo:
         """
         return (self.expBits == 0) and self.has_subnormals
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}"
