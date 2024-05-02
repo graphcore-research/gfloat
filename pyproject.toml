@@ -28,7 +28,7 @@ dynamic = ["dependencies", "optional-dependencies"]
 [tool.setuptools.dynamic]
 # version = {attr = "gfloat.VERSION"} # Wow: https://github.com/pypa/setuptools/issues/1724
 dependencies = {file = ["requirements.txt"]}
-optional-dependencies = {test = {file = ["requirements-test.txt"]}}
+optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
 
 [tool.black]
 line-length = 88
