@@ -1,5 +1,8 @@
-# Requirements for development
+# Requirements for tests
 pytest
+ml_dtypes
+
+# Requirements for development
 pre-commit
 black
 mypy
