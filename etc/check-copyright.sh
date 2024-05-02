@@ -8,6 +8,5 @@ if grep -L -E "$PATTERN" "$@" | grep .
 then
   # There was output, signal unsuccessful
   exit 1
-else
-  exit 0
 fi
+# Normal exit, signalling success
