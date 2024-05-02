@@ -1,6 +1,5 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-
 # Set version numbers, make package, and publish
 
 set -o errexit
