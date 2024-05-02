@@ -1,7 +1,15 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-tmpdir=/tmp/test-gfloat
-mkdir -p $tmpdir
+tmpdir=$(mktemp -d)
+test -d $tmpdir || exit -1
+
+cleanup () {
+  echo "Removing $tmpdir"
+  rm $tmpdir/t.sh
+  rmdir $tmpdir
+}
+
+trap cleanup EXIT
 
 # Passing case
 echo "Copyright (c) 2024 Graphcore Ltd. All rights reserved." > $tmpdir/t.sh
