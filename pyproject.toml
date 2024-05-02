@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 [build-system]
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
@@ -8,7 +10,7 @@ package-dir = {"" = "src"}
 
 [project]
 name =  "gfloat"
-version = "0.0.5"
+version = "0.0.5" # Set version in package.sh
 authors = [
     {name = "Andrew Fitzgibbon", email = "awf@fitzgibbon.ie"},
 ]

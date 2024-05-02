@@ -1,19 +1,19 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 import math
-from enum import Enum
 
 import numpy as np
 
-from .decode import decode_float
-from .types import FloatValue, FormatInfo, RoundMode
+from .types import FormatInfo, RoundMode
 
 
-def _isodd(v: int):
+def _isodd(v: int) -> bool:
     return v & 0x1 == 1
 
 
-def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -> float:
+def round_float(
+    fi: FormatInfo, v: float, rnd: RoundMode = RoundMode.TiesToEven, sat: bool = False
+) -> float:
     """
     Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
 
@@ -22,29 +22,23 @@ def round_float(fi: FormatInfo, v: float, rnd=RoundMode.TiesToEven, sat=False) -
     otherwise to an Inf, if present, otherwise to a NaN.
     Negative zero will be returned if the format has negative zero, otherwise zero.
 
-    :param fi: FormatInfo describing the target format
-    :type fi: FormatInfo
+    Args:
+      fi (FormatInfo): Describes the target format
+      v (float): Input value to be rounded
+      rnd (RoundMode): Rounding mode to use
+      sat (bool): Saturation flag: if True, round overflowed values to `fi.max`
 
-    :param v: Input float
-    :type v: float
+    Returns:
+      A float which is one of the values in the format.
 
-    :param rnd: Rounding mode to use
-    :type rnd: RoundMode
-
-    :param sat: Saturation flag: if True, round overflowed values to `fi.max`
-    :type sat: bool
-
-    :raises ValueError: The target format cannot represent the input
-       (e.g. converting a NaN, or an Inf when the target has no Inf or NaN, and `¬sat`)
-
-    :return: A float which equals (inc. nan) one of the values in the format
-    :rtype: float
+    Raises:
+       ValueError: The target format cannot represent the input
+             (e.g. converting a `NaN`, or an `Inf` when the target has no
+             `NaN` or `Inf`, and :paramref:`sat` is false)
     """
 
     # Constants
-    k = fi.k
     p = fi.precision
-    w = fi.expBits
     bias = fi.expBias
     t = p - 1
 
@@ -147,13 +141,18 @@ def encode_float(fi: FormatInfo, v: float) -> int:
     """
     Encode input to the given :py:class:`FormatInfo`.
 
-    Will round toward zero if v is not in the value set.
-    Will saturate to inf, nan, fi.max in order of precedence.
-    Encode -0 to 0 if not fi.has_nz
-    For other roundings, and saturations, call round_float first.
+    Will round toward zero if :paramref:`v` is not in the value set.
+    Will saturate to `Inf`, `NaN`, `fi.max` in order of precedence.
+    Encode -0 to 0 if not `fi.has_nz`
 
-    :return: The integer code point
-    :rtype: int
+    For other roundings and saturations, call :func:`round_float` first.
+
+    Args:
+      fi (FormatInfo): Describes the target format
+      v (float): The value to be encoded.
+
+    Returns:
+      The integer code point
     """
 
     # Format Constants

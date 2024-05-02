@@ -19,14 +19,14 @@ from gfloat.formats import *
         (format_info_bfloat16, ml_dtypes.bfloat16),
     ],
 )
-def test_finfo(fmt, npfmt):
+def test_finfo(fmt: FormatInfo, npfmt: np.dtype) -> None:
     assert fmt.eps == ml_dtypes.finfo(npfmt).eps
     assert fmt.epsneg == ml_dtypes.finfo(npfmt).epsneg
     assert fmt.max == ml_dtypes.finfo(npfmt).max
     assert fmt.maxexp == ml_dtypes.finfo(npfmt).maxexp
 
 
-def test_constants():
+def test_constants() -> None:
     assert format_info_p3109(1).smallest_subnormal == 2.0**-62
     assert format_info_p3109(4).smallest_subnormal == 2.0**-10
     assert format_info_p3109(7).smallest_subnormal == 2.0**-6

@@ -7,8 +7,8 @@
 project = "GFloat"
 copyright = "2024, Graphcore Ltd"
 author = "Andrew Fitzgibbon"
-release = "0.0.5"
-version = "0.0.5"
+release = "0.0.5"  # Set version in package.sh
+version = "0.0.5"  # Set version in package.sh
 
 # -- General configuration
 
@@ -19,6 +19,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
     "sphinx_paramlinks",
     "myst_nb",
 ]

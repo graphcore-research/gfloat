@@ -6,20 +6,20 @@ from .types import FloatClass, FloatValue, FormatInfo
 
 
 def decode_float(fi: FormatInfo, i: int) -> FloatValue:
-    """
+    r"""
     Given :py:class:`FormatInfo` and integer code point, decode to a :py:class:`FloatValue`
 
-    :param fi: Foating point format descriptor.
-    :type fi: FormatInfo
+    Args:
+      fi (FormatInfo): Floating point format descriptor.
+      i (int):  Integer code point, in the range :math:`0 \le i < 2^{k}`,
+                where :math:`k` = ``fi.k``
 
-    :param i: Integer code point, in the range :math:`0 \le i < 2^{k}`,
-              where :math:`k` = ``fi.k``
-    :type i: int
+    Returns:
+      Decoded float value
 
-    :return: Decoded float value
-    :rtype: FloatValue
-
-    :raise ValueError: If i is outside the range of valid code points in fi.
+    Raises:
+      ValueError:
+        If :paramref:`i` is outside the range of valid code points in :paramref:`fi`.
     """
     k = fi.k
     p = fi.precision

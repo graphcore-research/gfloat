@@ -9,7 +9,7 @@ from gfloat.formats import *
 
 
 @pytest.mark.parametrize("fi", all_formats, ids=str)
-def test_encode(fi):
+def test_encode(fi: FormatInfo) -> None:
     dec = lambda v: decode_float(fi, v).fval
 
     if fi.bits <= 8:
@@ -28,7 +28,7 @@ def test_encode(fi):
 
 
 @pytest.mark.parametrize("fi", all_formats, ids=str)
-def test_encode_edges(fi):
+def test_encode_edges(fi: FormatInfo) -> None:
     assert encode_float(fi, fi.max) == fi.code_of_max
 
     assert encode_float(fi, fi.max * 1.25) == (

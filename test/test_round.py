@@ -1,5 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from typing import Type
+
 import ml_dtypes
 import numpy as np
 import pytest
@@ -8,14 +10,14 @@ from gfloat import RoundMode, decode_float, round_float
 from gfloat.formats import *
 
 
-def _mlround(v, dty):
+def _mlround(v: float, dty: Type) -> float:
     """
     Round `v` using ml_dtypes library
     """
     return np.array([v]).astype(dty).astype(float).item()
 
 
-def test_round_p3109():
+def test_round_p3109() -> None:
     fi = format_info_p3109(4)
     assert round_float(fi, 0.0068359375) == 0.0068359375
     assert round_float(fi, 0.0029296875) == 0.0029296875
@@ -41,7 +43,7 @@ def test_round_p3109():
     assert round_float(fi, 232.1) == np.inf
 
 
-def test_round_e5m2():
+def test_round_e5m2() -> None:
     fi = format_info_ocp_e5m2
 
     assert fi.max == 57344
@@ -67,7 +69,7 @@ def test_round_e5m2():
     assert np.isnan(round_float(fi, np.nan, sat=True))
 
 
-def test_round_e4m3():
+def test_round_e4m3() -> None:
     fi = format_info_ocp_e4m3
 
     assert fi.max == 448
@@ -117,7 +119,7 @@ some_positive_codepoints = (
     ],
     ids=str,
 )
-def test_round(fi):
+def test_round(fi: FormatInfo) -> None:
     """
     Test rounding from values between exact binary8 values
     For integer code point i, let
@@ -149,12 +151,12 @@ test_formats = [
 ]
 
 
-def _linterp(a, b, t):
+def _linterp(a: float, b: float, t: float) -> float:
     return a * (1 - t) + b * t
 
 
 @pytest.mark.parametrize("fi,mldtype", test_formats)
-def test_ml_dtype_compatible(fi, mldtype):
+def test_ml_dtype_compatible(fi: FormatInfo, mldtype: Type) -> None:
     """
     Test that rounding is compatible with ml_dtypes, assuming IEEE-like rounding
     """
@@ -174,7 +176,7 @@ def test_ml_dtype_compatible(fi, mldtype):
 
 
 @pytest.mark.parametrize("fi,mldtype", test_formats)
-def test_round_ints(fi, mldtype):
+def test_round_ints(fi: FormatInfo, mldtype: Type) -> None:
     for v in np.arange(289).astype(float):
         val = round_float(fi, v)
 
@@ -183,7 +185,7 @@ def test_round_ints(fi, mldtype):
 
 
 @pytest.mark.parametrize("fi", all_formats, ids=str)
-def test_round_roundtrip(fi):
+def test_round_roundtrip(fi: FormatInfo) -> None:
     if fi.bits <= 8:
         step = 1
     elif fi.bits <= 16:

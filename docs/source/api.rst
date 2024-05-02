@@ -1,3 +1,5 @@
+.. Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 API
 ===
 
@@ -23,6 +25,8 @@ Classes
 .. autoclass:: RoundMode()
    :members:
 .. autoclass:: FloatValue()
+   :members:
+.. autoclass:: BlockFormatInfo()
    :members:
 
 Pretty printers

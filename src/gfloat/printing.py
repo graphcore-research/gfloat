@@ -1,9 +1,11 @@
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 import fractions
 
 import numpy as np
 
 
-def float_pow2str(v, min_exponent=-np.inf):
+def float_pow2str(v: float, min_exponent: float = -np.inf) -> str:
     """
     Render floating point values as exact fractions times a power of two.
 
@@ -21,17 +23,17 @@ def float_pow2str(v, min_exponent=-np.inf):
 
     s = np.sign(v)
     x = np.abs(v)
-    e = int(np.floor(np.log2(x)))
-    sig = x * 2**-e
+    e = np.floor(np.log2(x))
+    sig = x * 2.0**-e
     if e < min_exponent:
-        sig *= 2 ** (e - min_exponent)
+        sig *= 2.0 ** (e - min_exponent)
         e = min_exponent
 
     significand = fractions.Fraction(sig)
-    return ("-" if s < 0 else "") + f"{significand}*2^{e:d}"
+    return ("-" if s < 0 else "") + f"{significand}*2^{int(e):d}"
 
 
-def float_tilde_unless_roundtrip_str(v: float, width=14, d=8) -> str:
+def float_tilde_unless_roundtrip_str(v: float, width: int = 14, d: int = 8) -> str:
     """
     Return a string representation of :paramref:`v`, in base 10,
     with maximum width :paramref:`width` and decimal digits :paramref:`d`

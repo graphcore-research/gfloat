@@ -8,7 +8,7 @@ from gfloat.formats import *
 
 
 @pytest.mark.parametrize("fi", all_block_formats, ids=str)
-def test_blocks(fi):
+def test_blocks(fi: BlockFormatInfo) -> None:
 
     vals = np.linspace(-37.0, 42.0, 32)
 

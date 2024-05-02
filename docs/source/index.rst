@@ -1,3 +1,5 @@
+.. Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
 .. note::
 
   Check the version number of this documentation against the `gfloat` version
