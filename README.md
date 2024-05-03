@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2024 Graphcore Ltd. All rights reserved. -->
+
 # gfloat: Generic floating-point types in Python
 
 An implementation of generic floating point encode/decode logic,
