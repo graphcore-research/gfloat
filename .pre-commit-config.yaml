@@ -23,6 +23,5 @@ repos:
             (?x)^(
                 docs/Makefile|
                 docs/make.bat|
-                .*\.md|
                 (.*/|)requirements.*\.txt
             )$
