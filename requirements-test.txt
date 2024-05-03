@@ -1,8 +1,0 @@
-# Requirements for testing and CI
-pytest
-pandas
-ipykernel
-black[jupyter]
-ml_dtypes
-mypy
-pre-commit

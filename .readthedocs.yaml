@@ -9,9 +9,6 @@ build:
 
 python:
   install:
-    - requirements: requirements.txt
-    - requirements: requirements-test.txt
-    - requirements: docs/requirements.txt
     - requirements: docs/requirements-rtd.txt
 
 sphinx:
