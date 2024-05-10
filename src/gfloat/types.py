@@ -400,5 +400,9 @@ class FormatInfo:
         """
         return (self.expBits == 0) and self.has_subnormals
 
+    @property
+    def __name__(self) -> str:
+        return self.name
+
     def __str__(self) -> str:
         return f"{self.name}"

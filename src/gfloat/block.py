@@ -47,8 +47,12 @@ class BlockFormatInfo:
         assert bits % 8 == 0
         return bits // 8
 
+    @property
+    def __name__(self) -> str:
+        return self.name
+
     def __str__(self) -> str:
-        return f"{self.name}"
+        return f"BlockFormatInfo:{self.name})"
 
 
 def decode_block(fi: BlockFormatInfo, block: Iterable[int]) -> Iterable[float]:

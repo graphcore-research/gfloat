@@ -117,7 +117,6 @@ some_positive_codepoints = (
         format_info_ocp_e4m3,
         *p3109_formats,
     ],
-    ids=str,
 )
 def test_round(fi: FormatInfo) -> None:
     """
@@ -184,7 +183,7 @@ def test_round_ints(fi: FormatInfo, mldtype: Type) -> None:
         np.testing.assert_equal(val, mlval)
 
 
-@pytest.mark.parametrize("fi", all_formats, ids=str)
+@pytest.mark.parametrize("fi", all_formats)
 def test_round_roundtrip(fi: FormatInfo) -> None:
     if fi.bits <= 8:
         step = 1

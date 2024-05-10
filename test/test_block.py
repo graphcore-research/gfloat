@@ -7,7 +7,7 @@ from gfloat import decode_block, encode_block
 from gfloat.formats import *
 
 
-@pytest.mark.parametrize("fi", all_block_formats, ids=str)
+@pytest.mark.parametrize("fi", all_block_formats)
 def test_blocks(fi: BlockFormatInfo) -> None:
 
     vals = np.linspace(-37.0, 42.0, 32)

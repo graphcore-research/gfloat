@@ -25,7 +25,6 @@ from gfloat.formats import *
         (ElemFormat.fp6_e3m2, format_info_ocp_e3m2),
         (ElemFormat.fp4_e2m1, format_info_ocp_e2m1),
     ],
-    ids=str,
 )
 def test_mx(
     mx_round: str,
