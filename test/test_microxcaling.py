@@ -34,7 +34,12 @@ from gfloat.formats import *
     ],
     ids=str,
 )
-def test_mx(mx_round, gf_round, mx_etype, gf_etype):
+def test_mx(
+    mx_round: str,
+    gf_round: RoundMode,
+    mx_etype: ElemFormat,
+    gf_etype: FormatInfo,
+) -> None:
     A = torch.arange(32) / 2 - 5
 
     mx_specs = dict(
