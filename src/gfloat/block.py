@@ -95,7 +95,7 @@ def encode_block(
     The :paramref:`scale` is explicitly passed, and the :paramref:`vals` are
     assumed to already be multiplied by `1/scale`.
     That is, this is pure encoding, scaling is computed and applied elsewhere
-    (see e.g. :funcref:`quantize_block`).
+    (see e.g. :func:`quantize_block`).
 
     It is checked for overflow in the target format,
     and will raise an exception if it does.
@@ -137,7 +137,7 @@ def compute_scale_amax(etype_emax: float, vals: npt.ArrayLike) -> float:
 
     Args:
       etype_emax (float): Maximum exponent to appear in `vals * scale`
-      vals (numpy.array): Input block
+      vals (ArrayLike): Input block
 
     Returns:
       A float such that `vals * scale` has exponents less than or equal to `etype_emax`.
@@ -160,13 +160,14 @@ def quantize_block(
     round: RoundMode = RoundMode.TiesToEven,
 ) -> npt.NDArray[np.float64]:
     """
-    Encode and decode a block of :paramref:`vals` of bytes into block Format descibed by :paramref:`fi`
+    Encode and decode a block of :paramref:`vals` of bytes into
+    block format descibed by :paramref:`fi`
 
     Args:
       fi (BlockFormatInfo): Describes the target block format
       vals (numpy.array): Input block
-      compute_scale ((float, np.array) -> float):
-          Callable to compute the scale
+      compute_scale ((float, ArrayLike) -> float):
+          Callable to compute the scale, defaults to :func:`compute_scale_amax`
       round (RoundMode): Rounding mode to use, defaults to `TiesToEven`
 
     Returns:
