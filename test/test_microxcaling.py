@@ -29,6 +29,7 @@ from gfloat.formats import *
 @pytest.mark.parametrize(
     ("mx_etype,gf_etype"),
     [
+        (ElemFormat.int8, format_info_ocp_int8),
         (ElemFormat.fp6_e3m2, format_info_ocp_e3m2),
         (ElemFormat.fp4_e2m1, format_info_ocp_e2m1),
     ],
@@ -41,7 +42,7 @@ def test_mx(
     gf_etype: FormatInfo,
 ) -> None:
     ## Input tensor
-    A = torch.arange(32) / 2 - 5
+    A = np.arange(32) / 2 - 5
 
     ## Compute MX quantization
     # Declare block format
@@ -54,19 +55,19 @@ def test_mx(
     )
 
     # Compute scale, encode, decode
-    mx_dq = quantize_mx_op(A, mx_specs, mx_etype, axes=0, round=mx_round)
+    mx_dq = quantize_mx_op(torch.tensor(A), mx_specs, mx_etype, axes=0, round=mx_round)
 
     ## Compute GFloat quantization
     # Declare block format
     fi = BlockFormatInfo("test", gf_etype, 32, format_info_ocp_e8m0)
 
     # Compute scale - this is not considered GFloat's job, but could easily be added
-    amax = A.abs().max()
-    q_log2scale = torch.floor(torch.log2(amax)).item() - fi.etype.emax
+    amax = np.max(np.abs(A))
+    q_log2scale = np.floor(np.log2(amax)) - fi.etype.emax
     q_scale = 2**q_log2scale
 
     # Apply scale to encode and decode
-    enc = encode_block(fi, q_scale, (a.item() for a in A), gf_round)
+    enc = encode_block(fi, q_scale, A, gf_round)
     gf_dq = list(decode_block(fi, enc))
 
     ## Compare
