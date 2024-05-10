@@ -6,6 +6,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Callable
 import numpy as np
+import numpy.typing as npt
 
 from .decode import decode_float
 from .round import RoundMode, encode_float, round_float
@@ -122,7 +123,10 @@ def encode_block(
         yield enc(fi.etype, val)
 
 
-def compute_scale_amax(etype_emax: float, vals: np.array) -> float:
+ComputeScaleCallable = Callable[[float, npt.ArrayLike], float]
+
+
+def compute_scale_amax(etype_emax: float, vals: npt.ArrayLike) -> float:
     """
     Compute a scale factor such that :paramref:`vals` can be
     quantized to the range [0, 2**etype_emax]
@@ -147,10 +151,10 @@ def compute_scale_amax(etype_emax: float, vals: np.array) -> float:
 
 def quantize_block(
     fi: BlockFormatInfo,
-    vals: np.array,
-    compute_scale: Callable[[float, np.array], float] = compute_scale_amax,
+    vals: npt.NDArray[np.float64],
+    compute_scale: ComputeScaleCallable = compute_scale_amax,
     round: RoundMode = RoundMode.TiesToEven,
-) -> np.array:
+) -> npt.NDArray[np.float64]:
     """
     Encode and decode a block of :paramref:`vals` of bytes into block Format descibed by :paramref:`fi`
 
@@ -169,5 +173,6 @@ def quantize_block(
     """
 
     q_scale = compute_scale_amax(fi.etype.emax, vals)
-    enc = encode_block(fi, q_scale, vals / q_scale, round)
+    scaled_vals = vals / q_scale
+    enc = encode_block(fi, q_scale, scaled_vals, round)
     return np.fromiter(decode_block(fi, enc), float)
