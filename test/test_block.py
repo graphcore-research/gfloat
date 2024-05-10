@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from gfloat import decode_block, encode_block
+from gfloat import decode_float, decode_block, encode_block, compute_scale_amax
 from gfloat.formats import *
 
 
@@ -12,9 +12,10 @@ def test_blocks(fi: BlockFormatInfo) -> None:
 
     vals = np.linspace(-37.0, 42.0, 32)
 
-    scale = 8.0
+    scale = compute_scale_amax(fi.etype.emax, vals)
     block = list(encode_block(fi, scale, vals / scale))
     decoded_vals = list(decode_block(fi, block))
 
-    atol = 2 * scale * fi.etype.eps
+    etype_next_under_max = decode_float(fi.etype, fi.etype.code_of_max - 1).fval
+    atol = (fi.etype.max - etype_next_under_max) * scale / 2
     np.testing.assert_allclose(decoded_vals, vals, atol=atol)
