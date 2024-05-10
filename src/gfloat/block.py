@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from .decode import decode_float
-from .round import encode_float, round_float
+from .round import encode_float, round_float, RoundMode
 from .types import FormatInfo
 
 
@@ -78,7 +78,10 @@ def decode_block(fi: BlockFormatInfo, block: Iterable[int]) -> Iterable[float]:
 
 
 def encode_block(
-    fi: BlockFormatInfo, scale: float, vals: Iterable[float]
+    fi: BlockFormatInfo,
+    scale: float,
+    vals: Iterable[float],
+    round: RoundMode = RoundMode.TiesToEven,
 ) -> Iterable[int]:
     """
     Encode a :paramref:`block` of bytes into block Format descibed by :paramref:`fi`
@@ -93,6 +96,7 @@ def encode_block(
       fi (BlockFormatInfo): Describes the target block format
       scale (float): Scale to be recorded in the block
       vals (Iterable[float]): Input block
+      round (RoundMode): Rounding mode to use, defaults to `TiesToEven`
 
     Returns:
       A sequence of ints representing the encoded values.
@@ -100,15 +104,19 @@ def encode_block(
     Raises:
       ValueError: The scale overflows the target scale encoding format.
     """
-    # TODO: this should not do any multiplication - the scale is to be recorded not applied.
+
+    # TODO: this should really not do any multiplication -
+    # the scale is to be recorded not applied.
     recip_scale = 1 / scale
     scale = 1 / recip_scale
 
     if scale > fi.stype.max:
         raise ValueError(f"Scaled {scale} too large for {fi.stype}")
 
+    sat = True  # Saturate elements if out of range
+
     def enc(ty: FormatInfo, x: float) -> int:
-        return encode_float(ty, round_float(ty, x))
+        return encode_float(ty, round_float(ty, x, round, sat))
 
     yield enc(fi.stype, scale)
 
