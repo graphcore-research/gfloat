@@ -233,6 +233,10 @@ format_info_mxfp4_e2m1 = BlockFormatInfo(
     "format_info_mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
 )
 
+format_info_mxint8 = BlockFormatInfo(
+    "format_info_mxint8", format_info_ocp_int8, 32, format_info_ocp_e8m0
+)
+
 all_block_formats = [
     format_info_mxfp8_e5m2,
     format_info_mxfp8_e4m3,
@@ -240,4 +244,5 @@ all_block_formats = [
     format_info_mxfp6_e2m3,
     format_info_mxfp4_e2m1,
     format_info_mxfp4_e2m1,
+    format_info_mxint8,
 ]
