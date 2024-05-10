@@ -10,15 +10,7 @@ from mx.mx_ops import quantize_mx_op
 from mx.formats import ElemFormat
 
 
-from gfloat import (
-    BlockFormatInfo,
-    encode_block,
-    decode_block,
-    encode_float,
-    decode_float,
-    round_float,
-    RoundMode,
-)
+from gfloat import BlockFormatInfo, RoundMode, quantize_block, compute_scale_amax
 from gfloat.formats import *
 
 
@@ -41,11 +33,10 @@ def test_mx(
     mx_etype: ElemFormat,
     gf_etype: FormatInfo,
 ) -> None:
-    ## Input tensor
+    # Input tensor
     A = np.arange(32) / 2 - 5
 
-    ## Compute MX quantization
-    # Declare block format
+    # MX: Declare block format
     mx_specs = dict(
         block_size=32,
         scale_bits=8,
@@ -54,21 +45,14 @@ def test_mx(
         custom_cuda=False,
     )
 
-    # Compute scale, encode, decode
+    # MX: Quantize
     mx_dq = quantize_mx_op(torch.tensor(A), mx_specs, mx_etype, axes=0, round=mx_round)
 
-    ## Compute GFloat quantization
-    # Declare block format
+    # GFloat: Declare block format
     fi = BlockFormatInfo("test", gf_etype, 32, format_info_ocp_e8m0)
 
-    # Compute scale - this is not considered GFloat's job, but could easily be added
-    amax = np.max(np.abs(A))
-    q_log2scale = np.floor(np.log2(amax)) - fi.etype.emax
-    q_scale = 2**q_log2scale
+    # GFloat: Quantize
+    gf_dq = quantize_block(fi, A, compute_scale_amax, gf_round)
 
-    # Apply scale to encode and decode
-    enc = encode_block(fi, q_scale, A, gf_round)
-    gf_dq = list(decode_block(fi, enc))
-
-    ## Compare
+    # Compare
     np.testing.assert_allclose(gf_dq, mx_dq)

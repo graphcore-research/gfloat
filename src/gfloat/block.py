@@ -4,10 +4,11 @@
 # https://en.wikipedia.org/wiki/Block_floating_point
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Callable
+import numpy as np
 
 from .decode import decode_float
-from .round import encode_float, round_float, RoundMode
+from .round import RoundMode, encode_float, round_float
 from .types import FormatInfo
 
 
@@ -84,10 +85,12 @@ def encode_block(
     round: RoundMode = RoundMode.TiesToEven,
 ) -> Iterable[int]:
     """
-    Encode a :paramref:`block` of bytes into block Format descibed by :paramref:`fi`
+    Encode float :paramref:`vals` into block Format descibed by :paramref:`fi`
 
-    The :paramref:`scale` is explicitly passed, and is converted to `1/(1/scale)`
-    before rounding to the target format.
+    The :paramref:`scale` is explicitly passed, and the :paramref:`vals` are
+    assumed to already be multiplied by `1/scale`.
+    That is, this is pure encoding, scaling is computed and applied elsewhere
+    (see e.g. :funcref:`quantize_block`).
 
     It is checked for overflow in the target format,
     and will raise an exception if it does.
@@ -105,11 +108,6 @@ def encode_block(
       ValueError: The scale overflows the target scale encoding format.
     """
 
-    # TODO: this should really not do any multiplication -
-    # the scale is to be recorded not applied.
-    recip_scale = 1 / scale
-    scale = 1 / recip_scale
-
     if scale > fi.stype.max:
         raise ValueError(f"Scaled {scale} too large for {fi.stype}")
 
@@ -121,4 +119,55 @@ def encode_block(
     yield enc(fi.stype, scale)
 
     for val in vals:
-        yield enc(fi.etype, recip_scale * val)
+        yield enc(fi.etype, val)
+
+
+def compute_scale_amax(etype_emax: float, vals: np.array) -> float:
+    """
+    Compute a scale factor such that :paramref:`vals` can be
+    quantized to the range [0, 2**etype_emax]
+
+    Args:
+      etype_emax (float): Maximum exponent to appear in `vals * scale`
+      vals (numpy.array): Input block
+
+    Returns:
+      A float such that `vals * scale` has exponents less than or equal to `etype_emax`.
+
+    Note:
+      If all vals are zero, 1.0 is returned.
+    """
+    amax = np.max(np.abs(vals))
+    if amax == 0.0:
+        # Array is all zeros - 1.0 is a good scale value
+        return 1.0
+    q_log2scale = np.floor(np.log2(amax)) - etype_emax
+    return 2.0**q_log2scale
+
+
+def quantize_block(
+    fi: BlockFormatInfo,
+    vals: np.array,
+    compute_scale: Callable[[float, np.array], float] = compute_scale_amax,
+    round: RoundMode = RoundMode.TiesToEven,
+) -> np.array:
+    """
+    Encode and decode a block of :paramref:`vals` of bytes into block Format descibed by :paramref:`fi`
+
+    Args:
+      fi (BlockFormatInfo): Describes the target block format
+      vals (numpy.array): Input block
+      compute_scale ((float, np.array) -> float):
+          Callable to compute the scale
+      round (RoundMode): Rounding mode to use, defaults to `TiesToEven`
+
+    Returns:
+      An array of floats representing the quantized values.
+
+    Raises:
+      ValueError: The scale overflows the target scale encoding format.
+    """
+
+    q_scale = compute_scale_amax(fi.etype.emax, vals)
+    enc = encode_block(fi, q_scale, vals / q_scale, round)
+    return np.fromiter(decode_block(fi, enc), float)

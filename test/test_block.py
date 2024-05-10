@@ -13,7 +13,7 @@ def test_blocks(fi: BlockFormatInfo) -> None:
     vals = np.linspace(-37.0, 42.0, 32)
 
     scale = 8.0
-    block = list(encode_block(fi, scale, vals))
+    block = list(encode_block(fi, scale, vals / scale))
     decoded_vals = list(decode_block(fi, block))
 
     atol = 2 * scale * fi.etype.eps
