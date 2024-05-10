@@ -1,7 +1,7 @@
 # Requirements for tests
 pytest
 ml_dtypes
-microxcaling
+mx
 
 # Requirements for development
 pre-commit
