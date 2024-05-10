@@ -27,10 +27,10 @@ from gfloat.formats import *
     ],
 )
 def test_mx(
-    mx_round: str,
-    gf_round: RoundMode,
     mx_etype: ElemFormat,
     gf_etype: FormatInfo,
+    mx_round: str,
+    gf_round: RoundMode,
 ) -> None:
     # Input tensor
     A = np.arange(32) / 2 - 5
