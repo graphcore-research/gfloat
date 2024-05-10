@@ -40,10 +40,11 @@ def test_mx(
     mx_etype: ElemFormat,
     gf_etype: FormatInfo,
 ) -> None:
-    # Input tensor
+    ## Input tensor
     A = torch.arange(32) / 2 - 5
 
-    # Compute MX quantization
+    ## Compute MX quantization
+    # Declare block format
     mx_specs = dict(
         block_size=32,
         scale_bits=8,
@@ -52,12 +53,14 @@ def test_mx(
         custom_cuda=False,
     )
 
+    # Compute scale, encode, decode
     mx_dq = quantize_mx_op(A, mx_specs, mx_etype, axes=0, round=mx_round)
 
-    # Compute GFloat quantization
+    ## Compute GFloat quantization
+    # Declare block format
     fi = BlockFormatInfo("test", gf_etype, 32, format_info_ocp_e8m0)
 
-    # Compute scale - this is not considered GFloat's job
+    # Compute scale - this is not considered GFloat's job, but could easily be added
     amax = A.abs().max()
     q_log2scale = torch.floor(torch.log2(amax)).item() - fi.etype.emax
     q_scale = 2**q_log2scale
@@ -66,5 +69,5 @@ def test_mx(
     enc = encode_block(fi, q_scale, (a.item() for a in A), gf_round)
     gf_dq = list(decode_block(fi, enc))
 
-    # Compare
+    ## Compare
     np.testing.assert_allclose(gf_dq, mx_dq)
