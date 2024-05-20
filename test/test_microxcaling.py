@@ -73,7 +73,7 @@ def test_mx(
     np.testing.assert_allclose(gf_dq, mx_dq)
 
 
-def test_mx_exceptions():
+def test_mx_exceptions() -> None:
     fi = BlockFormatInfo("test", format_info_ocp_e2m1, 32, format_info_ocp_e8m0)
 
     A = np.ones(32) * 2.0**-139
@@ -82,10 +82,10 @@ def test_mx_exceptions():
     assert s == 2.0**-127
 
     with pytest.raises(ValueError, match="out of range"):
-        next(encode_block(fi, fi.stype.max * 2, A))
+        list(encode_block(fi, fi.stype.max * 2, A))
 
     assert not fi.stype.is_signed
     scale = fi.stype.min / 2
     assert scale != 0
     with pytest.raises(ValueError, match="out of range"):
-        next(encode_block(fi, scale, A))
+        list(encode_block(fi, scale, A))
