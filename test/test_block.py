@@ -3,7 +3,13 @@
 import numpy as np
 import pytest
 
-from gfloat import decode_float, decode_block, encode_block, compute_scale_amax
+from gfloat import (
+    decode_float,
+    decode_block,
+    quantize_block,
+    encode_block,
+    compute_scale_amax,
+)
 from gfloat.formats import *
 
 
@@ -19,3 +25,6 @@ def test_blocks(fi: BlockFormatInfo) -> None:
     etype_next_under_max = decode_float(fi.etype, fi.etype.code_of_max - 1).fval
     atol = (fi.etype.max - etype_next_under_max) * scale / 2
     np.testing.assert_allclose(decoded_vals, vals, atol=atol)
+
+    via_qb = quantize_block(fi, vals, compute_scale_amax)
+    np.testing.assert_allclose(via_qb, decoded_vals, atol=0.0)

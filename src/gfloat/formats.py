@@ -243,6 +243,5 @@ all_block_formats = [
     format_info_mxfp6_e3m2,
     format_info_mxfp6_e2m3,
     format_info_mxfp4_e2m1,
-    format_info_mxfp4_e2m1,
     format_info_mxint8,
 ]

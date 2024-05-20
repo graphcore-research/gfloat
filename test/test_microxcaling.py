@@ -3,6 +3,7 @@
 import pytest
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 import torch
 
@@ -10,7 +11,13 @@ from mx.mx_ops import quantize_mx_op
 from mx.formats import ElemFormat
 
 
-from gfloat import BlockFormatInfo, RoundMode, quantize_block, compute_scale_amax
+from gfloat import (
+    BlockFormatInfo,
+    RoundMode,
+    quantize_block,
+    compute_scale_amax,
+    encode_block,
+)
 from gfloat.formats import *
 
 
@@ -26,15 +33,24 @@ from gfloat.formats import *
         (ElemFormat.fp4_e2m1, format_info_ocp_e2m1),
     ],
 )
+@pytest.mark.parametrize(
+    "A",
+    [
+        np.arange(32) / 2 - 5,
+        np.zeros(32),
+    ],
+    ids=[
+        "tennish",
+        "zeros",
+    ],
+)
 def test_mx(
     mx_etype: ElemFormat,
     gf_etype: FormatInfo,
     mx_round: str,
     gf_round: RoundMode,
+    A: ArrayLike,
 ) -> None:
-    # Input tensor
-    A = np.arange(32) / 2 - 5
-
     # MX: Declare block format
     mx_specs = dict(
         block_size=32,
@@ -55,3 +71,21 @@ def test_mx(
 
     # Compare
     np.testing.assert_allclose(gf_dq, mx_dq)
+
+
+def test_mx_exceptions():
+    fi = BlockFormatInfo("test", format_info_ocp_e2m1, 32, format_info_ocp_e8m0)
+
+    A = np.ones(32) * 2.0**-139
+
+    s = compute_scale_amax(fi.etype.emax, A)
+    assert s == 2.0**-127
+
+    with pytest.raises(ValueError, match="out of range"):
+        next(encode_block(fi, fi.stype.max * 2, A))
+
+    assert not fi.stype.is_signed
+    scale = fi.stype.min / 2
+    assert scale != 0
+    with pytest.raises(ValueError, match="out of range"):
+        next(encode_block(fi, scale, A))
