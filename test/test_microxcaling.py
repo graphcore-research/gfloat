@@ -3,7 +3,7 @@
 import pytest
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 
 import torch
 
@@ -49,7 +49,7 @@ def test_mx(
     gf_etype: FormatInfo,
     mx_round: str,
     gf_round: RoundMode,
-    A: ArrayLike,
+    A: NDArray[np.float64],
 ) -> None:
     # MX: Declare block format
     mx_specs = dict(
