@@ -4,7 +4,8 @@
 # https://en.wikipedia.org/wiki/Block_floating_point
 
 from dataclasses import dataclass
-from typing import Iterable, Callable
+from typing import Callable, Iterable
+
 import numpy as np
 import numpy.typing as npt
 
