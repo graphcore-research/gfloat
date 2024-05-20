@@ -30,8 +30,8 @@ python_use_unqualified_type_names = True
 
 autodoc_type_aliases = {
     "Iterable": "Iterable",
-    "npt.ArrayLike": "zArrayLike",
-    "npt.NDArray": "zNDArray",
+    "npt.ArrayLike": "ArrayLike",
+    "npt.NDArray": "NDArray",
 }
 
 autodoc_default_options = {
