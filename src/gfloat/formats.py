@@ -160,7 +160,7 @@ def format_info_p3109(precision: int) -> FormatInfo:
     if precision < 1 or precision > 7:
         raise ValueError(f"P3109 format not defined for p={precision}")
 
-    name = f"p3109_p{precision}"
+    name = f"format_info_p3109_p{precision}"
     emax = 2 ** (7 - precision) - 1
 
     return FormatInfo(
