@@ -1,0 +1,3 @@
+# PyPI doesn't like direct dependencies - see https://github.com/microsoft/microxcaling/issues/22
+
+mx @ git+https://github.com/microsoft/microxcaling
