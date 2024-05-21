@@ -20,7 +20,8 @@ jobs:
       - name: Install requirements
         run: |
           pip install -U pip
-          pip install .[dev]
+          pip install .[docs]
+          pip install -r requirements-dev.txt
 
       - name: Log installed environment
         run: |
