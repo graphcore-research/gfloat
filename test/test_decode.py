@@ -183,7 +183,7 @@ def test_spot_check_ocp_int8() -> None:
     assert dec(0xFF) == -fi.smallest
 
 
-@pytest.mark.parametrize("fi", p3109_formats, ids=str)
+@pytest.mark.parametrize("fi", p3109_formats)
 def test_specials(fi: FormatInfo) -> None:
     assert fi.code_of_nan == 0x80
     assert fi.code_of_zero == 0x00
@@ -191,7 +191,7 @@ def test_specials(fi: FormatInfo) -> None:
     assert fi.code_of_neginf == 0xFF
 
 
-@pytest.mark.parametrize("fi", all_formats, ids=str)
+@pytest.mark.parametrize("fi", all_formats)
 def test_specials_decode(fi: FormatInfo) -> None:
     dec = lambda v: decode_float(fi, v).fval
 
@@ -240,7 +240,7 @@ def test_except(v: int) -> None:
         decode_float(format_info_binary16, v)
 
 
-@pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8], ids=str)
+@pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8])
 def test_dense(fi: FormatInfo) -> None:
     fvs = [decode_float(fi, i) for i in range(0, 2**fi.bits)]
 

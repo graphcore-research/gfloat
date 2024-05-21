@@ -5,15 +5,22 @@ API
 
 .. module:: gfloat
 
-Functions
----------
+Scalar Functions
+----------------
 
 .. autofunction:: decode_float
 .. autofunction:: round_float
 .. autofunction:: encode_float
 
+Block format functions
+----------------------
+
 .. autofunction:: decode_block
 .. autofunction:: encode_block
+.. autofunction:: quantize_block
+
+.. autofunction:: compute_scale_amax
+
 
 Classes
 -------

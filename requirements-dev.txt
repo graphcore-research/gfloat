@@ -1,12 +1,14 @@
 # Requirements for tests
 pytest
 ml_dtypes
+mx @ git+https://github.com/microsoft/microxcaling
 
 # Requirements for development
 pre-commit
 black
 mypy
 black[jupyter]
+isort
 
 # Requirements for docs
 sphinx==7.1.2

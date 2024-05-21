@@ -24,6 +24,16 @@ extensions = [
     "myst_nb",
 ]
 
+autodoc_typehints = "none"  # We have them in the parameter descriptors
+autodoc_typehints_format = "short"
+python_use_unqualified_type_names = True
+
+autodoc_type_aliases = {
+    "Iterable": "Iterable",
+    "npt.ArrayLike": "ArrayLike",
+    "npt.NDArray": "NDArray",
+}
+
 autodoc_default_options = {
     "member-order": "bysource",
 }

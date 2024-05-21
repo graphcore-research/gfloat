@@ -1,6 +1,12 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from .block import BlockFormatInfo, decode_block, encode_block
+from .block import (
+    BlockFormatInfo,
+    compute_scale_amax,
+    decode_block,
+    encode_block,
+    quantize_block,
+)
 from .decode import decode_float
 from .printing import float_pow2str, float_tilde_unless_roundtrip_str
 from .round import encode_float, round_float
