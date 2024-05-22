@@ -5,7 +5,7 @@ from .types import FormatInfo
 
 #: FormatInfo for IEEE-754 Binary32 format
 format_info_binary32 = FormatInfo(
-    name="format_info_binary32",
+    name="binary32",
     k=32,
     precision=24,
     emax=127,
@@ -19,7 +19,7 @@ format_info_binary32 = FormatInfo(
 
 #: FormatInfo for IEEE-754 Binary16 format
 format_info_binary16 = FormatInfo(
-    name="format_info_binary16",
+    name="binary16",
     k=16,
     precision=11,
     emax=15,
@@ -33,7 +33,7 @@ format_info_binary16 = FormatInfo(
 
 #: FormatInfo for Google BFloat16 format
 format_info_bfloat16 = FormatInfo(
-    name="format_info_bfloat16",
+    name="bfloat16",
     k=16,
     precision=8,
     emax=127,
@@ -47,7 +47,7 @@ format_info_bfloat16 = FormatInfo(
 
 #: FormatInfo for OCP E5M2 format
 format_info_ocp_e5m2 = FormatInfo(
-    name="format_info_ocp_e5m2",
+    name="ocp_e5m2",
     k=8,
     precision=3,
     emax=15,
@@ -61,7 +61,7 @@ format_info_ocp_e5m2 = FormatInfo(
 
 #: FormatInfo for OCP E4M3 format
 format_info_ocp_e4m3 = FormatInfo(
-    name="format_info_ocp_e4m3",
+    name="ocp_e4m3",
     k=8,
     precision=4,
     emax=8,
@@ -75,7 +75,7 @@ format_info_ocp_e4m3 = FormatInfo(
 
 #: FormatInfo for OCP MX E2M3 format
 format_info_ocp_e2m3 = FormatInfo(
-    name="format_info_ocp_e2m3",
+    name="ocp_e2m3",
     k=6,
     precision=4,
     emax=2,
@@ -89,7 +89,7 @@ format_info_ocp_e2m3 = FormatInfo(
 
 #: FormatInfo for OCP MX E3M2 format
 format_info_ocp_e3m2 = FormatInfo(
-    name="format_info_ocp_e3m2",
+    name="ocp_e3m2",
     k=6,
     precision=3,
     emax=4,
@@ -103,7 +103,7 @@ format_info_ocp_e3m2 = FormatInfo(
 
 #: FormatInfo for OCP MX E2M1 format
 format_info_ocp_e2m1 = FormatInfo(
-    name="format_info_ocp_e2m1",
+    name="ocp_e2m1",
     k=4,
     precision=2,
     emax=2,
@@ -117,7 +117,7 @@ format_info_ocp_e2m1 = FormatInfo(
 
 #: FormatInfo for OCP MX E8M0 format
 format_info_ocp_e8m0 = FormatInfo(
-    name="format_info_ocp_e8m0",
+    name="ocp_e8m0",
     k=8,
     precision=1,
     emax=127,
@@ -131,7 +131,7 @@ format_info_ocp_e8m0 = FormatInfo(
 
 #: FormatInfo for OCP MX INT8 format
 format_info_ocp_int8 = FormatInfo(
-    name="format_info_ocp_int8",
+    name="ocp_int8",
     k=8,
     precision=8,
     emax=0,
@@ -160,7 +160,7 @@ def format_info_p3109(precision: int) -> FormatInfo:
     if precision < 1 or precision > 7:
         raise ValueError(f"P3109 format not defined for p={precision}")
 
-    name = f"format_info_p3109_p{precision}"
+    name = f"p3109_p{precision}"
     emax = 2 ** (7 - precision) - 1
 
     return FormatInfo(
@@ -178,7 +178,7 @@ def format_info_p3109(precision: int) -> FormatInfo:
 
 
 # Collections of formats
-tiny_formats = [
+_tiny_formats = [
     format_info_ocp_e2m1,
     format_info_ocp_e2m3,
     format_info_ocp_e3m2,
@@ -186,13 +186,13 @@ tiny_formats = [
 
 p3109_formats = [format_info_p3109(p) for p in range(1, 7)]
 
-fp8_formats = [
+_fp8_formats = [
     format_info_ocp_e4m3,
     format_info_ocp_e5m2,
     *p3109_formats,
 ]
 
-fp16_formats = [
+_fp16_formats = [
     format_info_binary16,
     format_info_bfloat16,
 ]
@@ -200,9 +200,9 @@ fp16_formats = [
 all_formats = [
     format_info_ocp_e8m0,
     format_info_ocp_int8,
-    *tiny_formats,
-    *fp8_formats,
-    *fp16_formats,
+    *_tiny_formats,
+    *_fp8_formats,
+    *_fp16_formats,
     format_info_binary32,
 ]
 
@@ -210,31 +210,31 @@ all_formats = [
 # Block formats
 
 format_info_mxfp8_e5m2 = BlockFormatInfo(
-    "format_info_mxfp8_e5m2", format_info_ocp_e5m2, 32, format_info_ocp_e8m0
+    "mxfp8_e5m2", format_info_ocp_e5m2, 32, format_info_ocp_e8m0
 )
 
 format_info_mxfp8_e4m3 = BlockFormatInfo(
-    "format_info_mxfp8_e4m3", format_info_ocp_e4m3, 32, format_info_ocp_e8m0
+    "mxfp8_e4m3", format_info_ocp_e4m3, 32, format_info_ocp_e8m0
 )
 
 format_info_mxfp6_e3m2 = BlockFormatInfo(
-    "format_info_mxfp6_e3m2", format_info_ocp_e3m2, 32, format_info_ocp_e8m0
+    "mxfp6_e3m2", format_info_ocp_e3m2, 32, format_info_ocp_e8m0
 )
 
 format_info_mxfp6_e2m3 = BlockFormatInfo(
-    "format_info_mxfp6_e2m3", format_info_ocp_e2m3, 32, format_info_ocp_e8m0
+    "mxfp6_e2m3", format_info_ocp_e2m3, 32, format_info_ocp_e8m0
 )
 
 format_info_mxfp4_e2m1 = BlockFormatInfo(
-    "format_info_mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
+    "mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
 )
 
 format_info_mxfp4_e2m1 = BlockFormatInfo(
-    "format_info_mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
+    "mxfp4_e2m1", format_info_ocp_e2m1, 32, format_info_ocp_e8m0
 )
 
 format_info_mxint8 = BlockFormatInfo(
-    "format_info_mxint8", format_info_ocp_int8, 32, format_info_ocp_e8m0
+    "mxint8", format_info_ocp_int8, 32, format_info_ocp_e8m0
 )
 
 all_block_formats = [
