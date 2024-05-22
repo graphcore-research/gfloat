@@ -4,12 +4,17 @@
 
 set -o errexit
 
-VERSION="0.1"
+# This is the master location at which to change version number
+VERSION="0.2.1"
+
+# Run the script to change the version elsewhere
 perl -pi -e 's/^(release|version) = "([\d.]+)"/$1 = "'$VERSION'"/' docs/source/conf.py
 perl -pi -e 's/^version = "([\d.]+)"/version = "'$VERSION'"/' pyproject.toml
 
+# Build docs to embed version
 ( cd docs && make html )
 
+# Build distribution
 rm -rf dist
 pip install build twine
 python -m build

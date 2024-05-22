@@ -1,7 +1,7 @@
 # Requirements for tests
 pytest
 ml_dtypes
-mx @ git+https://github.com/microsoft/microxcaling
+# See requirements-tests also for direct dependencies
 
 # Requirements for development
 pre-commit
