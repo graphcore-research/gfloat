@@ -62,22 +62,19 @@ def round_float(
         result = 0.0
 
     else:
-        # Extract significand (mantissa) and exponent
+        # Extract exponent
         expval = int(np.floor(np.log2(vpos)))
-        fsignificand = vpos * 2.0**-expval
 
-        assert fsignificand >= 1.0 and fsignificand < 2.0
+        assert expval > -1024 + p  # not yet tested for float64 near-subnormals
 
         # Effective precision, accounting for right shift for subnormal values
-        biased_exp = expval + bias
         if fi.has_subnormals:
-            effective_precision = t + min(biased_exp - 1, 0)
-        else:
-            effective_precision = t
+            expval = max(expval, 1 - bias)
 
         # Lift to "integer * 2^e"
-        fsignificand *= 2.0**effective_precision
-        expval -= effective_precision
+        expval -= t
+
+        fsignificand = vpos * 2.0**-expval
 
         # Round
         isignificand = math.floor(fsignificand)
@@ -101,8 +98,9 @@ def round_float(
                     else:
                         # All other modes tie to even
                         if fi.precision == 1:
-                            # No significand bits
+                            # No bits in significand
                             assert (isignificand == 1) or (isignificand == 0)
+                            biased_exp = expval + bias
                             if _isodd(biased_exp):
                                 expval += 1
                         else:
