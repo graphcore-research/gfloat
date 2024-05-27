@@ -36,7 +36,7 @@ class FloatValue:
     A floating-point value decoded in great detail.
     """
 
-    ival: int  #: Integer code point
+    code: int  #: Integer code point
 
     #: Value. Assumed to be exactly round-trippable to python float.
     #: This is true for all <64bit formats known in 2023.

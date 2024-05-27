@@ -222,6 +222,6 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         isig = (1 << t) - isig
 
     # Pack values into a single integer
-    ival = (sign << (k - 1)) | (biased_exp << t) | (isig << 0)
+    code = (sign << (k - 1)) | (biased_exp << t) | (isig << 0)
 
-    return ival
+    return code
