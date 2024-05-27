@@ -63,11 +63,10 @@ def round_float(
 
     else:
         # Extract significand (mantissa) and exponent
-        fsignificand, expval = np.frexp(vpos)
-        assert fsignificand >= 0.5 and fsignificand < 1.0
-        # Bring significand into range [1.0, 2.0)
-        fsignificand *= 2
-        expval -= 1
+        expval = int(np.floor(np.log2(vpos)))
+        fsignificand = vpos * 2.0**-expval
+
+        assert fsignificand >= 1.0 and fsignificand < 2.0
 
         # Effective precision, accounting for right shift for subnormal values
         biased_exp = expval + bias
