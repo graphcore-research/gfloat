@@ -10,13 +10,6 @@ from gfloat import RoundMode, decode_float, round_float
 from gfloat.formats import *
 
 
-def _mlround(v: float, dty: Type) -> float:
-    """
-    Round `v` using ml_dtypes library
-    """
-    return np.array([v]).astype(dty).astype(float).item()
-
-
 def test_round_p3109() -> None:
     fi = format_info_p3109(4)
     assert round_float(fi, 0.0068359375) == 0.0068359375
@@ -154,10 +147,17 @@ def _linterp(a: float, b: float, t: float) -> float:
     return a * (1 - t) + b * t
 
 
+def _mlround(v: float, dty: Type) -> float:
+    """
+    Round `v` using ml_dtypes library
+    """
+    return np.array([v]).astype(dty).astype(float).item()
+
+
 @pytest.mark.parametrize("fi,mldtype", test_formats)
 def test_ml_dtype_compatible(fi: FormatInfo, mldtype: Type) -> None:
     """
-    Test that rounding is compatible with ml_dtypes, assuming IEEE-like rounding
+    Test that rounding is compatible with ml_dtypes
     """
     for i in range(255):
         # For each float v, check values at various interpolations

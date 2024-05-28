@@ -72,40 +72,42 @@ def round_float(
             expval = max(expval, 1 - bias)
 
         # Lift to "integer * 2^e"
-        expval -= t
+        expval = expval - p + 1
 
         fsignificand = vpos * 2.0**-expval
 
         # Round
         isignificand = math.floor(fsignificand)
-        if isignificand != fsignificand:
-            # Need to round
-            if rnd == RoundMode.TowardZero:
-                pass
-            elif rnd == RoundMode.TowardPositive:
-                isignificand += 1 if not sign else 0
-            elif rnd == RoundMode.TowardNegative:
-                isignificand += 1 if sign else 0
-            else:
-                # Round to nearest
-                d = fsignificand - isignificand
-                if d > 0.5:
-                    isignificand += 1
-                elif d == 0.5:
-                    # Tie
-                    if rnd == RoundMode.TiesToAway:
-                        isignificand += 1
-                    else:
-                        # All other modes tie to even
-                        if fi.precision == 1:
-                            # No bits in significand
-                            assert (isignificand == 1) or (isignificand == 0)
-                            biased_exp = expval + bias
-                            if _isodd(biased_exp):
-                                expval += 1
-                        else:
-                            if _isodd(isignificand):
-                                isignificand += 1
+        delta = fsignificand - isignificand
+        if (
+            (rnd == RoundMode.TowardPositive and not sign)
+            or (rnd == RoundMode.TowardNegative and sign)
+            or (rnd == RoundMode.TiesToAway and delta >= 0.5)
+            or (rnd == RoundMode.TiesToEven and delta > 0.5)
+            or (rnd == RoundMode.TiesToEven and delta == 0.5 and _isodd(isignificand))
+        ):
+            isignificand += 1
+
+        ## Special case for Precision=1, all-log format with zero.
+        if fi.precision == 1:
+            # The logic is simply duplicated for clarity of reading.
+            isignificand = math.floor(fsignificand)
+            code_is_odd = isignificand != 0 and _isodd(expval + bias)
+            if (
+                (rnd == RoundMode.TowardPositive and not sign)
+                or (rnd == RoundMode.TowardNegative and sign)
+                or (rnd == RoundMode.TiesToAway and delta >= 0.5)
+                or (rnd == RoundMode.TiesToEven and delta > 0.5)
+                or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
+            ):
+                # Go to nextUp.
+                # Increment isignificand if zero,
+                # else increment exponent
+                if isignificand == 0:
+                    isignificand = 1
+                else:
+                    assert isignificand == 1
+                    expval += 1
 
         result = isignificand * (2.0**expval)
 
