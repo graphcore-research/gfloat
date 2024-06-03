@@ -80,8 +80,8 @@ def round_float(
         isignificand = math.floor(fsignificand)
         delta = fsignificand - isignificand
         if (
-            (rnd == RoundMode.TowardPositive and not sign)
-            or (rnd == RoundMode.TowardNegative and sign)
+            (rnd == RoundMode.TowardPositive and not sign and delta > 0)
+            or (rnd == RoundMode.TowardNegative and sign and delta > 0)
             or (rnd == RoundMode.TiesToAway and delta >= 0.5)
             or (rnd == RoundMode.TiesToEven and delta > 0.5)
             or (rnd == RoundMode.TiesToEven and delta == 0.5 and _isodd(isignificand))
@@ -108,6 +108,7 @@ def round_float(
                 else:
                     assert isignificand == 1
                     expval += 1
+        ## End special case for Precision=1.
 
         result = isignificand * (2.0**expval)
 
