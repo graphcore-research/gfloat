@@ -21,9 +21,9 @@ def test_encode(fi: FormatInfo) -> None:
 
     for i in range(0, 2**fi.bits, step):
         fv = decode_float(fi, i)
-        ival = encode_float(fi, fv.fval)
-        assert (i == ival) or np.isnan(fv.fval)
-        fv2 = decode_float(fi, ival)
+        code = encode_float(fi, fv.fval)
+        assert (i == code) or np.isnan(fv.fval)
+        fv2 = decode_float(fi, code)
         np.testing.assert_equal(fv2.fval, fv.fval)
 
 

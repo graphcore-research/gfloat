@@ -14,8 +14,8 @@ def _isnegzero(x: float) -> bool:
 
 def test_spot_check_ocp_e5m2() -> None:
     fi = format_info_ocp_e5m2
-    dec = lambda ival: decode_float(fi, ival).fval
-    fclass = lambda ival: decode_float(fi, ival).fclass
+    dec = lambda code: decode_float(fi, code).fval
+    fclass = lambda code: decode_float(fi, code).fclass
     assert dec(0x01) == 2.0**-16
     assert dec(0x40) == 2.0
     assert _isnegzero(dec(0x80))
@@ -30,7 +30,7 @@ def test_spot_check_ocp_e5m2() -> None:
 
 def test_spot_check_ocp_e4m3() -> None:
     fi = format_info_ocp_e4m3
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert dec(0x40) == 2.0
     assert dec(0x01) == 2.0**-9
@@ -42,7 +42,7 @@ def test_spot_check_ocp_e4m3() -> None:
 
 def test_spot_check_p3109_p3() -> None:
     fi = format_info_p3109(3)
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert dec(0x01) == 2.0**-17
     assert dec(0x40) == 1.0
@@ -53,7 +53,7 @@ def test_spot_check_p3109_p3() -> None:
 
 def test_spot_check_p3109_p1() -> None:
     fi = format_info_p3109(1)
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert dec(0x01) == 2.0**-62
     assert dec(0x40) == 2.0
@@ -64,7 +64,7 @@ def test_spot_check_p3109_p1() -> None:
 
 def test_spot_check_binary16() -> None:
     fi = format_info_binary16
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert dec(0x3C00) == 1.0
     assert dec(0x3C01) == 1.0 + 2**-10
@@ -78,7 +78,7 @@ def test_spot_check_binary16() -> None:
 
 def test_spot_check_bfloat16() -> None:
     fi = format_info_bfloat16
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert dec(0x3F80) == 1
     assert dec(0x4000) == 2
@@ -92,7 +92,7 @@ def test_spot_check_bfloat16() -> None:
 def test_spot_check_ocp_e2m3() -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m3
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert fi.max == 7.5
     assert fi.smallest_subnormal == 0.125
@@ -109,7 +109,7 @@ def test_spot_check_ocp_e2m3() -> None:
 def test_spot_check_ocp_e3m2() -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e3m2
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert fi.max == 28.0
     assert fi.smallest_subnormal == 0.0625
@@ -126,7 +126,7 @@ def test_spot_check_ocp_e3m2() -> None:
 def test_spot_check_ocp_e2m1() -> None:
     # Test against Table 5 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m1
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert fi.max == 6.0
     assert fi.smallest_subnormal == 0.5
@@ -149,8 +149,8 @@ def test_spot_check_ocp_e2m1() -> None:
 def test_spot_check_ocp_e8m0() -> None:
     # Test against Table 7 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e8m0
-    dec = lambda ival: decode_float(fi, ival).fval
-    fclass = lambda ival: decode_float(fi, ival).fclass
+    dec = lambda code: decode_float(fi, code).fval
+    fclass = lambda code: decode_float(fi, code).fclass
     assert fi.expBias == 127
     assert fi.max == 2.0**127
     assert fi.smallest == 2.0**-127
@@ -168,7 +168,7 @@ def test_spot_check_ocp_e8m0() -> None:
 def test_spot_check_ocp_int8() -> None:
     # Test against Table TODO in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_int8
-    dec = lambda ival: decode_float(fi, ival).fval
+    dec = lambda code: decode_float(fi, code).fval
 
     assert fi.max == 1.0 + 63.0 / 64
     assert fi.smallest == 2.0**-6
