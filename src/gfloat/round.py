@@ -94,8 +94,8 @@ def round_float(
             isignificand = math.floor(fsignificand)
             code_is_odd = isignificand != 0 and _isodd(expval + bias)
             if (
-                (rnd == RoundMode.TowardPositive and not sign)
-                or (rnd == RoundMode.TowardNegative and sign)
+                (rnd == RoundMode.TowardPositive and not sign and delta > 0)
+                or (rnd == RoundMode.TowardNegative and sign and delta > 0)
                 or (rnd == RoundMode.TiesToAway and delta >= 0.5)
                 or (rnd == RoundMode.TiesToEven and delta > 0.5)
                 or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
