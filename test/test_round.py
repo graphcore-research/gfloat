@@ -27,6 +27,9 @@ def test_round_p3109() -> None:
     assert round_float(fi, 232.0, RoundMode.TowardNegative) == 224.0
     assert round_float(fi, 232.0, RoundMode.TowardPositive) == np.inf
 
+    assert round_float(fi, -1.0, RoundMode.TowardNegative) == -1.0
+    assert round_float(fi, 1.0, RoundMode.TowardPositive) == 1.0
+
     assert round_float(fi, -232.0) == -224.0
     assert round_float(fi, -232.0, RoundMode.TiesToAway) == -np.inf
     assert round_float(fi, -232.0, RoundMode.TowardZero) == -224.0
