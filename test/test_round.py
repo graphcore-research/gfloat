@@ -135,7 +135,7 @@ p4min = 2**-10  # smallest subnormal in p4
         ),
     ),
 )
-def test_round_p3109b(mode, vals) -> None:
+def test_round_p3109b(mode: RoundMode, vals: list) -> None:
     fi = format_info_p3109(4)
 
     for sat in (True, False):
@@ -286,7 +286,7 @@ p4maxhalfup = (p4max + p4maxup) / 2
         f"{str(x[0])}-{'Sat' if x[1] else 'Inf'}" if len(x) == 2 else f"{len(x)}"
     ),
 )
-def test_round_p3109_sat(modesat, vals) -> None:
+def test_round_p3109_sat(modesat: tuple[RoundMode, bool], vals: list) -> None:
     fi = format_info_p3109(4)
 
     for val, expected in vals:
