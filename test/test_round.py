@@ -46,8 +46,8 @@ p4min = 2**-10  # smallest subnormal in p4
             RoundMode.TowardZero,
             (
                 (p4min, p4min),
-                (p4min / 4, 0),
-                (p4min / 2, 0),
+                (p4min / 4, 0.0),
+                (p4min / 2, 0.0),
                 (-p4min, -p4min),
                 (-p4min / 4, 0.0),
                 (-p4min / 2, 0.0),
@@ -80,8 +80,8 @@ p4min = 2**-10  # smallest subnormal in p4
             RoundMode.TowardNegative,
             (
                 (p4min, p4min),
-                (p4min / 4, 0),
-                (p4min / 2, 0),
+                (p4min / 4, 0.0),
+                (p4min / 2, 0.0),
                 (-p4min, -p4min),
                 (-p4min / 4, -p4min),
                 (-p4min / 2, -p4min),
@@ -97,11 +97,11 @@ p4min = 2**-10  # smallest subnormal in p4
             RoundMode.TiesToEven,
             (
                 (p4min, p4min),
-                (p4min / 4, 0),
-                (p4min / 2, 0),
+                (p4min / 4, 0.0),
+                (p4min / 2, 0.0),
                 (-p4min, -p4min),
-                (-p4min / 4, 0),
-                (-p4min / 2, 0),
+                (-p4min / 4, 0.0),
+                (-p4min / 2, 0.0),
                 (64.0, 64.0),
                 (63.0, 64.0),
                 (62.0, 64.0),
@@ -117,10 +117,10 @@ p4min = 2**-10  # smallest subnormal in p4
             RoundMode.TiesToAway,
             (
                 (p4min, p4min),
-                (p4min / 4, 0),
+                (p4min / 4, 0.0),
                 (p4min / 2, p4min),
                 (-p4min, -p4min),
-                (-p4min / 4, 0),
+                (-p4min / 4, 0.0),
                 (-p4min / 2, -p4min),
                 (64.0, 64.0),
                 (63.0, 64.0),
@@ -282,9 +282,7 @@ p4maxhalfup = (p4max + p4maxup) / 2
             ),
         ),
     ),
-    ids=lambda x: (
-        f"{str(x[0])}-{'Sat' if x[1] else 'Inf'}" if len(x) == 2 else f"{len(x)}"
-    ),
+    ids=lambda x: f"{str(x[0])}-{'Sat' if x[1] else 'Inf'}" if len(x) == 2 else None,
 )
 def test_round_p3109_sat(modesat: tuple[RoundMode, bool], vals: list) -> None:
     fi = format_info_p3109(4)
