@@ -138,9 +138,9 @@ p4min = 2**-10  # smallest subnormal in p4
 def test_round_p3109b(mode, vals) -> None:
     fi = format_info_p3109(4)
 
-    for val, expected in vals:
-        sat = True
-        assert round_float(fi, val, mode, sat) == expected
+    for sat in (True, False):
+        for val, expected in vals:
+            assert round_float(fi, val, mode, sat) == expected
 
 
 p4max = 224.0
