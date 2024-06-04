@@ -39,6 +39,257 @@ def test_round_p3109() -> None:
     assert round_float(fi, 232.1) == np.inf
 
 
+p4min = 2**-10  # smallest subnormal in p4
+
+
+@pytest.mark.parametrize(
+    "mode, vals",
+    (
+        (
+            RoundMode.TowardZero,
+            (
+                (p4min, p4min),
+                (p4min / 4, 0),
+                (-p4min, -p4min),
+                (-p4min / 4, 0.0),
+                (64.0, 64.0),
+                (63.0, 60.0),
+                (62.0, 60.0),
+                (-64.0, -64.0),
+                (-63.0, -60.0),
+                (-62.0, -60.0),
+            ),
+        ),
+        (
+            RoundMode.TowardPositive,
+            (
+                (p4min, p4min),
+                (p4min / 4, p4min),
+                (-p4min, -p4min),
+                (-p4min / 4, 0.0),
+                (64.0, 64.0),
+                (63.0, 64.0),
+                (62.0, 64.0),
+                (-64.0, -64.0),
+                (-63.0, -60.0),
+                (-62.0, -60.0),
+            ),
+        ),
+        (
+            RoundMode.TowardNegative,
+            (
+                (p4min, p4min),
+                (p4min / 4, 0),
+                (-p4min, -p4min),
+                (-p4min / 4, -p4min),
+                (64.0, 64.0),
+                (63.0, 60.0),
+                (62.0, 60.0),
+                (-64.0, -64.0),
+                (-63.0, -64.0),
+                (-62.0, -64.0),
+            ),
+        ),
+        (
+            RoundMode.TiesToEven,
+            (
+                (p4min, p4min),
+                (p4min / 4, 0),
+                (p4min / 2, 0),
+                (-p4min, -p4min),
+                (-p4min / 4, 0),
+                (-p4min / 2, 0),
+                (64.0, 64.0),
+                (63.0, 64.0),
+                (62.0, 64.0),
+                (61.0, 60.0),
+                (-64.0, -64.0),
+                (-63.0, -64.0),
+                (-62.0, -64.0),
+                (-61.0, -60.0),
+                (-58.0, -56.0),
+            ),
+        ),
+        (
+            RoundMode.TiesToAway,
+            (
+                (p4min, p4min),
+                (p4min / 4, 0),
+                (p4min / 2, p4min),
+                (-p4min, -p4min),
+                (-p4min / 4, 0),
+                (-p4min / 2, -p4min),
+                (64.0, 64.0),
+                (63.0, 64.0),
+                (62.0, 64.0),
+                (61.0, 60.0),
+                (-64.0, -64.0),
+                (-63.0, -64.0),
+                (-62.0, -64.0),
+                (-61.0, -60.0),
+                (-58.0, -60.0),
+            ),
+        ),
+    ),
+)
+def test_round_p3109b(mode, vals) -> None:
+    fi = format_info_p3109(4)
+
+    for val, expected in vals:
+        sat = True
+        assert round_float(fi, val, mode, sat) == expected
+
+
+p4max = 224.0
+p4maxup = 240.0
+p4maxhalfup = (p4max + p4maxup) / 2
+
+
+@pytest.mark.parametrize(
+    "modesat, vals",
+    (
+        (
+            (RoundMode.TowardZero, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.TowardZero, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -np.inf),
+            ),
+        ),
+        (
+            (RoundMode.TowardPositive, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.TowardPositive, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, np.inf),
+                (p4maxup, np.inf),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -np.inf),
+            ),
+        ),
+        (
+            (RoundMode.TowardNegative, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.TowardNegative, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -np.inf),
+                (-p4maxup, -np.inf),
+                (-np.inf, -np.inf),
+            ),
+        ),
+        (
+            (RoundMode.TiesToEven, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.TiesToEven, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, np.inf),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -np.inf),
+                (-np.inf, -np.inf),
+            ),
+        ),
+        (
+            (RoundMode.TiesToAway, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.TiesToAway, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, np.inf),
+                (p4maxup, np.inf),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -np.inf),
+                (-p4maxup, -np.inf),
+                (-np.inf, -np.inf),
+            ),
+        ),
+    ),
+    ids=lambda x: (
+        f"{str(x[0])}-{'Sat' if x[1] else 'Inf'}" if len(x) == 2 else f"{len(x)}"
+    ),
+)
+def test_round_p3109_sat(modesat, vals) -> None:
+    fi = format_info_p3109(4)
+
+    for val, expected in vals:
+        assert round_float(fi, val, *modesat) == expected
+
+
 def test_round_e5m2() -> None:
     fi = format_info_ocp_e5m2
 

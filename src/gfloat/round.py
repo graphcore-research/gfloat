@@ -56,10 +56,8 @@ def round_float(
     if np.isinf(vpos):
         result = np.inf
 
-    elif fi.has_subnormals and vpos < fi.smallest_subnormal / 2:
-        # Test against smallest_subnormal to avoid subnormals in frexp below
-        # Note that this restricts us to types narrower than float64
-        result = 0.0
+    elif vpos == 0:
+        result = 0
 
     else:
         # Extract exponent
@@ -119,9 +117,15 @@ def round_float(
             return 0.0
 
     # Overflow
-    if result > (-fi.min if sign else fi.max):
-        if sat:
-            result = fi.max
+    amax = -fi.min if sign else fi.max
+    if result > amax:
+        if (
+            sat
+            or (rnd == RoundMode.TowardNegative and not sign and np.isfinite(v))
+            or (rnd == RoundMode.TowardPositive and sign and np.isfinite(v))
+            or (rnd == RoundMode.TowardZero and np.isfinite(v))
+        ):
+            result = amax
         else:
             if fi.has_infs:
                 result = np.inf
