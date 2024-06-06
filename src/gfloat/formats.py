@@ -3,6 +3,20 @@
 from .block import BlockFormatInfo
 from .types import FormatInfo
 
+#: FormatInfo for IEEE-754 Binary64 format
+format_info_binary64 = FormatInfo(
+    name="binary64",
+    k=64,
+    precision=53,
+    emax=1023,
+    has_nz=True,
+    has_infs=True,
+    num_high_nans=2**52 - 1,
+    has_subnormals=True,
+    is_signed=True,
+    is_twos_complement=False,
+)
+
 #: FormatInfo for IEEE-754 Binary32 format
 format_info_binary32 = FormatInfo(
     name="binary32",
@@ -204,6 +218,7 @@ all_formats = [
     *_fp8_formats,
     *_fp16_formats,
     format_info_binary32,
+    format_info_binary64,
 ]
 
 # ------

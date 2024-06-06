@@ -21,6 +21,8 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
       ValueError:
         If :paramref:`i` is outside the range of valid code points in :paramref:`fi`.
     """
+    assert isinstance(i, int)
+
     k = fi.k
     p = fi.precision
     t = p - 1  # Trailing significand field width
@@ -56,13 +58,10 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
         expval = exp - expBias
         fsignificand = 1.0 + significand * 2**-t
 
-    # val: the raw value excluding specials
-    val = sign * fsignificand * 2.0**expval
-
-    # Now overwrite the raw value with specials: Infs, NaN, -0, NaN_0
+    # Handle specials: Infs, NaN, -0, NaN_0
     signed_infinity = -np.inf if signbit else np.inf
 
-    fval = val
+    fval = None
     # All-bits-special exponent (ABSE)
     if w > 0 and exp == 2**w - 1:
         min_i_with_nan = 2 ** (p - 1) - fi.num_high_nans
@@ -77,6 +76,10 @@ def decode_float(fi: FormatInfo, i: int) -> FloatValue:
             fval = -0.0
         else:
             fval = np.nan
+
+    # In range - compute value
+    if fval is None:
+        fval = sign * fsignificand * 2.0**expval
 
     # Compute FloatClass
     fclass = None

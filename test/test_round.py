@@ -446,6 +446,8 @@ def test_round_roundtrip(fi: FormatInfo) -> None:
         step = 13
     elif fi.bits <= 32:
         step = 73013
+    elif fi.bits <= 64:
+        step = (73013 << 32) + 39
 
     for i in range(0, 2**fi.bits, step):
         fv = decode_float(fi, i)
