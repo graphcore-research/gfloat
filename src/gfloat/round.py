@@ -73,40 +73,34 @@ def round_float(
 
         fsignificand = vpos * 2.0**-expval
 
-        # Round
+        # Round.
         isignificand = math.floor(fsignificand)
         delta = fsignificand - isignificand
+
+        # Is the integer codepoint odd or even?
+        if rnd == RoundMode.TiesToEven:
+            code_is_odd = _isodd(isignificand)
+            if fi.precision == 1:  # When precision == 1, also check exponent.
+                code_is_odd = isignificand != 0 and _isodd(expval + bias)
+
+        # Rounded value will be either isignificand or isignificand+1.
         if (
-            (rnd == RoundMode.TowardPositive and not sign and delta > 0)
-            or (rnd == RoundMode.TowardNegative and sign and delta > 0)
+            (
+                rnd == RoundMode.TiesToEven
+                and (delta > 0.5 or delta == 0.5 and code_is_odd)
+            )
             or (rnd == RoundMode.TiesToAway and delta >= 0.5)
-            or (rnd == RoundMode.TiesToEven and delta > 0.5)
-            or (rnd == RoundMode.TiesToEven and delta == 0.5 and _isodd(isignificand))
+            or (rnd == RoundMode.TowardPositive and not sign and delta > 0)
+            or (rnd == RoundMode.TowardNegative and sign and delta > 0)
         ):
             isignificand += 1
+            if fi.precision == 1 and isignificand == 2:
+                # Special case for p = 1: carry overflowed significand to exponent.
+                # (Not needed for p>1 as we are reconstructing, not encoding)
+                isignificand = 1
+                expval += 1
 
-        ## Special case for Precision=1, all-log format with zero.
-        if fi.precision == 1:
-            # The logic is simply duplicated for clarity of reading.
-            isignificand = math.floor(fsignificand)
-            code_is_odd = isignificand != 0 and _isodd(expval + bias)
-            if (
-                (rnd == RoundMode.TowardPositive and not sign and delta > 0)
-                or (rnd == RoundMode.TowardNegative and sign and delta > 0)
-                or (rnd == RoundMode.TiesToAway and delta >= 0.5)
-                or (rnd == RoundMode.TiesToEven and delta > 0.5)
-                or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
-            ):
-                # Go to nextUp.
-                # Increment isignificand if zero,
-                # else increment exponent
-                if isignificand == 0:
-                    isignificand = 1
-                else:
-                    assert isignificand == 1
-                    expval += 1
-        ## End special case for Precision=1.
-
+        # Reconstruct from integer significand and exponent
         result = isignificand * (2.0**expval)
 
     if result == 0:
