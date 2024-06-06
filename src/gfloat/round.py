@@ -86,8 +86,8 @@ def round_float(
             isignificand += 1
 
         ## Special case for Precision=1, all-log format with zero.
+        #  The logic is simply duplicated (and isignificand overwritten) for clarity.
         if fi.precision == 1:
-            # The logic is simply duplicated for clarity of reading.
             isignificand = math.floor(fsignificand)
             code_is_odd = isignificand != 0 and _isodd(expval + bias)
             if (
@@ -105,8 +105,9 @@ def round_float(
                 else:
                     assert isignificand == 1
                     expval += 1
-        ## End special case for Precision=1.
+            ## End special case for Precision=1.
 
+        # Reconstruct rounded result to float
         result = isignificand * (2.0**expval)
 
     if result == 0:
