@@ -40,7 +40,6 @@ def round_float(
     # Constants
     p = fi.precision
     bias = fi.expBias
-    t = p - 1
 
     if np.isnan(v):
         if fi.num_nans == 0:
