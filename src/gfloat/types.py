@@ -146,7 +146,7 @@ class FormatInfo:
     @property
     def eps(self) -> float:
         """
-        The difference between 1.0 and the next smallest representable float
+        The difference between 1.0 and the smallest representable float
         larger than 1.0. For example, for 64-bit binary floats in the IEEE-754
         standard, ``eps = 2**-52``, approximately 2.22e-16.
         """
@@ -156,7 +156,7 @@ class FormatInfo:
     @property
     def epsneg(self) -> float:
         """
-        The difference between 1.0 and the next smallest representable float
+        The difference between 1.0 and the largest representable float
         less than 1.0. For example, for 64-bit binary floats in the IEEE-754
         standard, ``epsneg = 2**-53``, approximately 1.11e-16.
         """
