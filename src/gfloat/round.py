@@ -62,8 +62,6 @@ def round_float(
         # Extract exponent
         expval = int(np.floor(np.log2(vpos)))
 
-        assert expval > -1024 + p  # not yet tested for float64 near-subnormals
-
         # Effective precision, accounting for right shift for subnormal values
         if fi.has_subnormals:
             expval = max(expval, 1 - bias)
@@ -71,7 +69,8 @@ def round_float(
         # Lift to "integer * 2^e"
         expval = expval - p + 1
 
-        fsignificand = vpos * 2.0**-expval
+        # use ldexp instead of vpos*2**-expval to avoid overflow
+        fsignificand = math.ldexp(vpos, -expval)
 
         # Round
         isignificand = math.floor(fsignificand)
@@ -191,8 +190,9 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         isig = 0
         biased_exp = 0
     else:
-        assert fi.bits < 64  # TODO: check implementation if fi is binary64
         sig, exp = np.frexp(vpos)
+        exp = int(exp)  # All calculations in Python ints
+
         # sig in range [0.5, 1)
         sig *= 2
         exp -= 1
@@ -226,6 +226,6 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         isig = (1 << t) - isig
 
     # Pack values into a single integer
-    code = (sign << (k - 1)) | (biased_exp << t) | (isig << 0)
+    code = (int(sign) << (k - 1)) | (biased_exp << t) | (isig << 0)
 
     return code
