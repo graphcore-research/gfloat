@@ -10,7 +10,7 @@ package-dir = {"" = "src"}
 
 [project]
 name =  "gfloat"
-version = "0.2.1" # Set version in package.sh
+version = "0.3" # Set version in package.sh
 authors = [
     {name = "Andrew Fitzgibbon", email = "awf@fitzgibbon.ie"},
 ]

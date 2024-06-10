@@ -8,8 +8,9 @@ Defined Formats
 IEEE 754 Formats
 ----------------
 
-.. autodata:: format_info_binary32
 .. autodata:: format_info_binary16
+.. autodata:: format_info_binary32
+.. autodata:: format_info_binary64
 
 BFloat16
 ----------------

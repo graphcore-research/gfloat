@@ -1,0 +1,17 @@
+
+0.3: Jun 10, 2024
+  - Use python ints throughout, adding float64 to test
+  - Simplify round, fix directed rounding
+  - Rename "ival" to "code" in FloatValue
+  - Shorten format names from "format_info_*" to "*"
+
+
+0.2: May 21, 2024
+  - Add MX Formats
+  - Improved CI
+  - Add value table pretty-printing
+
+0.1: May 2, 2024
+  - First released version
+
+Copyright (c) 2024 Graphcore Ltd. All rights reserved.
