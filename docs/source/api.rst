@@ -12,6 +12,12 @@ Scalar Functions
 .. autofunction:: round_float
 .. autofunction:: encode_float
 
+Array Functions
+---------------
+
+.. autofunction:: round_ndarray
+.. autofunction:: encode_ndarray
+
 Block format functions
 ----------------------
 
