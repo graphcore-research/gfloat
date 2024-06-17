@@ -78,40 +78,35 @@ def round_ndarray(
 
         result[finite_mask] = isignificand * (2.0**expval)
 
+    amax = np.where(is_negative, -fi.min, fi.max)
+
+    # In some rounding modes, send to amax independent of sat
+    if rnd == RoundMode.TowardNegative:
+        result[(result > amax) & finite_mask & ~is_negative] = amax
+    elif rnd == RoundMode.TowardPositive:
+        result[(result > amax) & finite_mask & is_negative] = amax
+    elif rnd == RoundMode.TowardZero:
+        result[(result > amax) & finite_mask] = amax
+
+    if sat:
+        result[result > amax] = amax[result > amax]
+    else:
+        # Not saturating, send to infinity or NaN
+        if fi.has_infs:
+            result[result > amax] = np.inf
+        elif fi.num_nans > 0:
+            result[result > amax] = np.nan
+        else:
+            if np.any(result > amax):
+                raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
+
+    result[is_negative] = -result[is_negative]
+
     if np.any(result == 0):
         if fi.has_nz:
             result[(result == 0) & is_negative] = -0.0
         else:
             result[result == 0] = 0.0
-
-    amax = np.where(is_negative, -fi.min, fi.max)
-    overflow_mask = result > amax
-
-    if np.any(overflow_mask):
-        if rnd == RoundMode.TowardNegative:
-            overflow_conditions = ~is_negative & np.isfinite(v)
-        elif rnd == RoundMode.TowardPositive:
-            overflow_conditions = is_negative & np.isfinite(v)
-        elif rnd == RoundMode.TowardZero:
-            overflow_conditions = np.isfinite(v)
-        else:
-            overflow_conditions = np.zeros_like(v, dtype=bool)
-
-        overflow_conditions = sat | overflow_conditions
-
-        if np.any(overflow_conditions):
-            result[overflow_mask & overflow_conditions] = amax[
-                overflow_mask & overflow_conditions
-            ]
-        else:
-            if fi.has_infs:
-                result[overflow_mask] = np.inf
-            elif fi.num_nans > 0:
-                result[overflow_mask] = np.nan
-            else:
-                raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
-
-    result[is_negative] = -result[is_negative]
 
     return result
 

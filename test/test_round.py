@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from typing import Type
+from typing import Type, Callable
 
 import ml_dtypes
 import numpy as np
@@ -10,7 +10,16 @@ from gfloat import RoundMode, decode_float, round_float, round_ndarray
 from gfloat.formats import *
 
 
-def test_round_p3109() -> None:
+def rnd_scalar(fi, v, mode=RoundMode.TiesToEven, sat: bool = False):
+    return round_float(fi, v, mode, sat)
+
+
+def rnd_array(fi, v, mode=RoundMode.TiesToEven, sat: bool = False):
+    return round_ndarray(fi, np.array([v]), mode, sat).item()
+
+
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_p3109(round_float: Callable) -> None:
     fi = format_info_p3109(4)
     assert round_float(fi, 0.0068359375) == 0.0068359375
     assert round_float(fi, 0.0029296875) == 0.0029296875
@@ -135,7 +144,8 @@ p4min = 2**-10  # smallest subnormal in p4
         ),
     ),
 )
-def test_round_p3109b(mode: RoundMode, vals: list) -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_p3109b(round_float: Callable, mode: RoundMode, vals: list) -> None:
     fi = format_info_p3109(4)
 
     for sat in (True, False):
@@ -284,14 +294,18 @@ p4maxhalfup = (p4max + p4maxup) / 2
     ),
     ids=lambda x: f"{str(x[0])}-{'Sat' if x[1] else 'Inf'}" if len(x) == 2 else None,
 )
-def test_round_p3109_sat(modesat: tuple[RoundMode, bool], vals: list) -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_p3109_sat(
+    round_float: Callable, modesat: tuple[RoundMode, bool], vals: list
+) -> None:
     fi = format_info_p3109(4)
 
     for val, expected in vals:
         assert round_float(fi, val, *modesat) == expected
 
 
-def test_round_e5m2() -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_e5m2(round_float: Callable) -> None:
     fi = format_info_ocp_e5m2
 
     assert fi.max == 57344
@@ -317,7 +331,8 @@ def test_round_e5m2() -> None:
     assert np.isnan(round_float(fi, np.nan, sat=True))
 
 
-def test_round_e4m3() -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_e4m3(round_float: Callable) -> None:
     fi = format_info_ocp_e4m3
 
     assert fi.max == 448
@@ -421,7 +436,10 @@ def _mlround(v: float, dty: Type) -> float:
 
 
 @pytest.mark.parametrize("fi,mldtype", test_formats)
-def test_ml_dtype_compatible(fi: FormatInfo, mldtype: Type) -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_ml_dtype_compatible(
+    round_float: Callable, fi: FormatInfo, mldtype: Type
+) -> None:
     """
     Test that rounding is compatible with ml_dtypes
     """
@@ -441,7 +459,8 @@ def test_ml_dtype_compatible(fi: FormatInfo, mldtype: Type) -> None:
 
 
 @pytest.mark.parametrize("fi,mldtype", test_formats)
-def test_round_ints(fi: FormatInfo, mldtype: Type) -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_ints(round_float: Callable, fi: FormatInfo, mldtype: Type) -> None:
     for v in np.arange(289).astype(float):
         val = round_float(fi, v)
 
@@ -450,7 +469,8 @@ def test_round_ints(fi: FormatInfo, mldtype: Type) -> None:
 
 
 @pytest.mark.parametrize("fi", all_formats)
-def test_round_roundtrip(fi: FormatInfo) -> None:
+@pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
+def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
     if fi.bits <= 8:
         step = 1
     elif fi.bits <= 16:
