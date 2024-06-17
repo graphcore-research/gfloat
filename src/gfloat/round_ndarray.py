@@ -22,91 +22,87 @@ def round_ndarray(
     p = fi.precision
     bias = fi.expBias
 
-    result = np.zeros_like(v)
     is_negative = np.signbit(v) & fi.is_signed
     vpos = np.where(is_negative, -v, v)
 
-    nan_mask = np.isnan(v)
-    result[nan_mask] = np.nan
+    nonzerofinite_mask = ~(np.isnan(v) | np.isinf(v) | (v == 0))
 
-    inf_mask = np.isinf(vpos)
-    result[inf_mask] = np.inf
+    # Place 1.0 where nonzerofinite_mask is False
+    vpos_safe = np.where(nonzerofinite_mask, vpos, 1.0)
 
-    zero_mask = vpos == 0
-    result[zero_mask] = 0
+    expval = np.floor(np.log2(vpos_safe)).astype(int)
 
-    finite_mask = ~(nan_mask | inf_mask | zero_mask)
+    if fi.has_subnormals:
+        expval = np.maximum(expval, 1 - bias)
 
-    if np.any(finite_mask):
-        expval = np.floor(np.log2(vpos[finite_mask])).astype(int)
+    expval = expval - p + 1
+    fsignificand = np.ldexp(vpos_safe, -expval)
 
-        if fi.has_subnormals:
-            expval = np.maximum(expval, 1 - bias)
+    isignificand = np.floor(fsignificand).astype(np.int64)
+    delta = fsignificand - isignificand
 
-        expval = expval - p + 1
-        fsignificand = np.ldexp(vpos[finite_mask], -expval)
+    if fi.precision > 1:
+        code_is_odd = _isodd(isignificand)
+    else:
+        code_is_odd = (isignificand != 0) & _isodd(expval + bias)
 
-        isignificand = np.floor(fsignificand).astype(np.int64)
-        delta = fsignificand - isignificand
+    if rnd == RoundMode.TowardPositive:
+        round_up = ~is_negative & (delta > 0)
+    elif rnd == RoundMode.TowardNegative:
+        round_up = is_negative & (delta > 0)
+    elif rnd == RoundMode.TiesToAway:
+        round_up = delta >= 0.5
+    elif rnd == RoundMode.TiesToEven:
+        round_up = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
+    else:
+        round_up = np.zeros_like(delta, dtype=bool)
 
-        if fi.precision > 1:
-            code_is_odd = _isodd(isignificand)
-        else:
-            code_is_odd = (isignificand != 0) & _isodd(expval + bias)
+    if fi.precision > 1:
+        isignificand += round_up
+    else:
+        # if isignificand == 0:
+        #     isignificand = 1
+        # else:
+        #     assert isignificand == 1
+        #     expval += 1
+        expval += round_up & (isignificand == 1)
+        isignificand = np.where(round_up, 1, isignificand)
 
-        if rnd == RoundMode.TowardPositive:
-            round_up = ~is_negative[finite_mask] & (delta > 0)
-        elif rnd == RoundMode.TowardNegative:
-            round_up = is_negative[finite_mask] & (delta > 0)
-        elif rnd == RoundMode.TiesToAway:
-            round_up = delta >= 0.5
-        elif rnd == RoundMode.TiesToEven:
-            round_up = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
-        else:
-            round_up = np.zeros_like(delta, dtype=bool)
-
-        if fi.precision > 1:
-            isignificand[round_up] += 1
-        else:
-            # if isignificand == 0:
-            #     isignificand = 1
-            # else:
-            #     assert isignificand == 1
-            #     expval += 1
-            expval[round_up & (isignificand == 1)] += 1
-            isignificand[round_up] = 1
-
-        result[finite_mask] = isignificand * (2.0**expval)
+    result = np.where(nonzerofinite_mask, isignificand * (2.0**expval), vpos)
 
     amax = np.where(is_negative, -fi.min, fi.max)
 
     # In some rounding modes, send to amax independent of sat
     if rnd == RoundMode.TowardNegative:
-        result[(result > amax) & finite_mask & ~is_negative] = amax
+        put_amax_at = (result > amax) & nonzerofinite_mask & ~is_negative
     elif rnd == RoundMode.TowardPositive:
-        result[(result > amax) & finite_mask & is_negative] = amax
+        put_amax_at = (result > amax) & nonzerofinite_mask & is_negative
     elif rnd == RoundMode.TowardZero:
-        result[(result > amax) & finite_mask] = amax
-
-    if sat:
-        result[result > amax] = amax[result > amax]
+        put_amax_at = (result > amax) & nonzerofinite_mask
+    elif sat:
+        put_amax_at = result > amax
     else:
+        put_amax_at = np.zeros_like(result, dtype=bool)
+
+    result = np.where(put_amax_at, amax, result)
+
+    if not sat:
         # Not saturating, send to infinity or NaN
         if fi.has_infs:
-            result[result > amax] = np.inf
+            result = np.where(result > amax, np.inf, result)
         elif fi.num_nans > 0:
-            result[result > amax] = np.nan
+            result = np.where(result > amax, np.nan, result)
         else:
             if np.any(result > amax):
                 raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
 
-    result[is_negative] = -result[is_negative]
+    result = np.where(is_negative, -result, result)
 
-    if np.any(result == 0):
-        if fi.has_nz:
-            result[(result == 0) & is_negative] = -0.0
-        else:
-            result[result == 0] = 0.0
+    # Make negative zeros negative if has_nz, else make them not negative.
+    if fi.has_nz:
+        result = np.where((result == 0) & is_negative, -0.0, result)
+    else:
+        result = np.where(result == 0, 0.0, result)
 
     return result
 
