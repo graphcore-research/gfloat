@@ -59,7 +59,7 @@ def round_ndarray(
         round_up = np.zeros_like(delta, dtype=bool)
 
     if fi.precision > 1:
-        isignificand += int(round_up)
+        isignificand = np.where(round_up, isignificand + 1, isignificand)
     else:
         # if isignificand == 0:
         #     isignificand = 1
