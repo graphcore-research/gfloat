@@ -24,20 +24,20 @@ def round_ndarray(
     bias = fi.expBias
 
     is_negative = np.signbit(v) & fi.is_signed
-    vpos = np.where(is_negative, -v, v)
+    absv = np.where(is_negative, -v, v)
 
     nonzerofinite_mask = ~(np.isnan(v) | np.isinf(v) | (v == 0))
 
     # Place 1.0 where nonzerofinite_mask is False
-    vpos_safe = np.where(nonzerofinite_mask, vpos, 1.0)
+    absv_masked = np.where(nonzerofinite_mask, absv, 1.0)
 
-    expval = np.floor(np.log2(vpos_safe)).astype(int)
+    expval = np.floor(np.log2(absv_masked)).astype(int)
 
     if fi.has_subnormals:
         expval = np.maximum(expval, 1 - bias)
 
     expval = expval - p + 1
-    fsignificand = np.ldexp(vpos_safe, -expval)
+    fsignificand = np.ldexp(absv_masked, -expval)
 
     isignificand = np.floor(fsignificand).astype(np.int64)
     delta = fsignificand - isignificand
@@ -69,7 +69,7 @@ def round_ndarray(
         expval += round_up & (isignificand == 1)
         isignificand = np.where(round_up, 1, isignificand)
 
-    result = np.where(nonzerofinite_mask, isignificand * (2.0**expval), vpos)
+    result = np.where(nonzerofinite_mask, isignificand * (2.0**expval), absv)
 
     amax = np.where(is_negative, -fi.min, fi.max)
 
