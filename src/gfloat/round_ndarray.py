@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from types import ModuleType
 from .types import FormatInfo, RoundMode
 import numpy as np
 import math
@@ -14,7 +15,7 @@ def round_ndarray(
     v: np.ndarray,
     rnd: RoundMode = RoundMode.TiesToEven,
     sat: bool = False,
-    np=np,
+    np: ModuleType = np,
 ) -> np.ndarray:
     """
     Vectorized version of round_float.

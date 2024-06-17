@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from typing import Type, Callable
+from typing import Type, Callable, Iterator, Tuple
 
 import ml_dtypes
 import numpy as np
@@ -10,11 +10,15 @@ from gfloat import RoundMode, decode_float, round_float, round_ndarray
 from gfloat.formats import *
 
 
-def rnd_scalar(fi, v, mode=RoundMode.TiesToEven, sat: bool = False):
+def rnd_scalar(
+    fi: FormatInfo, v: float, mode: RoundMode = RoundMode.TiesToEven, sat: bool = False
+) -> float:
     return round_float(fi, v, mode, sat)
 
 
-def rnd_array(fi, v, mode=RoundMode.TiesToEven, sat: bool = False):
+def rnd_array(
+    fi: FormatInfo, v: float, mode: RoundMode = RoundMode.TiesToEven, sat: bool = False
+) -> float:
     return round_ndarray(fi, np.array([v]), mode, sat).item()
 
 
@@ -394,7 +398,7 @@ def test_round(fi: FormatInfo) -> None:
         round(v0 + 0.6*dv) == v1
     """
 
-    def get_vals():
+    def get_vals() -> Iterator[Tuple[float, float]]:
         for i in some_positive_codepoints:
             v0 = decode_float(fi, i + 0).fval
             v1 = decode_float(fi, i + 1).fval
