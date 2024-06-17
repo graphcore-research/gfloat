@@ -58,7 +58,7 @@ def round_ndarray(
         round_up = np.zeros_like(delta, dtype=bool)
 
     if fi.precision > 1:
-        isignificand += round_up
+        isignificand += int(round_up)
     else:
         # if isignificand == 0:
         #     isignificand = 1
@@ -72,22 +72,21 @@ def round_ndarray(
 
     amax = np.where(is_negative, -fi.min, fi.max)
 
-    # In some rounding modes, send to amax independent of sat
-    if rnd == RoundMode.TowardNegative:
-        put_amax_at = (result > amax) & nonzerofinite_mask & ~is_negative
-    elif rnd == RoundMode.TowardPositive:
-        put_amax_at = (result > amax) & nonzerofinite_mask & is_negative
-    elif rnd == RoundMode.TowardZero:
-        put_amax_at = (result > amax) & nonzerofinite_mask
-    elif sat:
-        put_amax_at = result > amax
+    if sat:
+        result = np.where(result > amax, amax, result)
     else:
-        put_amax_at = np.zeros_like(result, dtype=bool)
+        if rnd == RoundMode.TowardNegative:
+            put_amax_at = (result > amax) & nonzerofinite_mask & ~is_negative
+        elif rnd == RoundMode.TowardPositive:
+            put_amax_at = (result > amax) & nonzerofinite_mask & is_negative
+        elif rnd == RoundMode.TowardZero:
+            put_amax_at = (result > amax) & nonzerofinite_mask
+        else:
+            put_amax_at = np.zeros_like(result, dtype=bool)
 
-    result = np.where(put_amax_at, amax, result)
+        result = np.where(put_amax_at, amax, result)
 
-    if not sat:
-        # Not saturating, send to infinity or NaN
+        # Now anything larger than amax goes to infinity or NaN
         if fi.has_infs:
             result = np.where(result > amax, np.inf, result)
         elif fi.num_nans > 0:
