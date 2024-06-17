@@ -26,10 +26,10 @@ def round_ndarray(
     is_negative = np.signbit(v) & fi.is_signed
     absv = np.where(is_negative, -v, v)
 
-    nonzerofinite_mask = ~(np.isnan(v) | np.isinf(v) | (v == 0))
+    finite_nonzero = ~(np.isnan(v) | np.isinf(v) | (v == 0))
 
-    # Place 1.0 where nonzerofinite_mask is False
-    absv_masked = np.where(nonzerofinite_mask, absv, 1.0)
+    # Place 1.0 where finite_nonzero is False, to avoid log of {0,inf,nan}
+    absv_masked = np.where(finite_nonzero, absv, 1.0)
 
     expval = np.floor(np.log2(absv_masked)).astype(int)
 
@@ -69,7 +69,7 @@ def round_ndarray(
         expval += round_up & (isignificand == 1)
         isignificand = np.where(round_up, 1, isignificand)
 
-    result = np.where(nonzerofinite_mask, isignificand * (2.0**expval), absv)
+    result = np.where(finite_nonzero, isignificand * (2.0**expval), absv)
 
     amax = np.where(is_negative, -fi.min, fi.max)
 
@@ -77,15 +77,15 @@ def round_ndarray(
         result = np.where(result > amax, amax, result)
     else:
         if rnd == RoundMode.TowardNegative:
-            put_amax_at = (result > amax) & nonzerofinite_mask & ~is_negative
+            put_amax_at = (result > amax) & ~is_negative
         elif rnd == RoundMode.TowardPositive:
-            put_amax_at = (result > amax) & nonzerofinite_mask & is_negative
+            put_amax_at = (result > amax) & is_negative
         elif rnd == RoundMode.TowardZero:
-            put_amax_at = (result > amax) & nonzerofinite_mask
+            put_amax_at = result > amax
         else:
             put_amax_at = np.zeros_like(result, dtype=bool)
 
-        result = np.where(put_amax_at, amax, result)
+        result = np.where(finite_nonzero & put_amax_at, amax, result)
 
         # Now anything larger than amax goes to infinity or NaN
         if fi.has_infs:
@@ -119,7 +119,6 @@ def encode_ndarray(fi: FormatInfo, v: np.ndarray) -> np.ndarray:
     vpos = np.where(sign, -v, v)
 
     nan_mask = np.isnan(v)
-    inf_mask = np.isinf(v)
 
     code = np.zeros_like(v, dtype=np.uint64)
 
@@ -148,15 +147,12 @@ def encode_ndarray(fi: FormatInfo, v: np.ndarray) -> np.ndarray:
         finite_sign = sign[finite_mask]
 
         sig, exp = np.frexp(finite_vpos)
-        expl = exp.astype(int) - 1
-        tsig = sig * 2
 
-        biased_exp = expl + fi.expBias
+        biased_exp = exp.astype(np.int64) + (fi.expBias - 1)
         subnormal_mask = (biased_exp < 1) & fi.has_subnormals
 
-        tsig[subnormal_mask] *= 2.0 ** (biased_exp[subnormal_mask] - 1)
+        tsig = np.where(subnormal_mask, sig * 2.0**biased_exp, sig * 2 - 1.0)
         biased_exp[subnormal_mask] = 0
-        tsig[~subnormal_mask] -= 1.0
 
         isig = np.floor(tsig * 2**t).astype(int)
 
