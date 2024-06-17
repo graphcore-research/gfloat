@@ -7,8 +7,8 @@ from numpy.typing import NDArray
 
 import torch
 
-from mx.mx_ops import quantize_mx_op
 from mx.formats import ElemFormat
+from mx.mx_ops import quantize_mx_op
 
 
 from gfloat import (
