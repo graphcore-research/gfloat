@@ -1,10 +1,11 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-import ml_dtypes
+from typing import Callable
+
 import numpy as np
 import pytest
 
-from gfloat import decode_float, encode_float
+from gfloat import decode_float, encode_float, encode_ndarray
 from gfloat.formats import *
 
 
@@ -24,23 +25,37 @@ def test_encode(fi: FormatInfo) -> None:
     for i in range(0, 2**fi.bits, step):
         fv = decode_float(fi, i)
         code = encode_float(fi, fv.fval)
-        assert (i == code) or np.isnan(fv.fval)
+        assert (i == code) or (np.isnan(fv.fval) and code == fi.code_of_nan)
         fv2 = decode_float(fi, code)
         np.testing.assert_equal(fv2.fval, fv.fval)
 
+    codes = np.arange(0, 2**fi.bits, step, dtype=np.uint64)
+    fvals = np.array([decode_float(fi, int(i)).fval for i in codes])
+    enc_codes = encode_ndarray(fi, fvals)
+    if fi.num_nans == 0:
+        assert not np.any(np.isnan(fvals))
+        expected_codes = codes
+    else:
+        expected_codes = np.where(np.isnan(fvals), fi.code_of_nan, codes)
+    np.testing.assert_equal(enc_codes, expected_codes)
+
 
 @pytest.mark.parametrize("fi", all_formats)
-def test_encode_edges(fi: FormatInfo) -> None:
-    assert encode_float(fi, fi.max) == fi.code_of_max
+@pytest.mark.parametrize("enc", (encode_float, encode_ndarray))
+def test_encode_edges(fi: FormatInfo, enc: Callable) -> None:
+    if enc == encode_ndarray:
+        enc = lambda fi, x: encode_ndarray(fi, np.array([x])).item()
 
-    assert encode_float(fi, fi.max * 1.25) == (
+    assert enc(fi, fi.max) == fi.code_of_max
+
+    assert enc(fi, fi.max * 1.25) == (
         fi.code_of_posinf
         if fi.has_infs
         else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_max
     )
 
     if fi.is_signed:
-        assert encode_float(fi, fi.min * 1.25) == (
+        assert enc(fi, fi.min * 1.25) == (
             fi.code_of_neginf
             if fi.has_infs
             else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min

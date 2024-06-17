@@ -6,7 +6,7 @@ import ml_dtypes
 import numpy as np
 import pytest
 
-from gfloat import RoundMode, decode_float, round_float
+from gfloat import RoundMode, decode_float, round_float, round_ndarray
 from gfloat.formats import *
 
 
@@ -378,18 +378,29 @@ def test_round(fi: FormatInfo) -> None:
         round(v0 + 0.3*dv) == v0
         round(v0 + 0.6*dv) == v1
     """
-    for i in some_positive_codepoints:
-        v0 = decode_float(fi, i + 0).fval
-        v1 = decode_float(fi, i + 1).fval
-        if np.isfinite([v0, v1]).all():
-            dv = v1 - v0
-            np.testing.assert_equal(round_float(fi, v0), v0)
-            np.testing.assert_equal(round_float(fi, v0 + 0.3 * dv), v0)
-            np.testing.assert_equal(round_float(fi, v0 + 0.49 * dv), v0)
-            np.testing.assert_equal(round_float(fi, v0 + 0.51 * dv), v1)
-            np.testing.assert_equal(round_float(fi, v0 + 0.99 * dv), v1)
-            nearest_even = v0 if (i & 1 == 0) else v1
-            np.testing.assert_equal(round_float(fi, v0 + 0.50 * dv), nearest_even)
+
+    def get_vals():
+        for i in some_positive_codepoints:
+            v0 = decode_float(fi, i + 0).fval
+            v1 = decode_float(fi, i + 1).fval
+            if np.isfinite([v0, v1]).all():
+                dv = v1 - v0
+                nearest_even = v0 if (i & 1 == 0) else v1
+                yield v0, v0
+                yield v0 + 0.3 * dv, v0
+                yield v0 + 0.49 * dv, v0
+                yield v0 + 0.51 * dv, v1
+                yield v0 + 0.99 * dv, v1
+                yield v0 + 0.50 * dv, nearest_even
+
+    for v, expected in get_vals():
+        assert round_float(fi, v) == expected
+
+    vs = np.array([v for v, _ in get_vals()])
+    expecteds = np.array([expected for _, expected in get_vals()])
+
+    got = round_ndarray(fi, vs)
+    np.testing.assert_equal(got, expecteds)
 
 
 test_formats = [
