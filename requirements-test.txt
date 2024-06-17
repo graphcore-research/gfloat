@@ -1,3 +1,7 @@
 # PyPI doesn't like direct dependencies - see https://github.com/microsoft/microxcaling/issues/22
 
 mx @ git+https://github.com/microsoft/microxcaling
+numpy<2.0.0 # microscaling needs pytorch 2.1, which needs to be less than 2.0
+torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.16.0
+torchaudio==2.1.0
