@@ -19,3 +19,5 @@ myst_nb
 # Requirements for notebooks
 airium
 pandas
+jaxlib
+jax
