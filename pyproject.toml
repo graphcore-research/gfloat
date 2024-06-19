@@ -40,5 +40,4 @@ module = "mx.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-nb_test_files = true
-nb_diff_ignore = ["/metadata/language_info"]
+addopts = "--nbval"

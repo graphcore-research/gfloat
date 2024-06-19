@@ -1,6 +1,6 @@
 # Requirements for tests (see "requirements-tests.txt" also for direct dependencies)
 pytest
-pytest-notebook
+nbval
 ml_dtypes
 jaxlib
 jax
