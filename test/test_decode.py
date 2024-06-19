@@ -260,10 +260,16 @@ def test_consistent_decodes_all_values(
     npivals = np.arange(
         np.iinfo(int_dtype).min, int(np.iinfo(int_dtype).max) + 1, dtype=int_dtype
     )
-    npfvals = npivals.view(dtype=npfmt)
+    npfvals = npivals.view(dtype=npfmt).astype(np.float64)
+
+    # Scalar version
     for i, npfval in zip(npivals, npfvals):
         val = decode_float(fmt, int(i))
         np.testing.assert_equal(val.fval, npfval)
+
+    # Vector version
+    vals = decode_ndarray(fmt, npivals)
+    np.testing.assert_equal(vals, npfvals)
 
 
 @pytest.mark.parametrize("v", [-1, 0x10000])
