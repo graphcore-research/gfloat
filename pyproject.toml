@@ -38,3 +38,6 @@ fast = true
 [[tool.mypy.overrides]]
 module = "mx.*"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+nb_test_files = true
