@@ -1,7 +1,9 @@
-# Requirements for tests
+# Requirements for tests (see "requirements-tests.txt" also for direct dependencies)
 pytest
+pytest-notebook
 ml_dtypes
-# See requirements-tests also for direct dependencies
+jaxlib
+jax
 
 # Requirements for development
 pre-commit
@@ -19,5 +21,3 @@ myst_nb
 # Requirements for notebooks
 airium
 pandas
-jaxlib
-jax
