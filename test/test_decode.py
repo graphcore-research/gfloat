@@ -34,7 +34,7 @@ def get_method(method: str, fi: FormatInfo) -> Callable:
 
 
 @pytest.mark.parametrize("method", methods)
-def test_spot_check_ocp_e5m2(method) -> None:
+def test_spot_check_ocp_e5m2(method: str) -> None:
     fi = format_info_ocp_e5m2
     dec = get_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
@@ -51,7 +51,7 @@ def test_spot_check_ocp_e5m2(method) -> None:
 
 
 @pytest.mark.parametrize("method", methods)
-def test_spot_check_ocp_e4m3(method) -> None:
+def test_spot_check_ocp_e4m3(method: str) -> None:
     fi = format_info_ocp_e4m3
     dec = get_method(method, fi)
     assert dec(0x40) == 2.0

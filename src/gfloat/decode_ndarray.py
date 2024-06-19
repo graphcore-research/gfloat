@@ -1,11 +1,13 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from types import ModuleType
 import numpy as np
+from .types import FormatInfo
 
-from .types import FloatClass, FloatValue, FormatInfo
 
-
-def decode_ndarray(fi: FormatInfo, codes: np.ndarray, np=np) -> np.ndarray:
+def decode_ndarray(
+    fi: FormatInfo, codes: np.ndarray, np: ModuleType = np
+) -> np.ndarray:
     r"""
     Vectorized version of :function:`decode_float`
 
