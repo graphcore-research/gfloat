@@ -17,21 +17,32 @@ of:
   * Precision (p)
   * Maximum exponent (emax)
 
-with additional fields defining the encoding of infinities, Not-a-number (NaN) values,
-and negative zero, among others (see :class:`gfloat.FormatInfo`.)
+with additional fields defining the presence/encoding of:
+
+  * Infinities
+  * Not-a-number (NaN) values
+  * Negative zero
+  * Subnormal numbers
+  * Signed/unsigned
+  * Two's complement encoding (of the significand)
 
 This allows an implementation of generic floating point encode/decode logic,
 handling various current and proposed floating point types:
 
  - `IEEE 754 <https://en.wikipedia.org/wiki/IEEE_754>`_: Binary16, Binary32
- - `OCP Float8 <https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf>`_: E5M2, E4M3, and MX formats
+ - `Brain floating point <https://en.wikipedia.org/wiki/Bfloat16_floating-point_format>`_: BFloat16
+ - `OCP Float8 <https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf>`_: E5M2, E4M3
  - `IEEE WG P3109 <https://github.com/awf/P3109-Public/blob/main/Shared%20Reports/P3109%20WG%20Interim%20report.pdf>`_: P{p} for p in 1..7
+ - Types from the `OCP MX <https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf>`_ spec: E8M0, INT8, and FP4, FP6 types
 
-The library favours readability and extensibility over speed - for fast
-implementations of these datatypes see, for example,
+
+GFloat, being a pure Python library, favours readability and extensibility over speed
+(although the `*_ndarray` functions are reasonably fast for large arrays).
+For fast implementations of these datatypes see, for example,
 `ml_dtypes <https://github.com/jax-ml/ml_dtypes>`_,
 `bitstring <https://github.com/scott-griffiths/bitstring>`_,
-`MX PyTorch Emulation Library <https://github.com/microsoft/microxcaling>`_.
+`MX PyTorch Emulation Library <https://github.com/microsoft/microxcaling>`_,
+`APyTypes <https://apytypes.github.io/apytypes>`_.
 
 To get started with the library, we recommend perusing the notebooks,
 otherwise you may wish to jump straight into the API.

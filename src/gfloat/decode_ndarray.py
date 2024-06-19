@@ -9,7 +9,7 @@ def decode_ndarray(
     fi: FormatInfo, codes: np.ndarray, np: ModuleType = np
 ) -> np.ndarray:
     r"""
-    Vectorized version of :function:`decode_float`
+    Vectorized version of :meth:`decode_float`
 
     Args:
       fi (FormatInfo): Floating point format descriptor.

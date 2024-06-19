@@ -18,7 +18,30 @@ def round_ndarray(
     np: ModuleType = np,
 ) -> np.ndarray:
     """
-    Vectorized version of round_float.
+    Vectorized version of :meth:`round_float`.
+
+    Round inputs to the given :py:class:`FormatInfo`, given rounding mode and
+    saturation flag
+
+    Input NaNs will convert to NaNs in the target, not necessarily preserving payload.
+    An input Infinity will convert to the largest float if :paramref:`sat`,
+    otherwise to an Inf, if present, otherwise to a NaN.
+    Negative zero will be returned if the format has negative zero, otherwise zero.
+
+    Args:
+      fi (FormatInfo): Describes the target format
+      v (float): Input value to be rounded
+      rnd (RoundMode): Rounding mode to use
+      sat (bool): Saturation flag: if True, round overflowed values to `fi.max`
+      np (Module): May be `numpy`, `jax.numpy` or another module cloning numpy
+
+    Returns:
+      An array of floats which is a subset of the format's value set.
+
+    Raises:
+       ValueError: The target format cannot represent an input
+             (e.g. converting a `NaN`, or an `Inf` when the target has no
+             `NaN` or `Inf`, and :paramref:`sat` is false)
     """
     p = fi.precision
     bias = fi.expBias
@@ -109,7 +132,22 @@ def round_ndarray(
 
 def encode_ndarray(fi: FormatInfo, v: np.ndarray) -> np.ndarray:
     """
-    Vectorized version of encode_float.
+    Vectorized version of :meth:`encode_float`.
+
+    Encode inputs to the given :py:class:`FormatInfo`.
+
+    Will round toward zero if :paramref:`v` is not in the value set.
+    Will saturate to `Inf`, `NaN`, `fi.max` in order of precedence.
+    Encode -0 to 0 if not `fi.has_nz`
+
+    For other roundings and saturations, call :func:`round_ndarray` first.
+
+    Args:
+      fi (FormatInfo): Describes the target format
+      v (float array): The value to be encoded.
+
+    Returns:
+      The integer code point
     """
     k = fi.bits
     p = fi.precision

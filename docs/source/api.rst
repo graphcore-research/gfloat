@@ -8,9 +8,9 @@ API
 Scalar Functions
 ----------------
 
-.. autofunction:: decode_float
 .. autofunction:: round_float
 .. autofunction:: encode_float
+.. autofunction:: decode_float
 
 Array Functions
 ---------------
