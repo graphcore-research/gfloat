@@ -1,10 +1,10 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
-
+from typing import Callable
 import ml_dtypes
 import numpy as np
 import pytest
 
-from gfloat import FloatClass, decode_float
+from gfloat import FloatClass, decode_float, decode_ndarray
 from gfloat.formats import *
 
 
@@ -12,9 +12,31 @@ def _isnegzero(x: float) -> bool:
     return (x == 0) and (np.signbit(x) == 1)
 
 
-def test_spot_check_ocp_e5m2() -> None:
+methods = ["scalar", "array"]
+
+
+def get_method(method: str, fi: FormatInfo) -> Callable:
+    if method == "scalar":
+
+        def dec(code: int) -> float:
+            return decode_float(fi, code).fval
+
+    if method == "array":
+
+        def dec(code: int) -> float:
+            asnp = np.tile(np.array(code, dtype=np.int64), (2, 3))
+            vals = decode_ndarray(fi, asnp)
+            val = vals.item(0)
+            np.testing.assert_equal(val, vals)
+            return val
+
+    return dec
+
+
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e5m2(method) -> None:
     fi = format_info_ocp_e5m2
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
     assert dec(0x01) == 2.0**-16
     assert dec(0x40) == 2.0
