@@ -17,6 +17,7 @@ Array Functions
 
 .. autofunction:: round_ndarray
 .. autofunction:: encode_ndarray
+.. autofunction:: decode_ndarray
 
 Block format functions
 ----------------------
