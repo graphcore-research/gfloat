@@ -22,7 +22,7 @@ def test_jax() -> None:
     a8 = a.astype(ml_dtypes.float8_e5m2).astype(jnp.float64)
 
     fi = format_info_ocp_e5m2
-    j8 = gfloat.round_ndarray(fi, jnp.array(a), np=jnp)
+    j8 = gfloat.round_ndarray(fi, jnp.array(a), np=jnp)  # type: ignore [arg-type]
 
     np.testing.assert_equal(a8, j8)
 
