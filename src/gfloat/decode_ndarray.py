@@ -39,15 +39,15 @@ def decode_ndarray(fi: FormatInfo, codes: np.ndarray, np=np) -> np.ndarray:
         signmask = None
         sign = 1.0
 
-    exp = (codes >> t) & ((1 << w) - 1)
+    exp = ((codes >> t) & ((1 << w) - 1)).astype(np.int64)
     significand = codes & ((1 << t) - 1)
     if fi.is_twos_complement:
         significand = np.where(sign < 0, (1 << t) - significand, significand)
 
     expBias = fi.expBias
 
-    iszero = (exp == 0) & (significand == 0) if fi.has_zero else False
-    issubnormal = (exp == 0) & (significand != 0) if fi.has_subnormals else False
+    iszero = (exp == 0) & (significand == 0) & fi.has_zero
+    issubnormal = (exp == 0) & (significand != 0) & fi.has_subnormals
     isnormal = ~iszero & ~issubnormal
     expval = np.where(~isnormal, 1 - expBias, exp - expBias)
     fsignificand = np.where(~isnormal, significand * 2**-t, 1.0 + significand * 2**-t)
@@ -55,21 +55,22 @@ def decode_ndarray(fi: FormatInfo, codes: np.ndarray, np=np) -> np.ndarray:
     # Normal/Subnormal/Zero case, other values will be overwritten
     fval = np.where(iszero, 0.0, sign * fsignificand * 2.0**expval)
 
-    # All-bits-special exponent (ABSE)
-    if w > 0:
-        abse = exp == 2**w - 1
-        min_i_with_nan = 2 ** (p - 1) - fi.num_high_nans
-        fval = np.where(abse & (significand >= min_i_with_nan), np.nan, fval)
-        if fi.has_infs:
-            fval = np.where(
-                abse & (significand == min_i_with_nan - 1), np.inf * sign, fval
-            )
+    if fi.has_infs:
+        fval = np.where(codes == fi.code_of_posinf, np.inf, fval)
+        fval = np.where(codes == fi.code_of_neginf, -np.inf, fval)
+
+    if fi.num_nans > 0:
+        code_is_nan = codes == fi.code_of_nan
+        if w > 0:
+            # All-bits-special exponent (ABSE)
+            abse = exp == 2**w - 1
+            min_code_with_nan = 2 ** (p - 1) - fi.num_high_nans
+            code_is_nan |= abse & (significand >= min_code_with_nan)
+
+        fval = np.where(code_is_nan, np.nan, fval)
 
     # Negative zero
     if fi.has_nz:
         fval = np.where(iszero & (sign < 0), -0.0, fval)
-    else:
-        # Negative zero slot is nan
-        fval = np.where(codes == fi.code_of_negzero, np.nan, fval)
 
     return fval
