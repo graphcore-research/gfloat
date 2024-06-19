@@ -1,4 +1,4 @@
-# Requirements for tests (see "requirements-tests.txt" also for direct dependencies)
+# Requirements for tests (see "requirements-direct.txt" also for direct dependencies)
 pytest
 nbval
 ml_dtypes
