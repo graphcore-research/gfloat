@@ -31,9 +31,29 @@ handling various current and proposed floating point types:
 
  - `IEEE 754 <https://en.wikipedia.org/wiki/IEEE_754>`_: Binary16, Binary32
  - `Brain floating point <https://en.wikipedia.org/wiki/Bfloat16_floating-point_format>`_: BFloat16
- - `OCP Float8 <https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf>`_: E5M2, E4M3
- - `IEEE WG P3109 <https://github.com/awf/P3109-Public/blob/main/Shared%20Reports/P3109%20WG%20Interim%20report.pdf>`_: P{p} for p in 1..7
- - Types from the `OCP MX <https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf>`_ spec: E8M0, INT8, and FP4, FP6 types
+ - |ocp_link|: E5M2, E4M3
+ - |p3109_link|: P{p} for p in 1..7
+ - Types from the |ocp_mx_link| spec: E8M0, INT8, and FP4, FP6 types
+
+As well as block formats from |ocp_mx_link|.
+
+.. |ocp_mx_link| raw:: html
+
+   <a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank">
+     OCP MX
+   </a>
+
+.. |ocp_link| raw:: html
+
+   <a href="https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf" target="_blank">
+     OCP Float8
+   </a>
+
+.. |p3109_link| raw:: html
+
+    <a href="https://raw.githubusercontent.com/P3109/Public/main/Shared%20Reports/P3109%20WG%20Interim%20Report.pdf" target="_blank">
+      IEEE P3109
+    </a>
 
 Example
 -------
