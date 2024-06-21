@@ -21,16 +21,22 @@ def float_pow2str(v: float, min_exponent: float = -np.inf) -> str:
     if not np.isfinite(v):
         return str(v)
 
-    s = np.sign(v)
+    signstr = "-" if np.signbit(v) else ""
+
     x = np.abs(v)
-    e = np.floor(np.log2(x))
-    sig = x * 2.0**-e
+    e = int(np.floor(np.log2(x)))
+    sig = np.ldexp(x, -e)
     if e < min_exponent:
-        sig *= 2.0 ** (e - min_exponent)
+        sig = np.ldexp(sig, e - min_exponent)
         e = min_exponent
 
+    pow2str = f"2^{int(e):d}"
+
     significand = fractions.Fraction(sig)
-    return ("-" if s < 0 else "") + f"{significand}*2^{int(e):d}"
+    if significand == 1:
+        return signstr + pow2str
+    else:
+        return signstr + f"{significand}*{pow2str}"
 
 
 def float_tilde_unless_roundtrip_str(v: float, width: int = 14, d: int = 8) -> str:
