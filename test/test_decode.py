@@ -1,10 +1,10 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
-
+from typing import Callable
 import ml_dtypes
 import numpy as np
 import pytest
 
-from gfloat import FloatClass, decode_float
+from gfloat import FloatClass, decode_float, decode_ndarray
 from gfloat.formats import *
 
 
@@ -12,9 +12,31 @@ def _isnegzero(x: float) -> bool:
     return (x == 0) and (np.signbit(x) == 1)
 
 
-def test_spot_check_ocp_e5m2() -> None:
+methods = ["scalar", "array"]
+
+
+def get_method(method: str, fi: FormatInfo) -> Callable:
+    if method == "scalar":
+
+        def dec(code: int) -> float:
+            return decode_float(fi, code).fval
+
+    if method == "array":
+
+        def dec(code: int) -> float:
+            asnp = np.tile(np.array(code, dtype=np.uint64), (2, 3))
+            vals = decode_ndarray(fi, asnp)
+            val = vals.item(0)
+            np.testing.assert_equal(val, vals)
+            return val
+
+    return dec
+
+
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e5m2(method: str) -> None:
     fi = format_info_ocp_e5m2
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
     assert dec(0x01) == 2.0**-16
     assert dec(0x40) == 2.0
@@ -28,10 +50,10 @@ def test_spot_check_ocp_e5m2() -> None:
     assert fclass(0x00) == FloatClass.ZERO
 
 
-def test_spot_check_ocp_e4m3() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e4m3(method: str) -> None:
     fi = format_info_ocp_e4m3
-    dec = lambda code: decode_float(fi, code).fval
-
+    dec = get_method(method, fi)
     assert dec(0x40) == 2.0
     assert dec(0x01) == 2.0**-9
     assert _isnegzero(dec(0x80))
@@ -40,9 +62,10 @@ def test_spot_check_ocp_e4m3() -> None:
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_p3109_p3() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_p3109_p3(method: str) -> None:
     fi = format_info_p3109(3)
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert dec(0x01) == 2.0**-17
     assert dec(0x40) == 1.0
@@ -51,9 +74,10 @@ def test_spot_check_p3109_p3() -> None:
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_p3109_p1() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_p3109_p1(method: str) -> None:
     fi = format_info_p3109(1)
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert dec(0x01) == 2.0**-62
     assert dec(0x40) == 2.0
@@ -62,9 +86,10 @@ def test_spot_check_p3109_p1() -> None:
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
 
 
-def test_spot_check_binary16() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_binary16(method: str) -> None:
     fi = format_info_binary16
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert dec(0x3C00) == 1.0
     assert dec(0x3C01) == 1.0 + 2**-10
@@ -76,9 +101,10 @@ def test_spot_check_binary16() -> None:
     assert np.isnan(dec(0x7FFF))
 
 
-def test_spot_check_bfloat16() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_bfloat16(method: str) -> None:
     fi = format_info_bfloat16
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert dec(0x3F80) == 1
     assert dec(0x4000) == 2
@@ -89,10 +115,11 @@ def test_spot_check_bfloat16() -> None:
     assert np.isnan(dec(0x7FFF))
 
 
-def test_spot_check_ocp_e2m3() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e2m3(method: str) -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m3
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert fi.max == 7.5
     assert fi.smallest_subnormal == 0.125
@@ -106,10 +133,11 @@ def test_spot_check_ocp_e2m3() -> None:
     assert _isnegzero(dec(0b100000))
 
 
-def test_spot_check_ocp_e3m2() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e3m2(method: str) -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e3m2
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert fi.max == 28.0
     assert fi.smallest_subnormal == 0.0625
@@ -123,10 +151,11 @@ def test_spot_check_ocp_e3m2() -> None:
     assert _isnegzero(dec(0b100000))
 
 
-def test_spot_check_ocp_e2m1() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e2m1(method: str) -> None:
     # Test against Table 5 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m1
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert fi.max == 6.0
     assert fi.smallest_subnormal == 0.5
@@ -146,10 +175,11 @@ def test_spot_check_ocp_e2m1() -> None:
     assert _isnegzero(dec(0b1000))
 
 
-def test_spot_check_ocp_e8m0() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_e8m0(method: str) -> None:
     # Test against Table 7 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e8m0
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
     assert fi.expBias == 127
     assert fi.max == 2.0**127
@@ -165,10 +195,11 @@ def test_spot_check_ocp_e8m0() -> None:
     assert fclass(0x00) == FloatClass.NORMAL
 
 
-def test_spot_check_ocp_int8() -> None:
+@pytest.mark.parametrize("method", methods)
+def test_spot_check_ocp_int8(method: str) -> None:
     # Test against Table TODO in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_int8
-    dec = lambda code: decode_float(fi, code).fval
+    dec = get_method(method, fi)
 
     assert fi.max == 1.0 + 63.0 / 64
     assert fi.smallest == 2.0**-6
@@ -192,8 +223,9 @@ def test_specials(fi: FormatInfo) -> None:
 
 
 @pytest.mark.parametrize("fi", all_formats)
-def test_specials_decode(fi: FormatInfo) -> None:
-    dec = lambda v: decode_float(fi, v).fval
+@pytest.mark.parametrize("method", methods)
+def test_specials_decode(method: str, fi: FormatInfo) -> None:
+    dec = get_method(method, fi)
 
     if fi.has_zero:
         assert dec(fi.code_of_zero) == 0
@@ -228,10 +260,16 @@ def test_consistent_decodes_all_values(
     npivals = np.arange(
         np.iinfo(int_dtype).min, int(np.iinfo(int_dtype).max) + 1, dtype=int_dtype
     )
-    npfvals = npivals.view(dtype=npfmt)
+    npfvals = npivals.view(dtype=npfmt).astype(np.float64)
+
+    # Scalar version
     for i, npfval in zip(npivals, npfvals):
         val = decode_float(fmt, int(i))
         np.testing.assert_equal(val.fval, npfval)
+
+    # Vector version
+    vals = decode_ndarray(fmt, npivals)
+    np.testing.assert_equal(vals, npfvals)
 
 
 @pytest.mark.parametrize("v", [-1, 0x10000])
