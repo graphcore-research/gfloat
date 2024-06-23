@@ -28,9 +28,9 @@ def float_pow2str(v: float, min_exponent: float = -np.inf) -> str:
     sig = np.ldexp(x, -e)
     if e < min_exponent:
         sig = np.ldexp(sig, e - min_exponent)
-        e = min_exponent
+        e = int(min_exponent)
 
-    pow2str = f"2^{int(e):d}"
+    pow2str = f"2^{e:d}"
 
     significand = fractions.Fraction(sig)
     if significand == 1:
