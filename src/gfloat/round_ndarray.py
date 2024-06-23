@@ -92,7 +92,7 @@ def round_ndarray(
         expval += round_up & (isignificand == 1)
         isignificand = np.where(round_up, 1, isignificand)
 
-    result = np.where(finite_nonzero, isignificand * (2.0**expval), absv)
+    result = np.where(finite_nonzero, np.ldexp(isignificand, expval), absv)
 
     amax = np.where(is_negative, -fi.min, fi.max)
 
@@ -189,10 +189,11 @@ def encode_ndarray(fi: FormatInfo, v: np.ndarray) -> np.ndarray:
         biased_exp = exp.astype(np.int64) + (fi.expBias - 1)
         subnormal_mask = (biased_exp < 1) & fi.has_subnormals
 
-        tsig = np.where(subnormal_mask, sig * 2.0**biased_exp, sig * 2 - 1.0)
+        biased_exp_safe = np.where(subnormal_mask, biased_exp, 0)
+        tsig = np.where(subnormal_mask, np.ldexp(sig, biased_exp_safe), sig * 2 - 1.0)
         biased_exp[subnormal_mask] = 0
 
-        isig = np.floor(tsig * 2**t).astype(int)
+        isig = np.floor(np.ldexp(tsig, t)).astype(np.int64)
 
         zero_mask = fi.has_zero & (isig == 0) & (biased_exp == 0)
         if not fi.has_nz:
