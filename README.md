@@ -10,7 +10,8 @@ handling various current and proposed floating point types:
  - [IEEE WG P3109](https://github.com/awf/P3109-Public/blob/main/Shared%20Reports/P3109%20WG%20Interim%20report.pdf): P{p} for p in 1..7
  - [OCP MX Formats](https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf): E2M1, M2M3, E3M2, E8M0, INT8, and the MX block formats.
 
-The library favours readability and extensibility over speed - for fast implementations of these datatypes see, for example, [ml_dtypes](https://github.com/jax-ml/ml_dtypes),
+The library favours readability and extensibility over speed (although the *_ndarray functions are reasonably fast for large arrays, see the [benchmarking  notebook](docs/source/04-benchmark.ipynb)).
+For other implementations of these datatypes more focused on speed see, for example, [ml_dtypes](https://github.com/jax-ml/ml_dtypes),
 [bitstring](https://github.com/scott-griffiths/bitstring),
 [MX PyTorch Emulation Library](https://github.com/microsoft/microxcaling).
 

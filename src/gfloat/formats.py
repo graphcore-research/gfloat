@@ -212,13 +212,13 @@ _fp16_formats = [
 ]
 
 all_formats = [
-    format_info_ocp_e8m0,
-    format_info_ocp_int8,
     *_tiny_formats,
     *_fp8_formats,
     *_fp16_formats,
     format_info_binary32,
     format_info_binary64,
+    format_info_ocp_e8m0,
+    format_info_ocp_int8,
 ]
 
 # ------

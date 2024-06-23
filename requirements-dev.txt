@@ -6,6 +6,7 @@ jaxlib
 jax
 airium
 pandas
+matplotlib
 
 # Requirements for development
 pre-commit
