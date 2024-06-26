@@ -500,7 +500,7 @@ def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
         (311, 3, 7.0 / 8),
     ),
 )
-def test_stochastic_rounding(v, srnumbits, expected_up):
+def test_stochastic_rounding(v: float, srnumbits: int, expected_up: float) -> None:
     fi = format_info_ocp_e5m2
 
     v0 = round_float(fi, v, RoundMode.TowardNegative)
