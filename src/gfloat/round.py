@@ -12,7 +12,12 @@ def _isodd(v: int) -> bool:
 
 
 def round_float(
-    fi: FormatInfo, v: float, rnd: RoundMode = RoundMode.TiesToEven, sat: bool = False
+    fi: FormatInfo,
+    v: float,
+    rnd: RoundMode = RoundMode.TiesToEven,
+    sat: bool = False,
+    srbits: int = -1,
+    srnumbits: int = 0,
 ) -> float:
     """
     Round input to the given :py:class:`FormatInfo`, given rounding mode and saturation flag
@@ -27,6 +32,8 @@ def round_float(
       v (float): Input value to be rounded
       rnd (RoundMode): Rounding mode to use
       sat (bool): Saturation flag: if True, round overflowed values to `fi.max`
+      srbits (int): Bits to use for stochastic rounding if rnd == Stochastic.
+      srnumbits (int): How many bits are in srbits.  Implies srbits < 2**srnumbits.
 
     Returns:
       A float which is one of the values in the format.
@@ -35,11 +42,16 @@ def round_float(
        ValueError: The target format cannot represent the input
              (e.g. converting a `NaN`, or an `Inf` when the target has no
              `NaN` or `Inf`, and :paramref:`sat` is false)
+       ValueError: Inconsistent arguments, e.g. srnumbits >= 2**srnumbits
     """
 
     # Constants
     p = fi.precision
     bias = fi.expBias
+
+    if rnd == RoundMode.Stochastic:
+        if srbits >= 2**srnumbits:
+            raise ValueError(f"srnumbits={srnumbits} >= 2**srnumbits={2**srnumbits}")
 
     if np.isnan(v):
         if fi.num_nans == 0:
@@ -75,12 +87,15 @@ def round_float(
         # Round
         isignificand = math.floor(fsignificand)
         delta = fsignificand - isignificand
+
+        # fmt: off
         if (
             (rnd == RoundMode.TowardPositive and not sign and delta > 0)
             or (rnd == RoundMode.TowardNegative and sign and delta > 0)
             or (rnd == RoundMode.TiesToAway and delta >= 0.5)
             or (rnd == RoundMode.TiesToEven and delta > 0.5)
             or (rnd == RoundMode.TiesToEven and delta == 0.5 and _isodd(isignificand))
+            or (rnd == RoundMode.Stochastic and delta > (0.5 + srbits) * 2.0**-srnumbits)
         ):
             isignificand += 1
 
@@ -95,6 +110,7 @@ def round_float(
                 or (rnd == RoundMode.TiesToAway and delta >= 0.5)
                 or (rnd == RoundMode.TiesToEven and delta > 0.5)
                 or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
+                or (rnd == RoundMode.Stochastic and delta > (0.5 + srbits) * 2.0**-srnumbits)
             ):
                 # Go to nextUp.
                 # Increment isignificand if zero,
@@ -105,6 +121,7 @@ def round_float(
                     assert isignificand == 1
                     expval += 1
             ## End special case for Precision=1.
+        # fmt: on
 
         # Reconstruct rounded result to float
         result = isignificand * (2.0**expval)

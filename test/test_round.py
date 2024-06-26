@@ -488,3 +488,45 @@ def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
         fv = decode_float(fi, i)
         fval2 = round_float(fi, fv.fval)
         np.testing.assert_equal(fval2, fv.fval)
+
+
+@pytest.mark.parametrize(
+    "v, srnumbits, expected_up",
+    (
+        (259, 3, 0.0 / 8),
+        (259, 5, 1.0 / 32),
+        (277, 3, 3.0 / 8),
+        (288, 3, 0.5),
+        (311, 3, 7.0 / 8),
+    ),
+)
+def test_stochastic_rounding(v, srnumbits, expected_up):
+    fi = format_info_ocp_e5m2
+
+    v0 = round_float(fi, v, RoundMode.TowardNegative)
+    v1 = round_float(fi, v, RoundMode.TowardPositive)
+
+    n = 10_000
+    expected_up_count = expected_up * n
+
+    srbits = np.random.randint(0, 2**srnumbits, size=(n,))
+    count_v1 = 0
+    for k in range(n):
+        r = round_float(
+            fi,
+            v,
+            RoundMode.Stochastic,
+            sat=False,
+            srbits=srbits[k],
+            srnumbits=srnumbits,
+        )
+        if r == v1:
+            count_v1 += 1
+        else:
+            assert r == v0
+
+    print(f"SRBits={srnumbits}, observed = {count_v1}, expected = {expected_up_count} ")
+    # e.g. if expected is 1250/10000, want to be within 0.5,1.5
+    # this is loose, but should still catch logic errors
+    atol = n * 2.0 ** (-1 - srnumbits)
+    np.testing.assert_allclose(count_v1, expected_up_count, atol=atol)
