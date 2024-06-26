@@ -260,7 +260,10 @@ def test_consistent_decodes_all_values(
     npivals = np.arange(
         np.iinfo(int_dtype).min, int(np.iinfo(int_dtype).max) + 1, dtype=int_dtype
     )
-    npfvals = npivals.view(dtype=npfmt).astype(np.float64)
+
+    with np.errstate(invalid="ignore"):
+        # Warning here when converting bfloat16 NaNs to float64
+        npfvals = npivals.view(dtype=npfmt).astype(np.float64)
 
     # Scalar version
     for i, npfval in zip(npivals, npfvals):

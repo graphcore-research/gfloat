@@ -48,18 +48,14 @@ def decode_ndarray(
 
     expBias = fi.expBias
 
-    iszero = (exp == 0) & (significand == 0) & fi.has_zero
-    issubnormal = (exp == 0) & (significand != 0) & fi.has_subnormals
-    isnormal = ~iszero & ~issubnormal
-    expval = np.where(~isnormal, 1 - expBias, exp - expBias)
-    fsignificand = np.where(~isnormal, significand * 2**-t, 1.0 + significand * 2**-t)
-
-    # Normal/Subnormal/Zero case, other values will be overwritten
-    fval = np.where(iszero, 0.0, sign * fsignificand * 2.0**expval)
+    fval = np.zeros_like(codes, dtype=np.float64)
+    isspecial = np.zeros_like(codes, dtype=bool)
 
     if fi.has_infs:
         fval = np.where(codes == fi.code_of_posinf, np.inf, fval)
+        isspecial |= codes == fi.code_of_posinf
         fval = np.where(codes == fi.code_of_neginf, -np.inf, fval)
+        isspecial |= codes == fi.code_of_neginf
 
     if fi.num_nans > 0:
         code_is_nan = codes == fi.code_of_nan
@@ -70,9 +66,21 @@ def decode_ndarray(
             code_is_nan |= abse & (significand >= min_code_with_nan)
 
         fval = np.where(code_is_nan, np.nan, fval)
+        isspecial |= code_is_nan
 
-    # Negative zero
+    # Zero
+    iszero = ~isspecial & (exp == 0) & (significand == 0) & fi.has_zero
+    fval = np.where(iszero, 0.0, fval)
     if fi.has_nz:
         fval = np.where(iszero & (sign < 0), -0.0, fval)
+
+    issubnormal = (exp == 0) & (significand != 0) & fi.has_subnormals
+    expval = np.where(issubnormal, 1 - expBias, exp - expBias)
+    fsignificand = np.where(issubnormal, 0.0, 1.0) + np.ldexp(significand, -t)
+
+    # Normal/Subnormal/Zero case, other values will be overwritten
+    expval_safe = np.where(isspecial | iszero, 0, expval)
+    fval_finite_safe = sign * np.ldexp(fsignificand, expval_safe)
+    fval = np.where(~(iszero | isspecial), fval_finite_safe, fval)
 
     return fval
