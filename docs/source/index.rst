@@ -55,6 +55,13 @@ As well as block formats from |ocp_mx_link|.
       IEEE P3109
     </a>
 
+Supported rounding modes include:
+
+  * Directed modes: Toward Zero, Toward Positive, Toward Negative
+  * Round-to-nearest, with Ties to Even or Ties to Away
+  * Stochastic rounding, with specified numbers of random bits
+
+
 Example
 -------
 This table (from example notebook :doc:`value-stats <02-value-stats>`) shows how
@@ -65,8 +72,8 @@ gfloat has been used to tabulate properties of various floating point formats.
  - P: Precision in bits
  - E: Exponent field width in bits
  - smallest: Smallest positive value
- - smallest_normal: Smallest positive normal value, NaN if no finite values are normal
- - max: Largest finite normal value, NaN if all finite values are subnormal
+ - smallest_normal: Smallest positive normal value, n/a if no finite values are normal
+ - max: Largest finite value
  - num_nans: Number of NaN values
  - num_infs: Number of infinities (2 or 0)
 
