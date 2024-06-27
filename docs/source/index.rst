@@ -55,6 +55,13 @@ As well as block formats from |ocp_mx_link|.
       IEEE P3109
     </a>
 
+Supported rounding modes include:
+
+  * Directed modes: Toward Zero, Toward Positive, Toward Negative
+  * Round-to-nearest, with Ties to Even or Ties to Away
+  * Stochastic rounding, with specified numbers of random bits
+
+
 Example
 -------
 This table (from example notebook :doc:`value-stats <02-value-stats>`) shows how

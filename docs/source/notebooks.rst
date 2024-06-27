@@ -12,3 +12,4 @@ Some notebooks to illustrate uses of the library
    02-value-stats.ipynb
    03-value-tables.ipynb
    04-benchmark.ipynb
+   05-stochastic-rounding.ipynb
