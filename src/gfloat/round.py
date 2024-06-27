@@ -94,16 +94,18 @@ def round_float(
             else (isignificand != 0 and _isodd(expval + bias))
         )
 
-        # fmt: off
-        should_round_away = (
-            (rnd == RoundMode.TowardPositive and not sign and delta > 0)
-            or (rnd == RoundMode.TowardNegative and sign and delta > 0)
-            or (rnd == RoundMode.TiesToAway and delta >= 0.5)
-            or (rnd == RoundMode.TiesToEven and delta > 0.5)
-            or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
-            or (rnd == RoundMode.Stochastic and delta > (0.5 + srbits) * 2.0**-srnumbits)
-        )
-        # fmt: on
+        if rnd == RoundMode.TowardZero:
+            should_round_away = False
+        if rnd == RoundMode.TowardPositive:
+            should_round_away = not sign and delta > 0
+        if rnd == RoundMode.TowardNegative:
+            should_round_away = sign and delta > 0
+        if rnd == RoundMode.TiesToAway:
+            should_round_away = delta >= 0.5
+        if rnd == RoundMode.TiesToEven:
+            should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
+        if rnd == RoundMode.Stochastic:
+            should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
 
         if should_round_away:
             if fi.precision > 1:
