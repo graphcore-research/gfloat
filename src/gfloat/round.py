@@ -88,40 +88,33 @@ def round_float(
         isignificand = math.floor(fsignificand)
         delta = fsignificand - isignificand
 
+        code_is_odd = (
+            _isodd(isignificand)
+            if fi.precision > 1
+            else (isignificand != 0 and _isodd(expval + bias))
+        )
+
         # fmt: off
-        if (
+        should_round_away = (
             (rnd == RoundMode.TowardPositive and not sign and delta > 0)
             or (rnd == RoundMode.TowardNegative and sign and delta > 0)
             or (rnd == RoundMode.TiesToAway and delta >= 0.5)
             or (rnd == RoundMode.TiesToEven and delta > 0.5)
-            or (rnd == RoundMode.TiesToEven and delta == 0.5 and _isodd(isignificand))
+            or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
             or (rnd == RoundMode.Stochastic and delta > (0.5 + srbits) * 2.0**-srnumbits)
-        ):
-            isignificand += 1
+        )
+        # fmt: on
 
-        ## Special case for Precision=1, all-log format with zero.
-        #  The logic is simply duplicated (and isignificand overwritten) for clarity.
-        if fi.precision == 1:
-            isignificand = math.floor(fsignificand)
-            code_is_odd = isignificand != 0 and _isodd(expval + bias)
-            if (
-                (rnd == RoundMode.TowardPositive and not sign and delta > 0)
-                or (rnd == RoundMode.TowardNegative and sign and delta > 0)
-                or (rnd == RoundMode.TiesToAway and delta >= 0.5)
-                or (rnd == RoundMode.TiesToEven and delta > 0.5)
-                or (rnd == RoundMode.TiesToEven and delta == 0.5 and code_is_odd)
-                or (rnd == RoundMode.Stochastic and delta > (0.5 + srbits) * 2.0**-srnumbits)
-            ):
-                # Go to nextUp.
-                # Increment isignificand if zero,
-                # else increment exponent
+        if should_round_away:
+            if fi.precision > 1:
+                isignificand += 1
+            else:
+                # Increment isignificand if zero, else increment exponent
                 if isignificand == 0:
                     isignificand = 1
                 else:
                     assert isignificand == 1
                     expval += 1
-            ## End special case for Precision=1.
-        # fmt: on
 
         # Reconstruct rounded result to float
         result = isignificand * (2.0**expval)
