@@ -106,6 +106,8 @@ def round_float(
             should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
         if rnd == RoundMode.Stochastic:
             should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+        if rnd == RoundMode.StochasticFast:
+            should_round_away = delta > srbits * 2.0**-srnumbits
 
         if should_round_away:
             # This may increase isignificand to 2**p,
