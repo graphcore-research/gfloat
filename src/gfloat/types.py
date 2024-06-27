@@ -16,6 +16,7 @@ class RoundMode(Enum):
     TowardPositive = 3  #: :math:`\min \{ r ~ s.t. ~ r \ge v \}`
     TiesToEven = 4  #: Round to nearest, ties to even
     TiesToAway = 5  #: Round to nearest, ties away from zero
+    Stochastic = 6  #: Stochastic rounding
 
 
 class FloatClass(Enum):
