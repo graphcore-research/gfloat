@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
 import numpy as np
@@ -15,6 +16,8 @@ def round_ndarray(
     v: np.ndarray,
     rnd: RoundMode = RoundMode.TiesToEven,
     sat: bool = False,
+    srbits: Optional[np.ndarray] = None,
+    srnumbits: int = 0,
     np: ModuleType = np,
 ) -> np.ndarray:
     """
@@ -70,18 +73,24 @@ def round_ndarray(
     else:
         code_is_odd = (isignificand != 0) & _isodd(expval + bias)
 
+    if rnd == RoundMode.TowardZero:
+        should_round_away = np.zeros_like(delta, dtype=bool)
     if rnd == RoundMode.TowardPositive:
-        round_up = ~is_negative & (delta > 0)
-    elif rnd == RoundMode.TowardNegative:
-        round_up = is_negative & (delta > 0)
-    elif rnd == RoundMode.TiesToAway:
-        round_up = delta >= 0.5
-    elif rnd == RoundMode.TiesToEven:
-        round_up = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
-    else:
-        round_up = np.zeros_like(delta, dtype=bool)
+        should_round_away = ~is_negative & (delta > 0)
+    if rnd == RoundMode.TowardNegative:
+        should_round_away = is_negative & (delta > 0)
+    if rnd == RoundMode.TiesToAway:
+        should_round_away = delta >= 0.5
+    if rnd == RoundMode.TiesToEven:
+        should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
+    if rnd == RoundMode.Stochastic:
+        assert srbits is not None
+        should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+    if rnd == RoundMode.StochasticFast:
+        assert srbits is not None
+        should_round_away = delta > srbits * 2.0**-srnumbits
 
-    isignificand = np.where(round_up, isignificand + 1, isignificand)
+    isignificand = np.where(should_round_away, isignificand + 1, isignificand)
 
     result = np.where(finite_nonzero, np.ldexp(isignificand, expval), absv)
 
