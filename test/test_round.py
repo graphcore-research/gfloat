@@ -500,7 +500,10 @@ def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
         (311, 3, 7.0 / 8),
     ),
 )
-def test_stochastic_rounding(v: float, srnumbits: int, expected_up: float) -> None:
+@pytest.mark.parametrize("impl", ("scalar", "array"))
+def test_stochastic_rounding(
+    impl: bool, v: float, srnumbits: int, expected_up: float
+) -> None:
     fi = format_info_ocp_e5m2
 
     v0 = round_float(fi, v, RoundMode.TowardNegative)
@@ -510,20 +513,26 @@ def test_stochastic_rounding(v: float, srnumbits: int, expected_up: float) -> No
     expected_up_count = expected_up * n
 
     srbits = np.random.randint(0, 2**srnumbits, size=(n,))
-    count_v1 = 0
-    for k in range(n):
-        r = round_float(
-            fi,
-            v,
-            RoundMode.Stochastic,
-            sat=False,
-            srbits=srbits[k],
-            srnumbits=srnumbits,
-        )
-        if r == v1:
-            count_v1 += 1
-        else:
-            assert r == v0
+    if impl == "scalar":
+        count_v1 = 0
+        for k in range(n):
+            r = round_float(
+                fi,
+                v,
+                RoundMode.Stochastic,
+                sat=False,
+                srbits=srbits[k],
+                srnumbits=srnumbits,
+            )
+            if r == v1:
+                count_v1 += 1
+            else:
+                assert r == v0
+    else:
+        vs = np.full(n, v)
+        rs = round_ndarray(fi, vs, RoundMode.Stochastic, False, srbits, srnumbits)
+        assert np.all((rs == v0) | (rs == v1))
+        count_v1 = np.sum(rs == v1)
 
     print(f"SRBits={srnumbits}, observed = {count_v1}, expected = {expected_up_count} ")
     # e.g. if expected is 1250/10000, want to be within 0.5,1.5
