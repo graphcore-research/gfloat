@@ -32,9 +32,12 @@ def round_ndarray(
 
     Args:
       fi (FormatInfo): Describes the target format
-      v (float): Input value to be rounded
+      v (float array): Input values to be rounded
       rnd (RoundMode): Rounding mode to use
       sat (bool): Saturation flag: if True, round overflowed values to `fi.max`
+      srbits (int array): Bits to use for stochastic rounding if rnd == Stochastic.
+      srnumbits (int): How many bits are in srbits.  Implies srbits < 2**srnumbits.
+
       np (Module): May be `numpy`, `jax.numpy` or another module cloning numpy
 
     Returns:
