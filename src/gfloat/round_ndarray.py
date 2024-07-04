@@ -4,7 +4,6 @@ from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
 import numpy as np
-import math
 
 
 def _isodd(v: np.ndarray) -> np.ndarray:
