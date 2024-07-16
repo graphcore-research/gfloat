@@ -17,7 +17,14 @@ class RoundMode(Enum):
     TiesToEven = 4  #: Round to nearest, ties to even
     TiesToAway = 5  #: Round to nearest, ties away from zero
     Stochastic = 6  #: Stochastic rounding
-    StochasticFast = 7  #: Stochastic rounding - possibly faster, but biased.
+    StochasticFast = 7  #: Stochastic rounding - faster, but biased.
+    StochasticNearly = 8  #: Stochastic rounding - incorrect, see [Note 1].
+
+
+# [Note 1]:
+# StochasticNearly implements a stochastic rounding scheme that is unbiased in
+# infinite precision, but biased when the quantity to be rounded is computed to
+# a finite precision.
 
 
 class FloatClass(Enum):
