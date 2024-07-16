@@ -88,10 +88,18 @@ def round_ndarray(
             should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
         case RoundMode.Stochastic:
             assert srbits is not None
-            should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+            ## RTNE delta to srbits
+            d = delta * 2.0**srnumbits
+            floord = np.floor(d).astype(np.int64)
+            d = floord + ((d - floord > 0.5) | ((d - floord == 0.5) & _isodd(floord)))
+
+            should_round_away = d > srbits
         case RoundMode.StochasticFast:
             assert srbits is not None
             should_round_away = delta > srbits * 2.0**-srnumbits
+        case RoundMode.StochasticNearly:
+            assert srbits is not None
+            should_round_away = delta > (2 * srbits + 1) * 2.0 ** -(1 + srnumbits)
 
     isignificand = np.where(should_round_away, isignificand + 1, isignificand)
 
