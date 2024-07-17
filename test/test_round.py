@@ -494,7 +494,7 @@ def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
     "v, srnumbits, expected_up",
     (
         (259, 3, 0.0 / 8),
-        (259, 5, 1.0 / 32),
+        (259, 5, 2.0 / 32),
         (277, 3, 3.0 / 8),
         (288, 3, 0.5),
         (311, 3, 7.0 / 8),
