@@ -96,10 +96,10 @@ def round_ndarray(
             should_round_away = d > srbits
         case RoundMode.StochasticFast:
             assert srbits is not None
-            should_round_away = delta > srbits * 2.0**-srnumbits
-        case RoundMode.StochasticNearly:
-            assert srbits is not None
             should_round_away = delta > (2 * srbits + 1) * 2.0 ** -(1 + srnumbits)
+        case RoundMode.StochasticFastest:
+            assert srbits is not None
+            should_round_away = delta > srbits * 2.0**-srnumbits
 
     isignificand = np.where(should_round_away, isignificand + 1, isignificand)
 
