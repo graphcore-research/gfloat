@@ -51,7 +51,7 @@ def float_tilde_unless_roundtrip_str(v: float, width: int = 14, d: int = 8) -> s
     # it is preceded by a "~" to indicate "approximately equal to"
     s = f"{v}"
     if len(s) > width:
-        if abs(v) < 1 and not "e" in s:
+        if abs(v) < 1 and "e" not in s:
             s = f"{v:.{d}f}"
         else:
             s = f"{v:.{d}}"
