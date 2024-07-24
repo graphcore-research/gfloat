@@ -92,7 +92,7 @@ def round_ndarray(
             d = delta * 2.0**srnumbits
             floord = np.floor(d).astype(np.int64)
             dd = d - floord
-            drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
+            drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
             should_round_away = drnd > srbits
         case RoundMode.StochasticFast:
