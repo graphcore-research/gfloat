@@ -95,6 +95,15 @@ def round_ndarray(
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
             should_round_away = drnd > srbits
+        case RoundMode.StochasticOdd:
+            assert srbits is not None
+            ## RTNO delta to srbits
+            d = delta * 2.0**srnumbits
+            floord = np.floor(d).astype(np.int64)
+            dd = d - floord
+            drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
+
+            should_round_away = drnd > srbits
         case RoundMode.StochasticFast:
             assert srbits is not None
             should_round_away = delta > (2 * srbits + 1) * 2.0 ** -(1 + srnumbits)

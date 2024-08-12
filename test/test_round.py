@@ -541,7 +541,7 @@ def test_stochastic_rounding(
     np.testing.assert_allclose(count_v1, expected_up_count, atol=atol)
 
 
-def test_stochastic_rounding_2() -> None:
+def test_stochastic_rounding_scalar_eq_array() -> None:
     fi = format_info_p3109(3)
 
     v0 = decode_ndarray(fi, np.arange(255))

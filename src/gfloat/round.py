@@ -114,6 +114,15 @@ def round_float(
                 )
 
                 should_round_away = d > srbits
+            case RoundMode.StochasticOdd:
+                ## RTNE delta to srbits
+                d = delta * 2.0**srnumbits
+                floord = np.floor(d).astype(np.int64)
+                d = floord + (
+                    (d - floord > 0.5) or ((d - floord == 0.5) and ~_isodd(floord))
+                )
+
+                should_round_away = d > srbits
             case RoundMode.StochasticFastest:
                 should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
             case RoundMode.StochasticFast:

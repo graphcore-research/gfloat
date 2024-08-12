@@ -19,6 +19,7 @@ class RoundMode(Enum):
     Stochastic = 6  #: Stochastic rounding
     StochasticFast = 7  #: Stochastic rounding - faster, but biased, see [Note 1].
     StochasticFastest = 8  #: Stochastic rounding - incorrect, see [Note 1].
+    StochasticOdd = 9  #: Stochastic rounding, RTNO before comparison
 
 
 # [Note 1]:
