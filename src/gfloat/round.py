@@ -123,9 +123,9 @@ def round_float(
                 )
 
                 should_round_away = d > srbits
-            case RoundMode.StochasticFastest:
-                should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
             case RoundMode.StochasticFast:
+                should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+            case RoundMode.StochasticFastest:
                 should_round_away = delta > srbits * 2.0**-srnumbits
 
         if should_round_away:
