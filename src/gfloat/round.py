@@ -108,15 +108,10 @@ def round_float(
             should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
 
         if should_round_away:
-            if fi.precision > 1:
-                isignificand += 1
-            else:
-                # Increment isignificand if zero, else increment exponent
-                if isignificand == 0:
-                    isignificand = 1
-                else:
-                    assert isignificand == 1
-                    expval += 1
+            # This may increase isignificand to 2**p,
+            # which would require special casing in encode,
+            # but not here, where we reconstruct a rounded value.
+            isignificand += 1
 
         # Reconstruct rounded result to float
         result = isignificand * (2.0**expval)
