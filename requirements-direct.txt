@@ -3,4 +3,4 @@
 numpy<2.0.0 # microscaling needs pytorch 2.1, which needs to be less than 2.0
 torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
 
-mx @ git+https://github.com/microsoft/microxcaling
+mx @ git+https://github.com/microsoft/microxcaling@v1.0.0
