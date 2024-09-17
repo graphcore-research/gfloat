@@ -541,7 +541,11 @@ def test_stochastic_rounding(
     np.testing.assert_allclose(count_v1, expected_up_count, atol=atol)
 
 
-def test_stochastic_rounding_scalar_eq_array() -> None:
+@pytest.mark.parametrize(
+    "rnd",
+    (RoundMode.Stochastic, RoundMode.StochasticFast, RoundMode.StochasticFastest),
+)
+def test_stochastic_rounding_scalar_eq_array(rnd) -> None:
     fi = format_info_p3109(3)
 
     v0 = decode_ndarray(fi, np.arange(255))
@@ -558,7 +562,7 @@ def test_stochastic_rounding_scalar_eq_array() -> None:
             val_array = round_ndarray(
                 fi,
                 v,
-                RoundMode.Stochastic,
+                rnd,
                 sat=False,
                 srbits=np.asarray(srbits),
                 srnumbits=srnumbits,
@@ -568,7 +572,7 @@ def test_stochastic_rounding_scalar_eq_array() -> None:
                 round_float(
                     fi,
                     v,
-                    RoundMode.Stochastic,
+                    rnd,
                     sat=False,
                     srbits=srbits,
                     srnumbits=srnumbits,
