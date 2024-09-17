@@ -81,16 +81,7 @@ def round_ndarray(
     else:
         round_up = np.zeros_like(delta, dtype=bool)
 
-    if fi.precision > 1:
-        isignificand = np.where(round_up, isignificand + 1, isignificand)
-    else:
-        # if isignificand == 0:
-        #     isignificand = 1
-        # else:
-        #     assert isignificand == 1
-        #     expval += 1
-        expval += round_up & (isignificand == 1)
-        isignificand = np.where(round_up, 1, isignificand)
+    isignificand = np.where(round_up, isignificand + 1, isignificand)
 
     result = np.where(finite_nonzero, np.ldexp(isignificand, expval), absv)
 
