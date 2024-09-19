@@ -6,7 +6,7 @@ import ml_dtypes
 import numpy as np
 import pytest
 
-from gfloat import RoundMode, decode_float, round_float, round_ndarray
+from gfloat import RoundMode, decode_float, decode_ndarray, round_float, round_ndarray
 from gfloat.formats import *
 
 
@@ -428,7 +428,7 @@ test_formats = [
 ]
 
 
-def _linterp(a: float, b: float, t: float) -> float:
+def _linterp(a, b, t):  # type: ignore[no-untyped-def]
     return a * (1 - t) + b * t
 
 
@@ -494,13 +494,16 @@ def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
     "v, srnumbits, expected_up",
     (
         (259, 3, 0.0 / 8),
-        (259, 5, 1.0 / 32),
+        (259, 5, 2.0 / 32),
         (277, 3, 3.0 / 8),
         (288, 3, 0.5),
         (311, 3, 7.0 / 8),
     ),
 )
-def test_stochastic_rounding(v: float, srnumbits: int, expected_up: float) -> None:
+@pytest.mark.parametrize("impl", ("scalar", "array"))
+def test_stochastic_rounding(
+    impl: bool, v: float, srnumbits: int, expected_up: float
+) -> None:
     fi = format_info_ocp_e5m2
 
     v0 = round_float(fi, v, RoundMode.TowardNegative)
@@ -510,23 +513,73 @@ def test_stochastic_rounding(v: float, srnumbits: int, expected_up: float) -> No
     expected_up_count = expected_up * n
 
     srbits = np.random.randint(0, 2**srnumbits, size=(n,))
-    count_v1 = 0
-    for k in range(n):
-        r = round_float(
-            fi,
-            v,
-            RoundMode.Stochastic,
-            sat=False,
-            srbits=srbits[k],
-            srnumbits=srnumbits,
-        )
-        if r == v1:
-            count_v1 += 1
-        else:
-            assert r == v0
+    if impl == "scalar":
+        count_v1 = 0
+        for k in range(n):
+            r = round_float(
+                fi,
+                v,
+                RoundMode.Stochastic,
+                sat=False,
+                srbits=srbits[k],
+                srnumbits=srnumbits,
+            )
+            if r == v1:
+                count_v1 += 1
+            else:
+                assert r == v0
+    else:
+        vs = np.full(n, v)
+        rs = round_ndarray(fi, vs, RoundMode.Stochastic, False, srbits, srnumbits)
+        assert np.all((rs == v0) | (rs == v1))
+        count_v1 = np.sum(rs == v1)
 
     print(f"SRBits={srnumbits}, observed = {count_v1}, expected = {expected_up_count} ")
     # e.g. if expected is 1250/10000, want to be within 0.5,1.5
     # this is loose, but should still catch logic errors
     atol = n * 2.0 ** (-1 - srnumbits)
     np.testing.assert_allclose(count_v1, expected_up_count, atol=atol)
+
+
+@pytest.mark.parametrize(
+    "rnd",
+    (RoundMode.Stochastic, RoundMode.StochasticFast, RoundMode.StochasticFastest),
+)
+def test_stochastic_rounding_scalar_eq_array(rnd: RoundMode) -> None:
+    fi = format_info_p3109(3)
+
+    v0 = decode_ndarray(fi, np.arange(255))
+    v1 = decode_ndarray(fi, np.arange(255) + 1)
+    ok = np.isfinite(v0) & np.isfinite(v1)
+    v0 = v0[ok]
+    v1 = v1[ok]
+
+    srnumbits = 3
+    for srbits in range(2**srnumbits):
+        for alpha in (0, 0.3, 0.5, 0.6, 0.9, 1.25):
+            v = _linterp(v0, v1, alpha)
+            assert np.isfinite(v).all()
+            val_array = round_ndarray(
+                fi,
+                v,
+                rnd,
+                sat=False,
+                srbits=np.asarray(srbits),
+                srnumbits=srnumbits,
+            )
+
+            val_scalar = [
+                round_float(
+                    fi,
+                    v,
+                    rnd,
+                    sat=False,
+                    srbits=srbits,
+                    srnumbits=srnumbits,
+                )
+                for v in v
+            ]
+            if alpha < 1.0:
+                assert ((val_array == v0) | (val_array == v1)).all()
+
+            np.testing.assert_equal(val_array, val_scalar)

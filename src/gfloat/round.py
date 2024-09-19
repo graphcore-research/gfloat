@@ -49,7 +49,7 @@ def round_float(
     p = fi.precision
     bias = fi.expBias
 
-    if rnd == RoundMode.Stochastic:
+    if rnd in (RoundMode.Stochastic, RoundMode.StochasticFast):
         if srbits >= 2**srnumbits:
             raise ValueError(f"srnumbits={srnumbits} >= 2**srnumbits={2**srnumbits}")
 
@@ -94,18 +94,39 @@ def round_float(
             else (isignificand != 0 and _isodd(expval + bias))
         )
 
-        if rnd == RoundMode.TowardZero:
-            should_round_away = False
-        if rnd == RoundMode.TowardPositive:
-            should_round_away = not sign and delta > 0
-        if rnd == RoundMode.TowardNegative:
-            should_round_away = sign and delta > 0
-        if rnd == RoundMode.TiesToAway:
-            should_round_away = delta >= 0.5
-        if rnd == RoundMode.TiesToEven:
-            should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
-        if rnd == RoundMode.Stochastic:
-            should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+        match rnd:
+            case RoundMode.TowardZero:
+                should_round_away = False
+            case RoundMode.TowardPositive:
+                should_round_away = not sign and delta > 0
+            case RoundMode.TowardNegative:
+                should_round_away = sign and delta > 0
+            case RoundMode.TiesToAway:
+                should_round_away = delta >= 0.5
+            case RoundMode.TiesToEven:
+                should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
+            case RoundMode.Stochastic:
+                ## RTNE delta to srbits
+                d = delta * 2.0**srnumbits
+                floord = np.floor(d).astype(np.int64)
+                d = floord + (
+                    (d - floord > 0.5) or ((d - floord == 0.5) and _isodd(floord))
+                )
+
+                should_round_away = d > srbits
+            case RoundMode.StochasticOdd:
+                ## RTNE delta to srbits
+                d = delta * 2.0**srnumbits
+                floord = np.floor(d).astype(np.int64)
+                d = floord + (
+                    (d - floord > 0.5) or ((d - floord == 0.5) and ~_isodd(floord))
+                )
+
+                should_round_away = d > srbits
+            case RoundMode.StochasticFast:
+                should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+            case RoundMode.StochasticFastest:
+                should_round_away = delta > srbits * 2.0**-srnumbits
 
         if should_round_away:
             # This may increase isignificand to 2**p,

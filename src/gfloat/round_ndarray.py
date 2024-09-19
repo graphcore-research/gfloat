@@ -1,9 +1,9 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
+from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
 import numpy as np
-import math
 
 
 def _isodd(v: np.ndarray) -> np.ndarray:
@@ -15,6 +15,8 @@ def round_ndarray(
     v: np.ndarray,
     rnd: RoundMode = RoundMode.TiesToEven,
     sat: bool = False,
+    srbits: Optional[np.ndarray] = None,
+    srnumbits: int = 0,
     np: ModuleType = np,
 ) -> np.ndarray:
     """
@@ -30,9 +32,12 @@ def round_ndarray(
 
     Args:
       fi (FormatInfo): Describes the target format
-      v (float): Input value to be rounded
+      v (float array): Input values to be rounded
       rnd (RoundMode): Rounding mode to use
       sat (bool): Saturation flag: if True, round overflowed values to `fi.max`
+      srbits (int array): Bits to use for stochastic rounding if rnd == Stochastic.
+      srnumbits (int): How many bits are in srbits.  Implies srbits < 2**srnumbits.
+
       np (Module): May be `numpy`, `jax.numpy` or another module cloning numpy
 
     Returns:
@@ -70,18 +75,43 @@ def round_ndarray(
     else:
         code_is_odd = (isignificand != 0) & _isodd(expval + bias)
 
-    if rnd == RoundMode.TowardPositive:
-        round_up = ~is_negative & (delta > 0)
-    elif rnd == RoundMode.TowardNegative:
-        round_up = is_negative & (delta > 0)
-    elif rnd == RoundMode.TiesToAway:
-        round_up = delta >= 0.5
-    elif rnd == RoundMode.TiesToEven:
-        round_up = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
-    else:
-        round_up = np.zeros_like(delta, dtype=bool)
+    match rnd:
+        case RoundMode.TowardZero:
+            should_round_away = np.zeros_like(delta, dtype=bool)
+        case RoundMode.TowardPositive:
+            should_round_away = ~is_negative & (delta > 0)
+        case RoundMode.TowardNegative:
+            should_round_away = is_negative & (delta > 0)
+        case RoundMode.TiesToAway:
+            should_round_away = delta >= 0.5
+        case RoundMode.TiesToEven:
+            should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
+        case RoundMode.Stochastic:
+            assert srbits is not None
+            ## RTNE delta to srbits
+            d = delta * 2.0**srnumbits
+            floord = np.floor(d).astype(np.int64)
+            dd = d - floord
+            drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
-    isignificand = np.where(round_up, isignificand + 1, isignificand)
+            should_round_away = drnd > srbits
+        case RoundMode.StochasticOdd:
+            assert srbits is not None
+            ## RTNO delta to srbits
+            d = delta * 2.0**srnumbits
+            floord = np.floor(d).astype(np.int64)
+            dd = d - floord
+            drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
+
+            should_round_away = drnd > srbits
+        case RoundMode.StochasticFast:
+            assert srbits is not None
+            should_round_away = delta > (2 * srbits + 1) * 2.0 ** -(1 + srnumbits)
+        case RoundMode.StochasticFastest:
+            assert srbits is not None
+            should_round_away = delta > srbits * 2.0**-srnumbits
+
+    isignificand = np.where(should_round_away, isignificand + 1, isignificand)
 
     result = np.where(finite_nonzero, np.ldexp(isignificand, expval), absv)
 
@@ -90,14 +120,15 @@ def round_ndarray(
     if sat:
         result = np.where(result > amax, amax, result)
     else:
-        if rnd == RoundMode.TowardNegative:
-            put_amax_at = (result > amax) & ~is_negative
-        elif rnd == RoundMode.TowardPositive:
-            put_amax_at = (result > amax) & is_negative
-        elif rnd == RoundMode.TowardZero:
-            put_amax_at = result > amax
-        else:
-            put_amax_at = np.zeros_like(result, dtype=bool)
+        match rnd:
+            case RoundMode.TowardNegative:
+                put_amax_at = (result > amax) & ~is_negative
+            case RoundMode.TowardPositive:
+                put_amax_at = (result > amax) & is_negative
+            case RoundMode.TowardZero:
+                put_amax_at = result > amax
+            case _:
+                put_amax_at = np.zeros_like(result, dtype=bool)
 
         result = np.where(finite_nonzero & put_amax_at, amax, result)
 
