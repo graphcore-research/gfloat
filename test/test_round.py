@@ -545,7 +545,7 @@ def test_stochastic_rounding(
     "rnd",
     (RoundMode.Stochastic, RoundMode.StochasticFast, RoundMode.StochasticFastest),
 )
-def test_stochastic_rounding_scalar_eq_array(rnd) -> None:
+def test_stochastic_rounding_scalar_eq_array(rnd: RoundMode) -> None:
     fi = format_info_p3109(3)
 
     v0 = decode_ndarray(fi, np.arange(255))
