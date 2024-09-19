@@ -9,8 +9,10 @@ from .block import (
 )
 from .decode import decode_float
 from .printing import float_pow2str, float_tilde_unless_roundtrip_str
-from .round import encode_float, round_float
-from .round_ndarray import encode_ndarray, round_ndarray
+from .round import round_float
+from .encode import encode_float
+from .round_ndarray import round_ndarray
+from .encode_ndarray import encode_ndarray
 from .decode_ndarray import decode_ndarray
 from .types import FloatClass, FloatValue, FormatInfo, RoundMode
 
