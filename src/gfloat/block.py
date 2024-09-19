@@ -10,7 +10,8 @@ import numpy as np
 import numpy.typing as npt
 
 from .decode import decode_float
-from .round import RoundMode, encode_float, round_float
+from .round import RoundMode, round_float
+from .encode import encode_float
 from .types import FormatInfo
 
 
