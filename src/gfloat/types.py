@@ -8,30 +8,31 @@ class RoundMode(Enum):
     """
     Enum for IEEE-754 rounding modes.
 
-    Result r is obtained from input v depending on rounding mode as follows
+    Result :math:`r` is obtained from input :math:`v` depending on rounding mode as follows
+
+    Notes on stochastic rounding:
+
+    StochasticFast implements a stochastic rounding scheme that is unbiased in
+    infinite precision, but biased when the quantity to be rounded is computed to
+    a finite precision.
+
+    StochasticFastest implements a stochastic rounding scheme that is biased
+    (the rounded value is on average farther from zero than the true value).
+
+    With a lot of SRbits (say 8 or more), these biases are negligible, and there
+    may be some efficiency advantage in using StochasticFast or StochasticFastest.
+
     """
 
-    TowardZero = 1  #: :math:`\max \{ r ~ s.t. ~ |r| \le |v| \}`
-    TowardNegative = 2  #: :math:`\max \{ r ~ s.t. ~ r \le v \}`
-    TowardPositive = 3  #: :math:`\min \{ r ~ s.t. ~ r \ge v \}`
+    TowardZero = 1  #: Return the largest :math:`r` such that :math:`|r| \le |v|`
+    TowardNegative = 2  #: Return the largest :math:`r` such that :math:`r \le v`
+    TowardPositive = 3  #: Return the smallest :math:`r` such that :math:`r \ge v`
     TiesToEven = 4  #: Round to nearest, ties to even
     TiesToAway = 5  #: Round to nearest, ties away from zero
-    Stochastic = 6  #: Stochastic rounding
-    StochasticFast = 7  #: Stochastic rounding - faster, but biased, see [Note 1].
-    StochasticFastest = 8  #: Stochastic rounding - incorrect, see [Note 1].
-    StochasticOdd = 9  #: Stochastic rounding, RTNO before comparison
-
-
-# [Note 1]:
-# StochasticFast implements a stochastic rounding scheme that is unbiased in
-# infinite precision, but biased when the quantity to be rounded is computed to
-# a finite precision.
-#
-# StochasticFastest implements a stochastic rounding scheme that is biased
-# (the rounded value is on average farther from zero than the true value).
-#
-# With a lot of SRbits (say 8 or more), these biases are negligible, and there
-# may be some efficiency advantage in using StochasticFast or StochasticFastest.
+    Stochastic = 6  #: Stochastic rounding, RTNE before comparison
+    StochasticOdd = 7  #: Stochastic rounding, RTNO before comparison
+    StochasticFast = 8  #: Stochastic rounding - faster, but biased
+    StochasticFastest = 9  #: Stochastic rounding - even faster, but more biased
 
 
 class FloatClass(Enum):
