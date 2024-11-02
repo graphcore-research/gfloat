@@ -5,7 +5,7 @@
 set -o errexit
 
 # This is the master location at which to change version number
-VERSION="0.3"
+VERSION="0.4"
 
 # Run the script to change the version elsewhere
 perl -pi -e 's/^(release|version) = "([\d.]+)"/$1 = "'$VERSION'"/' docs/source/conf.py
