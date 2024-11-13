@@ -158,28 +158,30 @@ format_info_ocp_int8 = FormatInfo(
 )
 
 
-def format_info_p3109(precision: int) -> FormatInfo:
+def format_info_p3109(k: int, precision: int) -> FormatInfo:
     """
-    FormatInfo for P3109 P{p} formats
+    FormatInfo for P3109 K{k} P{p} formats
 
     Args:
+      k (int): Format width in bits
       p (int): Precision in bits
 
     Returns:
        FormatInfo class describing the format
 
     Raises:
-       ValueError: If p is not in 1..7
+       ValueError: If p is not in 1..k-1
+       ValueError: If k is < 2
     """
     if precision < 1 or precision > 7:
         raise ValueError(f"P3109 format not defined for p={precision}")
 
-    name = f"p3109_p{precision}"
-    emax = 2 ** (7 - precision) - 1
+    name = f"p3109_{k}p{precision}"
+    emax = 2 ** (k - 1 - precision) - 1
 
     return FormatInfo(
         name,
-        k=8,
+        k=k,
         precision=precision,
         emax=emax,
         has_nz=False,
@@ -194,16 +196,19 @@ def format_info_p3109(precision: int) -> FormatInfo:
 # Collections of formats
 _tiny_formats = [
     format_info_ocp_e2m1,
+    format_info_p3109(4, 2),
     format_info_ocp_e2m3,
     format_info_ocp_e3m2,
+    format_info_p3109(6, 3),
+    format_info_p3109(6, 4),
 ]
 
-p3109_formats = [format_info_p3109(p) for p in range(1, 7)]
+p3109_binary8_formats = [format_info_p3109(8, p) for p in range(1, 7)]
 
 _fp8_formats = [
     format_info_ocp_e4m3,
     format_info_ocp_e5m2,
-    *p3109_formats,
+    *p3109_binary8_formats,
 ]
 
 _fp16_formats = [

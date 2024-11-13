@@ -63,8 +63,8 @@ def test_spot_check_ocp_e4m3(method: str) -> None:
 
 
 @pytest.mark.parametrize("method", methods)
-def test_spot_check_p3109_p3(method: str) -> None:
-    fi = format_info_p3109(3)
+def test_spot_check_p3109_8p3(method: str) -> None:
+    fi = format_info_p3109(8, 3)
     dec = get_method(method, fi)
 
     assert dec(0x01) == 2.0**-17
@@ -75,8 +75,8 @@ def test_spot_check_p3109_p3(method: str) -> None:
 
 
 @pytest.mark.parametrize("method", methods)
-def test_spot_check_p3109_p1(method: str) -> None:
-    fi = format_info_p3109(1)
+def test_spot_check_p3109_8p1(method: str) -> None:
+    fi = format_info_p3109(8, 1)
     dec = get_method(method, fi)
 
     assert dec(0x01) == 2.0**-62
@@ -214,12 +214,23 @@ def test_spot_check_ocp_int8(method: str) -> None:
     assert dec(0xFF) == -fi.smallest
 
 
-@pytest.mark.parametrize("fi", p3109_formats)
-def test_specials(fi: FormatInfo) -> None:
+@pytest.mark.parametrize("fi", p3109_binary8_formats)
+def test_p3109_k8_specials(fi: FormatInfo) -> None:
     assert fi.code_of_nan == 0x80
     assert fi.code_of_zero == 0x00
     assert fi.code_of_posinf == 0x7F
     assert fi.code_of_neginf == 0xFF
+
+
+@pytest.mark.parametrize(
+    "k,p", [(8, 3), (8, 1), (6, 1), (6, 5), (3, 1), (3, 2), (11, 3)]
+)
+def test_p3109_specials(k, p) -> None:
+    fi = format_info_p3109(k, p)
+    assert fi.code_of_nan == 2 ** (k - 1)
+    assert fi.code_of_zero == 0
+    assert fi.code_of_posinf == 2 ** (k - 1) - 1
+    assert fi.code_of_neginf == 2**k - 1
 
 
 @pytest.mark.parametrize("fi", all_formats)
