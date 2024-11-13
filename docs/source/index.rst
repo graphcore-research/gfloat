@@ -46,7 +46,7 @@ handling various current and proposed floating point types:
 
  - `IEEE 754 <https://en.wikipedia.org/wiki/IEEE_754>`_: Binary16, Binary32
  - `Brain floating point <https://en.wikipedia.org/wiki/Bfloat16_floating-point_format>`_: BFloat16
- - |p3109_link|: Binary8_{K}p{P} for K > 2, and 1 <= P < K.
+ - |p3109_link|: P3109_{K}p{P} for K > 2, and 1 <= P < K.
  - |ocp_link|: E5M2, E4M3
  - Types from the |ocp_mx_link| spec: E8M0, INT8, and FP4, FP6 types
 
