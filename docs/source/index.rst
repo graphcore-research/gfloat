@@ -14,7 +14,7 @@ formats in Python.  Headline features:
 
   * A wide variety of floating point formats defined in :py:class:`gfloat.formats`
 
-    - IEEE 754, BFloat, OCP FP8 and MX, IEEE P3109
+    - IEEE 754 and P3109, BFloat, OCP FP8 and MX
 
   * Conversion between floats under numerous rounding modes
 
