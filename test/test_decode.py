@@ -225,7 +225,7 @@ def test_p3109_k8_specials(fi: FormatInfo) -> None:
 @pytest.mark.parametrize(
     "k,p", [(8, 3), (8, 1), (6, 1), (6, 5), (3, 1), (3, 2), (11, 3)]
 )
-def test_p3109_specials(k, p) -> None:
+def test_p3109_specials(k: int, p: int) -> None:
     fi = format_info_p3109(k, p)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
