@@ -24,7 +24,7 @@ def rnd_array(
 
 @pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
 def test_round_p3109(round_float: Callable) -> None:
-    fi = format_info_p3109(4)
+    fi = format_info_p3109(8, 4)
     assert round_float(fi, 0.0068359375) == 0.0068359375
     assert round_float(fi, 0.0029296875) == 0.0029296875
     assert round_float(fi, 0.0078125) == 0.0078125
@@ -49,7 +49,7 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi, 232.1) == np.inf
 
 
-p4min = 2**-10  # smallest subnormal in p4
+p4min = 2**-10  # smallest subnormal in 8p4
 
 
 @pytest.mark.parametrize(
@@ -150,7 +150,7 @@ p4min = 2**-10  # smallest subnormal in p4
 )
 @pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
 def test_round_p3109b(round_float: Callable, mode: RoundMode, vals: list) -> None:
-    fi = format_info_p3109(4)
+    fi = format_info_p3109(8, 4)
 
     for sat in (True, False):
         for val, expected in vals:
@@ -302,7 +302,7 @@ p4maxhalfup = (p4max + p4maxup) / 2
 def test_round_p3109_sat(
     round_float: Callable, modesat: tuple[RoundMode, bool], vals: list
 ) -> None:
-    fi = format_info_p3109(4)
+    fi = format_info_p3109(8, 4)
 
     for val, expected in vals:
         assert round_float(fi, val, *modesat) == expected
@@ -382,7 +382,7 @@ some_positive_codepoints = (
     [
         format_info_ocp_e5m2,
         format_info_ocp_e4m3,
-        *p3109_formats,
+        *p3109_binary8_formats,
     ],
 )
 def test_round(fi: FormatInfo) -> None:
@@ -546,7 +546,7 @@ def test_stochastic_rounding(
     (RoundMode.Stochastic, RoundMode.StochasticFast, RoundMode.StochasticFastest),
 )
 def test_stochastic_rounding_scalar_eq_array(rnd: RoundMode) -> None:
-    fi = format_info_p3109(3)
+    fi = format_info_p3109(8, 3)
 
     v0 = decode_ndarray(fi, np.arange(255))
     v1 = decode_ndarray(fi, np.arange(255) + 1)

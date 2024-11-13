@@ -27,6 +27,6 @@ def test_finfo(fmt: FormatInfo, npfmt: np.dtype) -> None:
 
 
 def test_constants() -> None:
-    assert format_info_p3109(1).smallest_subnormal == 2.0**-62
-    assert format_info_p3109(4).smallest_subnormal == 2.0**-10
-    assert format_info_p3109(7).smallest_subnormal == 2.0**-6
+    assert format_info_p3109(8, 1).smallest_subnormal == 2.0**-62
+    assert format_info_p3109(8, 4).smallest_subnormal == 2.0**-10
+    assert format_info_p3109(8, 7).smallest_subnormal == 2.0**-6
