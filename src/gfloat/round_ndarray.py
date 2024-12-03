@@ -59,15 +59,23 @@ def round_ndarray(
     # Place 1.0 where finite_nonzero is False, to avoid log of {0,inf,nan}
     absv_masked = np.where(finite_nonzero, absv, 1.0)
 
-    expval = np.floor(np.log2(absv_masked)).astype(int)
+    int_type = np.int64 if fi.k > 8 else np.int16
+
+    def to_int(v):
+        # assert v.max().item() < np.iinfo(int_type).max
+        # assert v.min().item() > np.iinfo(int_type).min
+
+        return v.to(int_type)
+
+    expval = to_int(np.floor(np.log2(absv_masked)))
 
     if fi.has_subnormals:
-        expval = np.maximum(expval, 1 - bias)
+        expval = np.maximum(expval, to_int(np.tensor(1 - bias)))
 
     expval = expval - p + 1
     fsignificand = np.ldexp(absv_masked, -expval)
 
-    isignificand = np.floor(fsignificand).astype(np.int64)
+    isignificand = to_int(np.floor(fsignificand))
     delta = fsignificand - isignificand
 
     if fi.precision > 1:
@@ -90,7 +98,7 @@ def round_ndarray(
             assert srbits is not None
             ## RTNE delta to srbits
             d = delta * 2.0**srnumbits
-            floord = np.floor(d).astype(np.int64)
+            floord = to_int(np.floor(d))
             dd = d - floord
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
@@ -99,7 +107,7 @@ def round_ndarray(
             assert srbits is not None
             ## RTNO delta to srbits
             d = delta * 2.0**srnumbits
-            floord = np.floor(d).astype(np.int64)
+            floord = to_int(np.floor(d))
             dd = d - floord
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
 
