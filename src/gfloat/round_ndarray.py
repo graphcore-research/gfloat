@@ -62,10 +62,17 @@ def round_ndarray(
     int_type = np.int64 if fi.k > 8 else np.int16
 
     def to_int(v):
-        # assert v.max().item() < np.iinfo(int_type).max
-        # assert v.min().item() > np.iinfo(int_type).min
+        # If these are out of range, it will lead to horrid bugs.
+        # Do a check every so often...  But not such a great idea if
+        # torch compile, as it will freeze the check..
+        # if np.random.rand() > 0.99:
+        #     assert v.min().item() > np.iinfo(int_type).min
 
-        return v.to(int_type)
+        out = v.to(int_type)
+        # lo = v < np.iinfo(int_type).min
+        # hi = v > np.iinfo(int_type).max
+        # out = out * (lo.sum() + hi.sum() == 0)
+        return out
 
     expval = to_int(np.floor(np.log2(absv_masked)))
 
