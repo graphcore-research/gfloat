@@ -99,7 +99,7 @@ def round_ndarray(
             dd = d - floord
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
-            should_round_away = drnd > srbits
+            should_round_away = drnd + srbits >= 2.0**srnumbits
 
         case RoundMode.StochasticOdd:
             assert srbits is not None

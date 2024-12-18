@@ -113,7 +113,7 @@ def round_float(
                     (d - floord > 0.5) or ((d - floord == 0.5) and _isodd(floord))
                 )
 
-                should_round_away = d > srbits
+                should_round_away = d + srbits >= 2.0**srnumbits
             case RoundMode.StochasticOdd:
                 ## RTNE delta to srbits
                 d = delta * 2.0**srnumbits
