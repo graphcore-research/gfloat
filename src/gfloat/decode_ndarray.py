@@ -5,9 +5,7 @@ import numpy as np
 from .types import FormatInfo
 
 
-def decode_ndarray(
-    fi: FormatInfo, codes: np.ndarray, np: ModuleType = np
-) -> np.ndarray:
+def decode_ndarray(fi: FormatInfo, codes: np.ndarray, np: ModuleType = np) -> np.ndarray:
     r"""
     Vectorized version of :meth:`decode_float`
 

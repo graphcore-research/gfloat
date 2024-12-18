@@ -102,7 +102,7 @@ def round_float(
             case RoundMode.TowardNegative:
                 should_round_away = sign and delta > 0
             case RoundMode.TiesToAway:
-                should_round_away = delta >= 0.5
+                should_round_away = delta + 0.5 >= 1.0
             case RoundMode.TiesToEven:
                 should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
             case RoundMode.Stochastic:
@@ -119,14 +119,14 @@ def round_float(
                 d = delta * 2.0**srnumbits
                 floord = np.floor(d).astype(np.int64)
                 d = floord + (
-                    (d - floord > 0.5) or ((d - floord == 0.5) and ~_isodd(floord))
+                    (d - floord > 0.5) or ((d - floord == 0.5) and not _isodd(floord))
                 )
 
-                should_round_away = d > srbits
+                should_round_away = d + srbits >= 2.0**srnumbits
             case RoundMode.StochasticFast:
-                should_round_away = delta > (0.5 + srbits) * 2.0**-srnumbits
+                should_round_away = delta + (0.5 + srbits) * 2.0**-srnumbits >= 1.0
             case RoundMode.StochasticFastest:
-                should_round_away = delta > srbits * 2.0**-srnumbits
+                should_round_away = delta + srbits * 2.0**-srnumbits >= 1.0
 
         if should_round_away:
             # This may increase isignificand to 2**p,
