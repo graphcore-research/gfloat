@@ -19,7 +19,8 @@ def rnd_scalar(
 def rnd_array(
     fi: FormatInfo, v: float, mode: RoundMode = RoundMode.TiesToEven, sat: bool = False
 ) -> float:
-    return round_ndarray(fi, np.array([v]), mode, sat).item()
+    a = round_ndarray(fi, np.asarray([v]), mode, sat)
+    return float(a[0])
 
 
 @pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
@@ -535,18 +536,27 @@ def test_stochastic_rounding(
         count_v1 = np.sum(rs == v1)
 
     print(f"SRBits={srnumbits}, observed = {count_v1}, expected = {expected_up_count} ")
-    # e.g. if expected is 1250/10000, want to be within 0.5,1.5
+    # e.g. if expected is 1250/10000, want to be within 0.75,1.25
     # this is loose, but should still catch logic errors
     atol = n * 2.0 ** (-1 - srnumbits)
-    np.testing.assert_allclose(count_v1, expected_up_count, atol=atol)
+    np.testing.assert_allclose(count_v1, expected_up_count, atol=atol / 2)
 
 
 @pytest.mark.parametrize(
     "rnd",
-    (RoundMode.Stochastic, RoundMode.StochasticFast, RoundMode.StochasticFastest),
+    (
+        RoundMode.Stochastic,
+        RoundMode.StochasticOdd,
+        RoundMode.StochasticFast,
+        RoundMode.StochasticFastest,
+    ),
 )
-def test_stochastic_rounding_scalar_eq_array(rnd: RoundMode) -> None:
-    fi = format_info_p3109(8, 3)
+@pytest.mark.parametrize("srnumbits", [3, 8, 9, 16, 32])
+@pytest.mark.parametrize("sat", (True, False))
+def test_stochastic_rounding_scalar_eq_array(
+    rnd: RoundMode, srnumbits: int, sat: bool
+) -> None:
+    fi = format_info_ocp_e5m2
 
     v0 = decode_ndarray(fi, np.arange(255))
     v1 = decode_ndarray(fi, np.arange(255) + 1)
@@ -554,32 +564,34 @@ def test_stochastic_rounding_scalar_eq_array(rnd: RoundMode) -> None:
     v0 = v0[ok]
     v1 = v1[ok]
 
-    srnumbits = 3
-    for srbits in range(2**srnumbits):
-        for alpha in (0, 0.3, 0.5, 0.6, 0.9, 1.25):
-            v = _linterp(v0, v1, alpha)
-            assert np.isfinite(v).all()
-            val_array = round_ndarray(
+    for alpha in (0, 0.3, 0.5, 0.6, 0.7, 0.9, 1.25):
+        v = _linterp(v0, v1, alpha)
+        assert np.isfinite(v).all()
+        srbits = np.random.randint(0, 2**srnumbits, v.shape)
+
+        val_array = round_ndarray(
+            fi,
+            v,
+            rnd,
+            sat=sat,
+            srbits=srbits,
+            srnumbits=srnumbits,
+        )
+
+        val_scalar = [
+            round_float(
                 fi,
-                v,
+                vi,
                 rnd,
-                sat=False,
-                srbits=np.asarray(srbits),
+                sat=sat,
+                srbits=srbitsi,
                 srnumbits=srnumbits,
             )
+            for vi, srbitsi in zip(v, srbits)
+        ]
 
-            val_scalar = [
-                round_float(
-                    fi,
-                    v,
-                    rnd,
-                    sat=False,
-                    srbits=srbits,
-                    srnumbits=srnumbits,
-                )
-                for v in v
-            ]
-            if alpha < 1.0:
-                assert ((val_array == v0) | (val_array == v1)).all()
+        np.testing.assert_equal(val_array, val_scalar)
 
-            np.testing.assert_equal(val_array, val_scalar)
+        # Ensure faithful rounding
+        if alpha < 1.0:
+            assert ((val_array == v0) | (val_array == v1)).all()

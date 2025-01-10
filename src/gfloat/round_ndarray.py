@@ -4,10 +4,27 @@ from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
 import numpy as np
+import array_api_compat
 
 
 def _isodd(v: np.ndarray) -> np.ndarray:
     return v & 0x1 == 1
+
+
+def _ldexp(v: np.ndarray, s: np.ndarray) -> np.ndarray:
+    xp = array_api_compat.array_namespace(v, s)
+    if (
+        array_api_compat.is_torch_array(v)
+        or array_api_compat.is_jax_array(v)
+        or array_api_compat.is_numpy_array(v)
+    ):
+        return xp.ldexp(v, s)
+
+    # Scale away from subnormal/infinite ranges
+    offset = 24
+    vlo = (v * 2.0**+offset) * 2.0 ** xp.astype(s - offset, v.dtype)
+    vhi = (v * 2.0**-offset) * 2.0 ** xp.astype(s + offset, v.dtype)
+    return xp.where(v < 1.0, vlo, vhi)
 
 
 def round_ndarray(
@@ -17,7 +34,6 @@ def round_ndarray(
     sat: bool = False,
     srbits: Optional[np.ndarray] = None,
     srnumbits: int = 0,
-    np: ModuleType = np,
 ) -> np.ndarray:
     """
     Vectorized version of :meth:`round_float`.
@@ -38,8 +54,6 @@ def round_ndarray(
       srbits (int array): Bits to use for stochastic rounding if rnd == Stochastic.
       srnumbits (int): How many bits are in srbits.  Implies srbits < 2**srnumbits.
 
-      np (Module): May be `numpy`, `jax.numpy` or another module cloning numpy
-
     Returns:
       An array of floats which is a subset of the format's value set.
 
@@ -48,27 +62,38 @@ def round_ndarray(
              (e.g. converting a `NaN`, or an `Inf` when the target has no
              `NaN` or `Inf`, and :paramref:`sat` is false)
     """
+    xp = array_api_compat.array_namespace(v, srbits)
+
     p = fi.precision
     bias = fi.expBias
 
-    is_negative = np.signbit(v) & fi.is_signed
-    absv = np.where(is_negative, -v, v)
+    is_negative = xp.signbit(v) & fi.is_signed
+    absv = xp.where(is_negative, -v, v)
 
-    finite_nonzero = ~(np.isnan(v) | np.isinf(v) | (v == 0))
+    finite_nonzero = ~(xp.isnan(v) | xp.isinf(v) | (v == 0))
 
     # Place 1.0 where finite_nonzero is False, to avoid log of {0,inf,nan}
-    absv_masked = np.where(finite_nonzero, absv, 1.0)
+    absv_masked = xp.where(finite_nonzero, absv, 1.0)
 
-    expval = np.floor(np.log2(absv_masked)).astype(int)
+    int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
+
+    def to_int(x):
+        return xp.astype(x, int_type)
+
+    def to_float(x):
+        return xp.astype(x, v.dtype)
+
+    expval = to_int(xp.floor(xp.log2(absv_masked)))
 
     if fi.has_subnormals:
-        expval = np.maximum(expval, 1 - bias)
+        expval = xp.maximum(expval, 1 - bias)
 
     expval = expval - p + 1
-    fsignificand = np.ldexp(absv_masked, -expval)
+    fsignificand = _ldexp(absv_masked, -expval)
 
-    isignificand = np.floor(fsignificand).astype(np.int64)
-    delta = fsignificand - isignificand
+    floorfsignificand = xp.floor(fsignificand)
+    isignificand = to_int(floorfsignificand)
+    delta = fsignificand - floorfsignificand
 
     if fi.precision > 1:
         code_is_odd = _isodd(isignificand)
@@ -77,7 +102,7 @@ def round_ndarray(
 
     match rnd:
         case RoundMode.TowardZero:
-            should_round_away = np.zeros_like(delta, dtype=bool)
+            should_round_away = xp.zeros_like(delta, dtype=xp.bool)
 
         case RoundMode.TowardPositive:
             should_round_away = ~is_negative & (delta > 0)
@@ -95,38 +120,44 @@ def round_ndarray(
             assert srbits is not None
             ## RTNE delta to srbits
             d = delta * 2.0**srnumbits
-            floord = np.floor(d).astype(np.int64)
-            dd = d - floord
-            drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
+            floord = to_int(xp.floor(d))
+            dd = d - xp.floor(d)
+            should_round_away_tne = (dd > 0.5) | ((dd == 0.5) & _isodd(floord))
+            drnd = floord + xp.astype(should_round_away_tne, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2.0**srnumbits
+            should_round_away = drnd + srbits >= 2**srnumbits
 
         case RoundMode.StochasticOdd:
             assert srbits is not None
             ## RTNO delta to srbits
             d = delta * 2.0**srnumbits
-            floord = np.floor(d).astype(np.int64)
-            dd = d - floord
-            drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
+            floord = to_int(xp.floor(d))
+            dd = d - xp.floor(d)
+            should_round_away_tno = (dd > 0.5) | ((dd == 0.5) & ~_isodd(floord))
+            drnd = floord + xp.astype(should_round_away_tno, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2.0**srnumbits
+            should_round_away = drnd + srbits >= 2**srnumbits
 
         case RoundMode.StochasticFast:
             assert srbits is not None
-            should_round_away = delta + (2 * srbits + 1) * 2.0 ** -(1 + srnumbits) >= 1.0
+            should_round_away = (
+                delta + to_float(2 * srbits + 1) * 2.0 ** -(1 + srnumbits) >= 1.0
+            )
 
         case RoundMode.StochasticFastest:
             assert srbits is not None
-            should_round_away = delta + srbits * 2.0**-srnumbits >= 1.0
+            should_round_away = delta + to_float(srbits) * 2.0**-srnumbits >= 1.0
 
-    isignificand = np.where(should_round_away, isignificand + 1, isignificand)
+    isignificand = xp.where(should_round_away, isignificand + 1, isignificand)
 
-    result = np.where(finite_nonzero, np.ldexp(isignificand, expval), absv)
+    fresult = _ldexp(to_float(isignificand), expval)
 
-    amax = np.where(is_negative, -fi.min, fi.max)
+    result = xp.where(finite_nonzero, fresult, absv)
+
+    amax = xp.where(is_negative, -fi.min, fi.max)
 
     if sat:
-        result = np.where(result > amax, amax, result)
+        result = xp.where(result > amax, amax, result)
     else:
         match rnd:
             case RoundMode.TowardNegative:
@@ -136,25 +167,25 @@ def round_ndarray(
             case RoundMode.TowardZero:
                 put_amax_at = result > amax
             case _:
-                put_amax_at = np.zeros_like(result, dtype=bool)
+                put_amax_at = xp.zeros_like(result, dtype=xp.bool)
 
-        result = np.where(finite_nonzero & put_amax_at, amax, result)
+        result = xp.where(finite_nonzero & put_amax_at, amax, result)
 
         # Now anything larger than amax goes to infinity or NaN
         if fi.has_infs:
-            result = np.where(result > amax, np.inf, result)
+            result = xp.where(result > amax, xp.inf, result)
         elif fi.num_nans > 0:
-            result = np.where(result > amax, np.nan, result)
+            result = xp.where(result > amax, xp.nan, result)
         else:
-            if np.any(result > amax):
+            if xp.any(result > amax):
                 raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
 
-    result = np.where(is_negative, -result, result)
+    result = xp.where(is_negative, -result, result)
 
     # Make negative zeros negative if has_nz, else make them not negative.
     if fi.has_nz:
-        result = np.where((result == 0) & is_negative, -0.0, result)
+        result = xp.where((result == 0) & is_negative, -0.0, result)
     else:
-        result = np.where(result == 0, 0.0, result)
+        result = xp.where(result == 0, 0.0, result)
 
     return result
