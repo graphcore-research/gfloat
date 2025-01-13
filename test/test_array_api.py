@@ -4,7 +4,14 @@ import array_api_strict as xp
 import numpy as np
 import pytest
 
-from gfloat import RoundMode, decode_float, decode_ndarray, round_float, round_ndarray
+from gfloat import (
+    RoundMode,
+    FormatInfo,
+    decode_float,
+    decode_ndarray,
+    round_float,
+    round_ndarray,
+)
 from gfloat.formats import *
 
 xp.set_array_api_strict_flags(api_version="2024.12")
@@ -19,7 +26,7 @@ xp.maximum = lambda a, b: _xp_maximum(xp.asarray(a), xp.asarray(b))
 @pytest.mark.parametrize("fi", all_formats)
 @pytest.mark.parametrize("rnd", RoundMode)
 @pytest.mark.parametrize("sat", [True, False])
-def test_array_api(fi, rnd, sat):
+def test_array_api(fi: FormatInfo, rnd: RoundMode, sat: bool) -> None:
     a = np.random.rand(23, 1, 34) - 0.5
     a = xp.asarray(a)
 

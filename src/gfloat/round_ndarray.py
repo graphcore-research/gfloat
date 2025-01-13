@@ -77,10 +77,10 @@ def round_ndarray(
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
 
-    def to_int(x):
+    def to_int(x: np.ndarray) -> np.ndarray:
         return xp.astype(x, int_type)
 
-    def to_float(x):
+    def to_float(x: np.ndarray) -> np.ndarray:
         return xp.astype(x, v.dtype)
 
     expval = to_int(xp.floor(xp.log2(absv_masked)))
