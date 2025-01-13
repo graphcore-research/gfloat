@@ -31,7 +31,7 @@ dependencies = {file = ["requirements.txt"]}
 optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
 
 [tool.black]
-line-length = 88
+line-length = 90
 fast = true
 
 [tool.mypy]

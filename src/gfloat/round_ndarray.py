@@ -78,14 +78,19 @@ def round_ndarray(
     match rnd:
         case RoundMode.TowardZero:
             should_round_away = np.zeros_like(delta, dtype=bool)
+
         case RoundMode.TowardPositive:
             should_round_away = ~is_negative & (delta > 0)
+
         case RoundMode.TowardNegative:
             should_round_away = is_negative & (delta > 0)
+
         case RoundMode.TiesToAway:
             should_round_away = delta >= 0.5
+
         case RoundMode.TiesToEven:
             should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
+
         case RoundMode.Stochastic:
             assert srbits is not None
             ## RTNE delta to srbits
@@ -94,7 +99,8 @@ def round_ndarray(
             dd = d - floord
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & _isodd(floord))
 
-            should_round_away = drnd > srbits
+            should_round_away = drnd + srbits >= 2.0**srnumbits
+
         case RoundMode.StochasticOdd:
             assert srbits is not None
             ## RTNO delta to srbits
@@ -103,13 +109,15 @@ def round_ndarray(
             dd = d - floord
             drnd = floord + (dd > 0.5) + ((dd == 0.5) & ~_isodd(floord))
 
-            should_round_away = drnd > srbits
+            should_round_away = drnd + srbits >= 2.0**srnumbits
+
         case RoundMode.StochasticFast:
             assert srbits is not None
-            should_round_away = delta > (2 * srbits + 1) * 2.0 ** -(1 + srnumbits)
+            should_round_away = delta + (2 * srbits + 1) * 2.0 ** -(1 + srnumbits) >= 1.0
+
         case RoundMode.StochasticFastest:
             assert srbits is not None
-            should_round_away = delta > srbits * 2.0**-srnumbits
+            should_round_away = delta + srbits * 2.0**-srnumbits >= 1.0
 
     isignificand = np.where(should_round_away, isignificand + 1, isignificand)
 
