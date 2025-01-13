@@ -36,7 +36,7 @@ fast = true
 
 [tool.mypy]
 [[tool.mypy.overrides]]
-module = "mx.*"
+module = ["mx.*", "array_api_compat.*", "array_api_strict.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

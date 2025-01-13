@@ -4,6 +4,8 @@ nbval
 ml_dtypes
 jaxlib
 jax
+torch
+array-api-strict
 airium
 pandas
 matplotlib

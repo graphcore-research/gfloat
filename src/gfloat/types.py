@@ -232,7 +232,7 @@ class FormatInfo:
                 return -self.max
             else:
                 assert not self.has_infs and self.num_high_nans == 0 and not self.has_nz
-                return -(2 ** (self.emax + 1))
+                return -(2.0 ** (self.emax + 1))
         elif self.has_zero:
             return 0.0
         else:
