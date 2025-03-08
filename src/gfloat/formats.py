@@ -173,7 +173,7 @@ def format_info_p3109(k: int, precision: int) -> FormatInfo:
        ValueError: If p is not in 1..k-1
        ValueError: If k is < 2
     """
-    if precision < 1 or precision > 7:
+    if precision < 1 or precision > k - 1:
         raise ValueError(f"P3109 format not defined for p={precision}")
 
     name = f"p3109_{k}p{precision}"
