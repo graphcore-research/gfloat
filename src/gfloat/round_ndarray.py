@@ -64,16 +64,20 @@ def round_ndarray(
     """
     xp = array_api_compat.array_namespace(v, srbits)
 
+    # Until https://github.com/data-apis/array-api/issues/807
+    xp_where = lambda a, t, f: xp.where(a, xp.asarray(t), xp.asarray(f))
+    xp_maximum = lambda a, b: xp.maximum(xp.asarray(a), xp.asarray(b))
+
     p = fi.precision
     bias = fi.expBias
 
     is_negative = xp.signbit(v) & fi.is_signed
-    absv = xp.where(is_negative, -v, v)
+    absv = xp_where(is_negative, -v, v)
 
     finite_nonzero = ~(xp.isnan(v) | xp.isinf(v) | (v == 0))
 
     # Place 1.0 where finite_nonzero is False, to avoid log of {0,inf,nan}
-    absv_masked = xp.where(finite_nonzero, absv, 1.0)
+    absv_masked = xp_where(finite_nonzero, absv, 1.0)
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
 
@@ -86,7 +90,7 @@ def round_ndarray(
     expval = to_int(xp.floor(xp.log2(absv_masked)))
 
     if fi.has_subnormals:
-        expval = xp.maximum(expval, 1 - bias)
+        expval = xp_maximum(expval, 1 - bias)
 
     expval = expval - p + 1
     fsignificand = _ldexp(absv_masked, -expval)
@@ -148,16 +152,16 @@ def round_ndarray(
             assert srbits is not None
             should_round_away = delta + to_float(srbits) * 2.0**-srnumbits >= 1.0
 
-    isignificand = xp.where(should_round_away, isignificand + 1, isignificand)
+    isignificand = xp_where(should_round_away, isignificand + 1, isignificand)
 
     fresult = _ldexp(to_float(isignificand), expval)
 
-    result = xp.where(finite_nonzero, fresult, absv)
+    result = xp_where(finite_nonzero, fresult, absv)
 
-    amax = xp.where(is_negative, -fi.min, fi.max)
+    amax = xp_where(is_negative, -fi.min, fi.max)
 
     if sat:
-        result = xp.where(result > amax, amax, result)
+        result = xp_where(result > amax, amax, result)
     else:
         match rnd:
             case RoundMode.TowardNegative:
@@ -169,23 +173,23 @@ def round_ndarray(
             case _:
                 put_amax_at = xp.zeros_like(result, dtype=xp.bool)
 
-        result = xp.where(finite_nonzero & put_amax_at, amax, result)
+        result = xp_where(finite_nonzero & put_amax_at, amax, result)
 
         # Now anything larger than amax goes to infinity or NaN
         if fi.has_infs:
-            result = xp.where(result > amax, xp.inf, result)
+            result = xp_where(result > amax, xp.inf, result)
         elif fi.num_nans > 0:
-            result = xp.where(result > amax, xp.nan, result)
+            result = xp_where(result > amax, xp.nan, result)
         else:
             if xp.any(result > amax):
                 raise ValueError(f"No Infs or NaNs in format {fi}, and sat=False")
 
-    result = xp.where(is_negative, -result, result)
+    result = xp_where(is_negative, -result, result)
 
     # Make negative zeros negative if has_nz, else make them not negative.
     if fi.has_nz:
-        result = xp.where((result == 0) & is_negative, -0.0, result)
+        result = xp_where((result == 0) & is_negative, -0.0, result)
     else:
-        result = xp.where(result == 0, 0.0, result)
+        result = xp_where(result == 0, 0.0, result)
 
     return result
