@@ -26,7 +26,7 @@ def get_method(method: str, fi: FormatInfo) -> Callable:
         def dec(code: int) -> float:
             asnp = np.tile(np.array(code, dtype=np.uint64), (2, 3))
             vals = decode_ndarray(fi, asnp)
-            val = vals.item(0)
+            val: float = vals.flatten()[0]
             np.testing.assert_equal(val, vals)
             return val
 

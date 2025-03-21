@@ -3,15 +3,16 @@
 from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
-import numpy as np
+
+import numpy.typing as npt
 import array_api_compat
 
 
-def _isodd(v: np.ndarray) -> np.ndarray:
+def _isodd(v: npt.NDArray) -> npt.NDArray:
     return v & 0x1 == 1
 
 
-def _ldexp(v: np.ndarray, s: np.ndarray) -> np.ndarray:
+def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
     xp = array_api_compat.array_namespace(v, s)
     if (
         array_api_compat.is_torch_array(v)
@@ -29,12 +30,12 @@ def _ldexp(v: np.ndarray, s: np.ndarray) -> np.ndarray:
 
 def round_ndarray(
     fi: FormatInfo,
-    v: np.ndarray,
+    v: npt.NDArray,
     rnd: RoundMode = RoundMode.TiesToEven,
     sat: bool = False,
-    srbits: Optional[np.ndarray] = None,
+    srbits: Optional[npt.NDArray] = None,
     srnumbits: int = 0,
-) -> np.ndarray:
+) -> npt.NDArray:
     """
     Vectorized version of :meth:`round_float`.
 
@@ -81,10 +82,10 @@ def round_ndarray(
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
 
-    def to_int(x: np.ndarray) -> np.ndarray:
+    def to_int(x: npt.NDArray) -> npt.NDArray:
         return xp.astype(x, int_type)
 
-    def to_float(x: np.ndarray) -> np.ndarray:
+    def to_float(x: npt.NDArray) -> npt.NDArray:
         return xp.astype(x, v.dtype)
 
     expval = to_int(xp.floor(xp.log2(absv_masked)))

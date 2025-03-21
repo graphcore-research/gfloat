@@ -2,9 +2,10 @@
 
 import pytest
 
+import numpy.typing as npt
 import torch
 
-from gfloat import RoundMode, round_ndarray
+from gfloat import FormatInfo, RoundMode, round_ndarray
 from gfloat.formats import format_info_ocp_e5m2, format_info_p3109
 
 
@@ -40,7 +41,7 @@ def test_torch() -> None:
 )
 @pytest.mark.parametrize("fi", (format_info_ocp_e5m2, format_info_p3109(8, 3)))
 @pytest.mark.parametrize("sat", (True, False))
-def test_torch_compile_agrees(fi, rnd, sat) -> None:
+def test_torch_compile_agrees(fi: FormatInfo, rnd: RoundMode, sat: bool) -> None:
     """
     Test that Torch compile output agrees with eager
     """
@@ -67,7 +68,7 @@ def test_torch_compile_agrees(fi, rnd, sat) -> None:
     ),
 )
 @pytest.mark.parametrize("fi", (format_info_ocp_e5m2, format_info_p3109(8, 3)))
-def test_torch_compile_agrees_sr(fi, rnd) -> None:
+def test_torch_compile_agrees_sr(fi: FormatInfo, rnd: RoundMode) -> None:
     """
     Test that Torch tensors don't crash
     """
@@ -82,18 +83,18 @@ def test_torch_compile_agrees_sr(fi, rnd) -> None:
 
     # Check torch.compile
     @torch.compile
-    def tc(x):
-        return round_ndarray(fi, x, rnd, srbits=srbits, srnumbits=srnumbits)
+    def tc(x: npt.NDArray) -> npt.NDArray:
+        return round_ndarray(fi, x, rnd, srbits=srbits, srnumbits=srnumbits)  # type: ignore [arg-type]
 
-    t8_tc = tc(a)
+    t8_tc = tc(a)  # type: ignore [arg-type]
 
     torch.testing.assert_close(t8, t8_tc, atol=0.0, rtol=0.0)
 
     # Check torch.compile dynamic
     @torch.compile(dynamic=True)
-    def tc2(x):
-        return round_ndarray(fi, x, rnd, srbits=srbits, srnumbits=srnumbits)
+    def tc2(x: npt.NDArray) -> npt.NDArray:
+        return round_ndarray(fi, x, rnd, srbits=srbits, srnumbits=srnumbits)  # type: ignore [arg-type]
 
-    t8_tc2 = tc2(a)
+    t8_tc2 = tc2(a)  # type: ignore [arg-type]
 
     torch.testing.assert_close(t8, t8_tc2, atol=0.0, rtol=0.0)

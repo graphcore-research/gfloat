@@ -63,7 +63,7 @@ def test_mx(
     fi = BlockFormatInfo("test", gf_etype, 32, format_info_ocp_e8m0)
 
     # GFloat: Quantize
-    gf_dq = quantize_block(fi, ta, compute_scale_amax)
+    gf_dq = quantize_block(fi, ta, compute_scale_amax)  # type: ignore [arg-type]
 
     # Compare
     np.testing.assert_allclose(gf_dq, mx_dq)

@@ -3,6 +3,7 @@
 from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 import pytest
 
 from gfloat import decode_float, encode_float, encode_ndarray
@@ -32,6 +33,7 @@ def test_encode(fi: FormatInfo) -> None:
     codes = np.arange(0, 2**fi.bits, step, dtype=np.uint64)
     fvals = np.array([decode_float(fi, int(i)).fval for i in codes])
     enc_codes = encode_ndarray(fi, fvals)
+    expected_codes: npt.NDArray
     if fi.num_nans == 0:
         assert not np.any(np.isnan(fvals))
         expected_codes = codes

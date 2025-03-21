@@ -2,10 +2,13 @@
 
 from types import ModuleType
 import numpy as np
+import numpy.typing as npt
 from .types import FormatInfo
 
 
-def decode_ndarray(fi: FormatInfo, codes: np.ndarray, np: ModuleType = np) -> np.ndarray:
+def decode_ndarray(
+    fi: FormatInfo, codes: npt.NDArray, np: ModuleType = np
+) -> npt.NDArray:
     r"""
     Vectorized version of :meth:`decode_float`
 

@@ -169,10 +169,10 @@ def compute_scale_amax(emax: float, vals: npt.ArrayLike) -> float:
 
 def quantize_block(
     fi: BlockFormatInfo,
-    vals: npt.NDArray[np.float64],
+    vals: npt.NDArray,
     compute_scale: ComputeScaleCallable,
     round: RoundMode = RoundMode.TiesToEven,
-) -> npt.NDArray[np.float64]:
+) -> npt.NDArray:
     """
     Encode and decode a block of :paramref:`vals` of bytes into
     block format described by :paramref:`fi`
