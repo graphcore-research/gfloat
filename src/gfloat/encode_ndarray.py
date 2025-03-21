@@ -2,9 +2,10 @@
 
 from .types import FormatInfo
 import numpy as np
+import numpy.typing as npt
 
 
-def encode_ndarray(fi: FormatInfo, v: np.ndarray) -> np.ndarray:
+def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
     """
     Vectorized version of :meth:`encode_float`.
 

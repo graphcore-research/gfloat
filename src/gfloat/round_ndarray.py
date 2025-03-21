@@ -3,15 +3,16 @@
 from typing import Optional
 from types import ModuleType
 from .types import FormatInfo, RoundMode
-import numpy as np
+
+import numpy.typing as npt
 import array_api_compat
 
 
-def _isodd(v: np.ndarray) -> np.ndarray:
+def _isodd(v: npt.NDArray) -> npt.NDArray:
     return v & 0x1 == 1
 
 
-def _ldexp(v: np.ndarray, s: np.ndarray) -> np.ndarray:
+def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
     xp = array_api_compat.array_namespace(v, s)
     if (
         array_api_compat.is_torch_array(v)
@@ -29,12 +30,12 @@ def _ldexp(v: np.ndarray, s: np.ndarray) -> np.ndarray:
 
 def round_ndarray(
     fi: FormatInfo,
-    v: np.ndarray,
+    v: npt.NDArray,
     rnd: RoundMode = RoundMode.TiesToEven,
     sat: bool = False,
-    srbits: Optional[np.ndarray] = None,
+    srbits: Optional[npt.NDArray] = None,
     srnumbits: int = 0,
-) -> np.ndarray:
+) -> npt.NDArray:
     """
     Vectorized version of :meth:`round_float`.
 
@@ -81,10 +82,10 @@ def round_ndarray(
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
 
-    def to_int(x: np.ndarray) -> np.ndarray:
+    def to_int(x: npt.NDArray) -> npt.NDArray:
         return xp.astype(x, int_type)
 
-    def to_float(x: np.ndarray) -> np.ndarray:
+    def to_float(x: npt.NDArray) -> npt.NDArray:
         return xp.astype(x, v.dtype)
 
     expval = to_int(xp.floor(xp.log2(absv_masked)))
@@ -123,29 +124,29 @@ def round_ndarray(
         case RoundMode.Stochastic:
             assert srbits is not None
             ## RTNE delta to srbits
-            d = delta * 2.0**srnumbits
+            d = delta * 2.0 ** float(srnumbits)
             floord = to_int(xp.floor(d))
             dd = d - xp.floor(d)
             should_round_away_tne = (dd > 0.5) | ((dd == 0.5) & _isodd(floord))
             drnd = floord + xp.astype(should_round_away_tne, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2**srnumbits
+            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
 
         case RoundMode.StochasticOdd:
             assert srbits is not None
             ## RTNO delta to srbits
-            d = delta * 2.0**srnumbits
+            d = delta * 2.0 ** float(srnumbits)
             floord = to_int(xp.floor(d))
             dd = d - xp.floor(d)
             should_round_away_tno = (dd > 0.5) | ((dd == 0.5) & ~_isodd(floord))
             drnd = floord + xp.astype(should_round_away_tno, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2**srnumbits
+            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
 
         case RoundMode.StochasticFast:
             assert srbits is not None
             should_round_away = (
-                delta + to_float(2 * srbits + 1) * 2.0 ** -(1 + srnumbits) >= 1.0
+                delta + to_float(2 * srbits + 1) * 2.0 ** -float(1 + srnumbits) >= 1.0
             )
 
         case RoundMode.StochasticFastest:

@@ -21,7 +21,6 @@ jobs:
         run: |
           pip install -U pip
           pip install .[dev]
-          pip install -r requirements-direct.txt
 
       - name: Log installed environment
         run: |

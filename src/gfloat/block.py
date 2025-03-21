@@ -9,6 +9,8 @@ from typing import Callable, Iterable
 import numpy as np
 import numpy.typing as npt
 
+import array_api_compat
+
 from .decode import decode_float
 from .round import RoundMode, round_float
 from .encode import encode_float
@@ -154,21 +156,23 @@ def compute_scale_amax(emax: float, vals: npt.ArrayLike) -> float:
     Note:
       If all vals are zero, 1.0 is returned.
     """
-    amax = np.max(np.abs(vals))
+    xp = array_api_compat.array_namespace(vals)
+
+    amax = xp.max(xp.abs(vals))
     if amax == 0.0:
         q_log2scale = -127.0
     else:
-        q_log2scale = np.floor(np.log2(amax)) - emax
-        q_log2scale = np.clip(q_log2scale, -127.0, 127.0)
+        q_log2scale = xp.floor(xp.log2(amax)) - emax
+        q_log2scale = xp.clip(q_log2scale, -127.0, 127.0)
     return 2.0**q_log2scale
 
 
 def quantize_block(
     fi: BlockFormatInfo,
-    vals: npt.NDArray[np.float64],
+    vals: npt.NDArray,
     compute_scale: ComputeScaleCallable,
     round: RoundMode = RoundMode.TiesToEven,
-) -> npt.NDArray[np.float64]:
+) -> npt.NDArray:
     """
     Encode and decode a block of :paramref:`vals` of bytes into
     block format described by :paramref:`fi`

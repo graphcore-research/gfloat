@@ -7,30 +7,35 @@ from numpy.typing import NDArray
 
 import torch
 
-from mx.mx_ops import quantize_mx_op
-from mx.formats import ElemFormat
-
+from torchao.prototype.mx_formats.mx_tensor import MXTensor
+from torchao.prototype.mx_formats.constants import (
+    DTYPE_FP6_E2M3,
+    DTYPE_FP6_E3M2,
+    DTYPE_FP4,
+)
 
 from gfloat import (
     BlockFormatInfo,
+    FormatInfo,
     RoundMode,
     quantize_block,
     compute_scale_amax,
     encode_block,
 )
-from gfloat.formats import *
-
-
-@pytest.mark.parametrize(
-    ("mx_round,gf_round"),
-    [("even", RoundMode.TiesToEven), ("nearest", RoundMode.TiesToAway)],
+from gfloat.formats import (
+    # format_info_ocp_int8,
+    format_info_ocp_e3m2,
+    format_info_ocp_e2m1,
+    format_info_ocp_e8m0,
 )
+
+
 @pytest.mark.parametrize(
     ("mx_etype,gf_etype"),
     [
-        (ElemFormat.int8, format_info_ocp_int8),
-        (ElemFormat.fp6_e3m2, format_info_ocp_e3m2),
-        (ElemFormat.fp4_e2m1, format_info_ocp_e2m1),
+        # (ElemFormat.int8, format_info_ocp_int8),
+        (DTYPE_FP6_E3M2, format_info_ocp_e3m2),
+        (DTYPE_FP4, format_info_ocp_e2m1),
     ],
 )
 @pytest.mark.parametrize(
@@ -45,29 +50,20 @@ from gfloat.formats import *
     ],
 )
 def test_mx(
-    mx_etype: ElemFormat,
+    mx_etype: str,
     gf_etype: FormatInfo,
-    mx_round: str,
-    gf_round: RoundMode,
     A: NDArray[np.float64],
 ) -> None:
-    # MX: Declare block format
-    mx_specs = dict(
-        block_size=32,
-        scale_bits=8,
-        shared_exp_method="max",
-        mx_flush_fp32_subnorms=False,
-        custom_cuda=False,
-    )
+    ta = torch.tensor(A, dtype=torch.float32)
 
     # MX: Quantize
-    mx_dq = quantize_mx_op(torch.tensor(A), mx_specs, mx_etype, axes=0, round=mx_round)
+    mx_dq = MXTensor.to_mx(ta, mx_etype).to_dtype(ta.dtype)
 
     # GFloat: Declare block format
     fi = BlockFormatInfo("test", gf_etype, 32, format_info_ocp_e8m0)
 
     # GFloat: Quantize
-    gf_dq = quantize_block(fi, A, compute_scale_amax, gf_round)
+    gf_dq = quantize_block(fi, ta, compute_scale_amax)  # type: ignore [arg-type]
 
     # Compare
     np.testing.assert_allclose(gf_dq, mx_dq)

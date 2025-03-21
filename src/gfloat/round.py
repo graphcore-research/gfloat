@@ -3,6 +3,7 @@
 import math
 
 import numpy as np
+import math
 
 from .types import FormatInfo, RoundMode
 
@@ -53,7 +54,7 @@ def round_float(
         if srbits >= 2**srnumbits:
             raise ValueError(f"srnumbits={srnumbits} >= 2**srnumbits={2**srnumbits}")
 
-    if np.isnan(v):
+    if math.isnan(v):
         if fi.num_nans == 0:
             raise ValueError(f"No NaN in format {fi}")
 
@@ -61,10 +62,10 @@ def round_float(
         return np.nan
 
     # Extract sign
-    sign = np.signbit(v) and fi.is_signed
+    sign = np.signbit([v]).item() and fi.is_signed
     vpos = -v if sign else v
 
-    if np.isinf(vpos):
+    if math.isinf(vpos):
         result = np.inf
 
     elif vpos == 0:
@@ -72,7 +73,7 @@ def round_float(
 
     else:
         # Extract exponent
-        expval = int(np.floor(np.log2(vpos)))
+        expval = int(math.floor(math.log2(vpos)))
 
         # Effective precision, accounting for right shift for subnormal values
         if fi.has_subnormals:
