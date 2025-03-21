@@ -129,7 +129,7 @@ def round_ndarray(
             should_round_away_tne = (dd > 0.5) | ((dd == 0.5) & _isodd(floord))
             drnd = floord + xp.astype(should_round_away_tne, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2.0 ** float(srnumbits)
+            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
 
         case RoundMode.StochasticOdd:
             assert srbits is not None
@@ -140,7 +140,7 @@ def round_ndarray(
             should_round_away_tno = (dd > 0.5) | ((dd == 0.5) & ~_isodd(floord))
             drnd = floord + xp.astype(should_round_away_tno, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2.0 ** float(srnumbits)
+            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
 
         case RoundMode.StochasticFast:
             assert srbits is not None
