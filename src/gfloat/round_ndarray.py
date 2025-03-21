@@ -123,29 +123,29 @@ def round_ndarray(
         case RoundMode.Stochastic:
             assert srbits is not None
             ## RTNE delta to srbits
-            d = delta * 2.0**srnumbits
+            d = delta * 2.0 ** float(srnumbits)
             floord = to_int(xp.floor(d))
             dd = d - xp.floor(d)
             should_round_away_tne = (dd > 0.5) | ((dd == 0.5) & _isodd(floord))
             drnd = floord + xp.astype(should_round_away_tne, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2**srnumbits
+            should_round_away = drnd + srbits >= 2.0 ** float(srnumbits)
 
         case RoundMode.StochasticOdd:
             assert srbits is not None
             ## RTNO delta to srbits
-            d = delta * 2.0**srnumbits
+            d = delta * 2.0 ** float(srnumbits)
             floord = to_int(xp.floor(d))
             dd = d - xp.floor(d)
             should_round_away_tno = (dd > 0.5) | ((dd == 0.5) & ~_isodd(floord))
             drnd = floord + xp.astype(should_round_away_tno, floord.dtype)
 
-            should_round_away = drnd + srbits >= 2**srnumbits
+            should_round_away = drnd + srbits >= 2.0 ** float(srnumbits)
 
         case RoundMode.StochasticFast:
             assert srbits is not None
             should_round_away = (
-                delta + to_float(2 * srbits + 1) * 2.0 ** -(1 + srnumbits) >= 1.0
+                delta + to_float(2 * srbits + 1) * 2.0 ** -float(1 + srnumbits) >= 1.0
             )
 
         case RoundMode.StochasticFastest:
