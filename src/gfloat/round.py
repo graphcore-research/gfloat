@@ -73,7 +73,7 @@ def round_float(
 
     else:
         # Extract exponent
-        expval = int(math.floor(math.log2(vpos)))
+        expval = math.frexp(vpos)[1] - 1
 
         # Effective precision, accounting for right shift for subnormal values
         if fi.has_subnormals:
