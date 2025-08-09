@@ -21,11 +21,11 @@ xp.set_array_api_strict_flags(api_version="2024.12")
 @pytest.mark.parametrize("rnd", RoundMode)
 @pytest.mark.parametrize("sat", [True, False])
 def test_array_api(fi: FormatInfo, rnd: RoundMode, sat: bool) -> None:
-    a = np.random.rand(23, 1, 34) - 0.5
-    a = xp.asarray(a)
+    a0 = np.random.rand(23, 1, 34) - 0.5
+    a = xp.asarray(a0)
 
     srnumbits = 32
-    srbits = np.random.randint(0, 2**srnumbits, a.shape)
-    srbits = xp.asarray(srbits)
+    srbits0 = np.random.randint(0, 2**srnumbits, a.shape)
+    srbits = xp.asarray(srbits0)
 
-    round_ndarray(fi, a, rnd, sat, srbits=srbits, srnumbits=srnumbits)
+    round_ndarray(fi, a, rnd, sat, srbits=srbits, srnumbits=srnumbits)  # type: ignore
