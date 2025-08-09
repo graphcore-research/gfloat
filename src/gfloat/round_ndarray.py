@@ -37,7 +37,9 @@ def _frexp(v: npt.NDArray) -> npt.NDArray:
     ):
         return xp.frexp(v)
 
-    raise NotImplementedError()
+    # Beware #49
+    expval = xp.astype(xp.floor(xp.log2(v)), xp.int64)
+    return (xp.nan, expval)
 
 
 def round_ndarray(
