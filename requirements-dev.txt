@@ -6,7 +6,7 @@ jaxlib
 jax
 torch
 array-api-strict
-torchao
+torchao==0.10
 airium
 pandas
 matplotlib

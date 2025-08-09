@@ -36,7 +36,7 @@ jobs:
 
       - name: MyPy
         run: |
-          mypy  --disallow-untyped-defs --enable-error-code redundant-expr src test
+          mypy -v --disallow-untyped-defs --enable-error-code redundant-expr src test
 
       - name: Ensure that docs build
         run: |

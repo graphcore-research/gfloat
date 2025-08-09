@@ -15,8 +15,8 @@ def _isodd(v: npt.NDArray) -> npt.NDArray:
 def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
     xp = array_api_compat.array_namespace(v, s)
     if (
-        array_api_compat.is_torch_array(v)
-        or array_api_compat.is_jax_array(v)
+        array_api_compat.is_torch_array(v)  # type: ignore
+        or array_api_compat.is_jax_array(v)  # type: ignore
         or array_api_compat.is_numpy_array(v)
     ):
         return xp.ldexp(v, s)
