@@ -595,3 +595,21 @@ def test_stochastic_rounding_scalar_eq_array(
         # Ensure faithful rounding
         if alpha < 1.0:
             assert ((val_array == v0) | (val_array == v1)).all()
+
+
+def test_large_bfloat():
+    # from https://github.com/graphcore-research/gfloat/pull/49
+
+    a = 6.6461399789245764e35
+    b = 6.620178494631905e35
+
+    assert b < a
+    rounded_a = round_float(format_info_bfloat16, a, RoundMode.TowardZero)
+    rounded_b = round_float(format_info_bfloat16, b, RoundMode.TowardZero)
+
+    assert rounded_b <= rounded_a
+
+    rounded_a = round_ndarray(format_info_bfloat16, np.array([a]), RoundMode.TowardZero)
+    rounded_b = round_ndarray(format_info_bfloat16, np.array([b]), RoundMode.TowardZero)
+
+    assert all(rounded_b <= rounded_a)
