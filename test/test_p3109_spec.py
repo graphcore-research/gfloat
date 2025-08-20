@@ -8,7 +8,7 @@ from gfloat import FloatClass, Domain, decode_float, decode_ndarray
 from gfloat.formats import *
 
 
-def spec_is_normal(fi: FormatInfo, x: int):
+def spec_is_normal(fi: FormatInfo, x: int) -> bool:
     r"""
   Copy from spec:
 

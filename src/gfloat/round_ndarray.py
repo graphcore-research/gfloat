@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 from typing import Optional, Tuple
-from .types import FormatInfo, RoundMode
+from .types import FormatInfo, RoundMode, Domain
 
 import numpy.typing as npt
 import array_api_compat
