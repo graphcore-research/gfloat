@@ -26,19 +26,19 @@ formats in Python.  Headline features:
 Provided Formats
 ----------------
 
-Formats are parameterized by the primary IEEE-754 parameters of:
+Formats are parameterized by the primary parameters of:
 
   * Width in bits (k)
   * Precision (p)
-  * Maximum exponent (emax)
+  * Exponent bias (bias)
 
 with additional fields defining the presence/encoding of:
 
-  * Infinities
+  * Domain (Finite vs Extended)
+  * Signed/unsigned
   * Not-a-number (NaN) values
   * Negative zero
   * Subnormal numbers
-  * Signed/unsigned
   * Two's complement encoding (of the significand)
 
 This allows an implementation of generic floating point encode/decode logic,
