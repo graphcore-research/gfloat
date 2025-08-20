@@ -597,7 +597,7 @@ def test_stochastic_rounding_scalar_eq_array(
             assert ((val_array == v0) | (val_array == v1)).all()
 
 
-def test_large_bfloat():
+def test_large_bfloat() -> None:
     # from https://github.com/graphcore-research/gfloat/pull/49
 
     a = 6.6461399789245764e35
@@ -609,7 +609,11 @@ def test_large_bfloat():
 
     assert rounded_b <= rounded_a
 
-    rounded_a = round_ndarray(format_info_bfloat16, np.array([a]), RoundMode.TowardZero)
-    rounded_b = round_ndarray(format_info_bfloat16, np.array([b]), RoundMode.TowardZero)
+    rounded_a_array = round_ndarray(
+        format_info_bfloat16, np.array([a]), RoundMode.TowardZero
+    )
+    rounded_b_array = round_ndarray(
+        format_info_bfloat16, np.array([b]), RoundMode.TowardZero
+    )
 
-    assert all(rounded_b <= rounded_a)
+    assert all(rounded_b_array <= rounded_a_array)

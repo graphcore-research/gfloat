@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from typing import Optional
-from types import ModuleType
+from typing import Optional, Tuple
 from .types import FormatInfo, RoundMode
 
 import numpy.typing as npt
@@ -28,7 +27,7 @@ def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
     return xp.where(v < 1.0, vlo, vhi)
 
 
-def _frexp(v: npt.NDArray) -> npt.NDArray:
+def _frexp(v: npt.NDArray) -> Tuple[None, npt.NDArray]:
     xp = array_api_compat.array_namespace(v)
     if (
         array_api_compat.is_torch_array(v)  # type: ignore
@@ -39,7 +38,7 @@ def _frexp(v: npt.NDArray) -> npt.NDArray:
 
     # Beware #49
     expval = xp.astype(xp.floor(xp.log2(v)), xp.int64)
-    return (xp.nan, expval)
+    return (None, expval)
 
 
 def round_ndarray(
