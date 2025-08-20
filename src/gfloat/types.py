@@ -392,6 +392,20 @@ class FormatInfo:
         return 1 if self.domain == Domain.Extended else 0
 
     @property
+    def num_neginfs(self) -> int:
+        """
+        Return the number of negative infinities
+        """
+        return 1 if self.domain == Domain.Extended and self.is_signed else 0
+
+    @property
+    def num_infs(self) -> int:
+        """
+        Return the number of infinities
+        """
+        return self.num_posinfs + self.num_neginfs
+
+    @property
     def code_of_max(self) -> int:
         """
         Return a codepoint for fi.max
