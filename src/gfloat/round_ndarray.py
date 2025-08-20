@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from typing import Optional
-from types import ModuleType
+from typing import Optional, Tuple
 from .types import FormatInfo, RoundMode
 
 import numpy.typing as npt
@@ -26,6 +25,20 @@ def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
     vlo = (v * 2.0**+offset) * 2.0 ** xp.astype(s - offset, v.dtype)
     vhi = (v * 2.0**-offset) * 2.0 ** xp.astype(s + offset, v.dtype)
     return xp.where(v < 1.0, vlo, vhi)
+
+
+def _frexp(v: npt.NDArray) -> Tuple[None, npt.NDArray]:
+    xp = array_api_compat.array_namespace(v)
+    if (
+        array_api_compat.is_torch_array(v)  # type: ignore
+        or array_api_compat.is_jax_array(v)  # type: ignore
+        or array_api_compat.is_numpy_array(v)
+    ):
+        return xp.frexp(v)
+
+    # Beware #49
+    expval = xp.astype(xp.floor(xp.log2(v)), xp.int64)
+    return (None, expval)
 
 
 def round_ndarray(
@@ -88,7 +101,7 @@ def round_ndarray(
     def to_float(x: npt.NDArray) -> npt.NDArray:
         return xp.astype(x, v.dtype)
 
-    expval = to_int(xp.floor(xp.log2(absv_masked)))
+    expval = _frexp(absv_masked)[1] - 1
 
     if fi.has_subnormals:
         expval = xp_maximum(expval, 1 - bias)
