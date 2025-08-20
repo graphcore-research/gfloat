@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from .types import FormatInfo
+from .types import FormatInfo, Domain
 import numpy as np
 import numpy.typing as npt
 
@@ -40,12 +40,14 @@ def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
     else:
         assert not np.any(nan_mask)
 
-    if fi.has_infs:
+    if fi.domain == Domain.Extended:
         code[v > fi.max] = fi.code_of_posinf
-        code[v < fi.min] = fi.code_of_neginf
+        if fi.is_signed:
+            code[v < fi.min] = fi.code_of_neginf
     else:
         code[v > fi.max] = fi.code_of_nan if fi.num_nans > 0 else fi.code_of_max
-        code[v < fi.min] = fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
+        if fi.is_signed:
+            code[v < fi.min] = fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
 
     if fi.has_zero:
         if fi.has_nz:
@@ -61,7 +63,7 @@ def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
 
         sig, exp = np.frexp(finite_vpos)
 
-        biased_exp = exp.astype(np.int64) + (fi.expBias - 1)
+        biased_exp = exp.astype(np.int64) + (fi.bias - 1)
         subnormal_mask = (biased_exp < 1) & fi.has_subnormals
 
         biased_exp_safe = np.where(subnormal_mask, biased_exp, 0)

@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 
-from .types import FormatInfo
+from .types import FormatInfo, Domain
 
 
 def encode_float(fi: FormatInfo, v: float) -> int:
@@ -36,14 +36,14 @@ def encode_float(fi: FormatInfo, v: float) -> int:
 
     # Overflow/underflow
     if v > fi.max:
-        if fi.has_infs:
+        if fi.domain == Domain.Extended:
             return fi.code_of_posinf
         if fi.num_nans > 0:
             return fi.code_of_nan
         return fi.code_of_max
 
     if v < fi.min:
-        if fi.has_infs:
+        if fi.domain == Domain.Extended:
             return fi.code_of_neginf
         if fi.num_nans > 0:
             return fi.code_of_nan
@@ -65,12 +65,12 @@ def encode_float(fi: FormatInfo, v: float) -> int:
         exp -= 1
         # now sig in range [1, 2)
 
-        biased_exp = exp + fi.expBias
+        biased_exp = exp + fi.bias
         if biased_exp < 1 and fi.has_subnormals:
             # subnormal
             sig *= 2.0 ** (biased_exp - 1)
             biased_exp = 0
-            assert vpos == sig * 2 ** (1 - fi.expBias)
+            assert vpos == sig * 2 ** (1 - fi.bias)
         else:
             if sig > 0:
                 sig -= 1.0
