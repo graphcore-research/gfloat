@@ -83,7 +83,7 @@ def round_ndarray(
     xp_maximum = lambda a, b: xp.maximum(xp.asarray(a), xp.asarray(b))
 
     p = fi.precision
-    bias = fi.expBias
+    bias = fi.bias
 
     is_negative = xp.signbit(v) & fi.is_signed
     absv = xp_where(is_negative, -v, v)
@@ -190,7 +190,7 @@ def round_ndarray(
         result = xp_where(finite_nonzero & put_amax_at, amax, result)
 
         # Now anything larger than amax goes to infinity or NaN
-        if fi.has_infs:
+        if fi.domain == Domain.Extended:
             result = xp_where(result > amax, xp.inf, result)
         elif fi.num_nans > 0:
             result = xp_where(result > amax, xp.nan, result)

@@ -4,7 +4,7 @@ import ml_dtypes
 import numpy as np
 import pytest
 
-from gfloat import FloatClass, decode_float, decode_ndarray
+from gfloat import FloatClass, Domain, decode_float, decode_ndarray
 from gfloat.formats import *
 
 
@@ -15,7 +15,7 @@ def _isnegzero(x: float) -> bool:
 methods = ["scalar", "array"]
 
 
-def get_method(method: str, fi: FormatInfo) -> Callable:
+def decode_for_method(method: str, fi: FormatInfo) -> Callable:
     if method == "scalar":
 
         def dec(code: int) -> float:
@@ -36,7 +36,7 @@ def get_method(method: str, fi: FormatInfo) -> Callable:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_ocp_e5m2(method: str) -> None:
     fi = format_info_ocp_e5m2
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
     assert dec(0x01) == 2.0**-16
     assert dec(0x40) == 2.0
@@ -53,7 +53,7 @@ def test_spot_check_ocp_e5m2(method: str) -> None:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_ocp_e4m3(method: str) -> None:
     fi = format_info_ocp_e4m3
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
     assert dec(0x40) == 2.0
     assert dec(0x01) == 2.0**-9
     assert _isnegzero(dec(0x80))
@@ -65,7 +65,7 @@ def test_spot_check_ocp_e4m3(method: str) -> None:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_p3109_8p3(method: str) -> None:
     fi = format_info_p3109(8, 3)
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert dec(0x01) == 2.0**-17
     assert dec(0x40) == 1.0
@@ -77,10 +77,10 @@ def test_spot_check_p3109_8p3(method: str) -> None:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_p3109_8p1(method: str) -> None:
     fi = format_info_p3109(8, 1)
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
-    assert dec(0x01) == 2.0**-62
-    assert dec(0x40) == 2.0
+    assert dec(0x01) == 2.0**-63
+    assert dec(0x40) == 1.0
     assert np.isnan(dec(0x80))
     assert dec(0xFF) == -np.inf
     assert np.floor(np.log2(dec(0x7E))) == fi.emax
@@ -89,7 +89,7 @@ def test_spot_check_p3109_8p1(method: str) -> None:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_binary16(method: str) -> None:
     fi = format_info_binary16
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert dec(0x3C00) == 1.0
     assert dec(0x3C01) == 1.0 + 2**-10
@@ -104,7 +104,7 @@ def test_spot_check_binary16(method: str) -> None:
 @pytest.mark.parametrize("method", methods)
 def test_spot_check_bfloat16(method: str) -> None:
     fi = format_info_bfloat16
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert dec(0x3F80) == 1
     assert dec(0x4000) == 2
@@ -119,12 +119,12 @@ def test_spot_check_bfloat16(method: str) -> None:
 def test_spot_check_ocp_e2m3(method: str) -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m3
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert fi.max == 7.5
     assert fi.smallest_subnormal == 0.125
     assert fi.smallest_normal == 1.0
-    assert not fi.has_infs
+    assert fi.domain == Domain.Finite
     assert fi.num_nans == 0
     assert fi.has_nz
 
@@ -137,12 +137,12 @@ def test_spot_check_ocp_e2m3(method: str) -> None:
 def test_spot_check_ocp_e3m2(method: str) -> None:
     # Test against Table 4 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e3m2
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert fi.max == 28.0
     assert fi.smallest_subnormal == 0.0625
     assert fi.smallest_normal == 0.25
-    assert not fi.has_infs
+    assert fi.domain == Domain.Finite
     assert fi.num_nans == 0
     assert fi.has_nz
 
@@ -155,12 +155,12 @@ def test_spot_check_ocp_e3m2(method: str) -> None:
 def test_spot_check_ocp_e2m1(method: str) -> None:
     # Test against Table 5 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e2m1
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert fi.max == 6.0
     assert fi.smallest_subnormal == 0.5
     assert fi.smallest_normal == 1.0
-    assert not fi.has_infs
+    assert fi.domain == Domain.Finite
     assert fi.num_nans == 0
     assert fi.has_nz
 
@@ -179,12 +179,12 @@ def test_spot_check_ocp_e2m1(method: str) -> None:
 def test_spot_check_ocp_e8m0(method: str) -> None:
     # Test against Table 7 in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_e8m0
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
     fclass = lambda code: decode_float(fi, code).fclass
-    assert fi.expBias == 127
+    assert fi.bias == 127
     assert fi.max == 2.0**127
     assert fi.smallest == 2.0**-127
-    assert not fi.has_infs
+    assert fi.domain == Domain.Finite
     assert fi.num_nans == 1
 
     assert dec(0x00) == 2.0**-127
@@ -199,11 +199,11 @@ def test_spot_check_ocp_e8m0(method: str) -> None:
 def test_spot_check_ocp_int8(method: str) -> None:
     # Test against Table TODO in "OCP Microscaling Formats (MX) v1.0 Spec"
     fi = format_info_ocp_int8
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     assert fi.max == 1.0 + 63.0 / 64
     assert fi.smallest == 2.0**-6
-    assert not fi.has_infs
+    assert fi.domain == Domain.Finite
     assert fi.num_nans == 0
 
     assert dec(0x00) == 0.0
@@ -216,25 +216,69 @@ def test_spot_check_ocp_int8(method: str) -> None:
 
 @pytest.mark.parametrize("fi", p3109_binary8_formats)
 def test_p3109_k8_specials(fi: FormatInfo) -> None:
-    assert fi.code_of_nan == 0x80
-    assert fi.code_of_zero == 0x00
-    assert fi.code_of_posinf == 0x7F
-    assert fi.code_of_neginf == 0xFF
+    if fi.is_signed:
+        assert fi.code_of_nan == 0x80
+        assert fi.code_of_zero == 0x00
+        if fi.domain == Domain.Extended:
+            assert fi.code_of_posinf == 0x7F
+            assert fi.code_of_neginf == 0xFF
+    else:
+        assert fi.code_of_nan == 0xFF
+        assert fi.code_of_zero == 0x00
+        if fi.domain == Domain.Extended:
+            assert fi.code_of_posinf == 0xFE
 
 
-@pytest.mark.parametrize("k,p", [(8, 3), (8, 1), (6, 1), (6, 5), (3, 1), (3, 2), (11, 3)])
-def test_p3109_specials(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p)
+p3109_formats_to_test = (
+    (3, 1),
+    (3, 2),
+    (3, 3),
+    (4, 1),
+    (4, 2),
+    (4, 3),
+    (4, 4),
+    (6, 1),
+    (6, 5),
+    (8, 3),
+    (8, 1),
+    (11, 3),
+)
+
+
+@pytest.mark.parametrize("k,p", p3109_formats_to_test)
+def test_p3109_specials_signed(k: int, p: int) -> None:
+    fi = format_info_p3109(k, p, Domain.Extended)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
     assert fi.code_of_posinf == 2 ** (k - 1) - 1
     assert fi.code_of_neginf == 2**k - 1
+    assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
+
+    fi = format_info_p3109(k, p, Domain.Finite)
+    assert fi.code_of_nan == 2 ** (k - 1)
+    assert fi.code_of_zero == 0
+    assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
+    with pytest.raises(ValueError):
+        fi.code_of_posinf
+    with pytest.raises(ValueError):
+        fi.code_of_neginf
+
+
+@pytest.mark.parametrize("k,p", p3109_formats_to_test)
+def test_p3109_specials_unsigned(k: int, p: int) -> None:
+    fi = format_info_p3109(k, p, Domain.Extended, signedness=False)
+    assert fi.code_of_nan == 2**k - 1
+    assert fi.code_of_zero == 0
+    assert fi.code_of_posinf == 2**k - 2
+    assert decode_float(fi, 2 ** (k - 1)).fval == 1.0
+    with pytest.raises(ValueError):
+        fi.code_of_neginf
 
 
 @pytest.mark.parametrize("fi", all_formats)
 @pytest.mark.parametrize("method", methods)
 def test_specials_decode(method: str, fi: FormatInfo) -> None:
-    dec = get_method(method, fi)
+    dec = decode_for_method(method, fi)
 
     if fi.has_zero:
         assert dec(fi.code_of_zero) == 0
@@ -242,9 +286,10 @@ def test_specials_decode(method: str, fi: FormatInfo) -> None:
     if fi.num_nans > 0:
         assert np.isnan(dec(fi.code_of_nan))
 
-    if fi.has_infs:
+    if fi.domain == Domain.Extended:
         assert dec(fi.code_of_posinf) == np.inf
-        assert dec(fi.code_of_neginf) == -np.inf
+        if fi.is_signed:
+            assert dec(fi.code_of_neginf) == -np.inf
 
     assert dec(fi.code_of_max) == fi.max
     assert dec(fi.code_of_min) == fi.min

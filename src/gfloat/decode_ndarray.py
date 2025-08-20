@@ -3,7 +3,7 @@
 from types import ModuleType
 import numpy as np
 import numpy.typing as npt
-from .types import FormatInfo
+from .types import FormatInfo, Domain
 
 
 def decode_ndarray(
@@ -47,16 +47,17 @@ def decode_ndarray(
     if fi.is_twos_complement:
         significand = np.where(sign < 0, (1 << t) - significand, significand)
 
-    expBias = fi.expBias
+    bias = fi.bias
 
     fval = np.zeros_like(codes, dtype=np.float64)
     isspecial = np.zeros_like(codes, dtype=bool)
 
-    if fi.has_infs:
+    if fi.domain == Domain.Extended:
         fval = np.where(codes == fi.code_of_posinf, np.inf, fval)
         isspecial |= codes == fi.code_of_posinf
-        fval = np.where(codes == fi.code_of_neginf, -np.inf, fval)
-        isspecial |= codes == fi.code_of_neginf
+        if fi.is_signed:
+            fval = np.where(codes == fi.code_of_neginf, -np.inf, fval)
+            isspecial |= codes == fi.code_of_neginf
 
     if fi.num_nans > 0:
         code_is_nan = codes == fi.code_of_nan
@@ -76,7 +77,7 @@ def decode_ndarray(
         fval = np.where(iszero & (sign < 0), -0.0, fval)
 
     issubnormal = (exp == 0) & (significand != 0) & fi.has_subnormals
-    expval = np.where(issubnormal, 1 - expBias, exp - expBias)
+    expval = np.where(issubnormal, 1 - bias, exp - bias)
     fsignificand = np.where(issubnormal, 0.0, 1.0) + np.ldexp(significand, -t)
 
     # Normal/Subnormal/Zero case, other values will be overwritten

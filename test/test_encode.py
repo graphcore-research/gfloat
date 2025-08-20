@@ -52,13 +52,13 @@ def test_encode_edges(fi: FormatInfo, enc: Callable) -> None:
 
     assert enc(fi, fi.max * 1.25) == (
         fi.code_of_posinf
-        if fi.has_infs
+        if fi.domain == Domain.Extended
         else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_max
     )
 
     if fi.is_signed:
         assert enc(fi, fi.min * 1.25) == (
             fi.code_of_neginf
-            if fi.has_infs
+            if fi.domain == Domain.Extended
             else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
         )

@@ -5,7 +5,7 @@ import math
 import numpy as np
 import math
 
-from .types import FormatInfo, RoundMode
+from .types import FormatInfo, RoundMode, Domain
 
 
 def _isodd(v: int) -> bool:
@@ -48,7 +48,7 @@ def round_float(
 
     # Constants
     p = fi.precision
-    bias = fi.expBias
+    bias = fi.bias
 
     if rnd in (RoundMode.Stochastic, RoundMode.StochasticFast):
         if srbits >= 2**srnumbits:
@@ -155,7 +155,7 @@ def round_float(
         ):
             result = amax
         else:
-            if fi.has_infs:
+            if fi.domain == Domain.Extended:
                 result = np.inf
             elif fi.num_nans > 0:
                 result = np.nan
