@@ -275,7 +275,7 @@ def test_p3109_specials_unsigned(k: int, p: int) -> None:
         fi.code_of_neginf
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 @pytest.mark.parametrize("method", methods)
 def test_specials_decode(method: str, fi: FormatInfo) -> None:
     dec = decode_for_method(method, fi)
@@ -335,7 +335,7 @@ def test_except(v: int) -> None:
         decode_float(format_info_binary16, v)
 
 
-@pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8])
+@pytest.mark.parametrize("fi", [fi for fi in sample_formats if fi.bits <= 8])
 def test_dense(fi: FormatInfo) -> None:
     fvs = [decode_float(fi, i) for i in range(0, 2**fi.bits)]
 

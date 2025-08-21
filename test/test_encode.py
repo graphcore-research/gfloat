@@ -10,7 +10,7 @@ from gfloat import decode_float, encode_float, encode_ndarray
 from gfloat.formats import *
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 def test_encode(fi: FormatInfo) -> None:
     dec = lambda v: decode_float(fi, v).fval
 
@@ -42,7 +42,7 @@ def test_encode(fi: FormatInfo) -> None:
     np.testing.assert_equal(enc_codes, expected_codes)
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 @pytest.mark.parametrize("enc", (encode_float, encode_ndarray))
 def test_encode_edges(fi: FormatInfo, enc: Callable) -> None:
     if enc == encode_ndarray:

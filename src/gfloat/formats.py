@@ -212,6 +212,7 @@ def format_info_p3109(
 
 # Collections of formats
 _tiny_formats = [
+    format_info_p3109(3, 2, Signedness.Signed, Domain.Finite),
     format_info_ocp_e2m1,
     format_info_p3109(4, 2, Signedness.Signed, Domain.Finite),
     format_info_ocp_e2m3,
@@ -220,12 +221,22 @@ _tiny_formats = [
     format_info_p3109(6, 4, Signedness.Signed, Domain.Finite),
 ]
 
-p3109_binary8_formats = [
-    format_info_p3109(8, p, signedness, domain)
-    for p in (1, 3, 4)
-    for signedness in (Signedness.Signed, Signedness.Unsigned)
-    for domain in (Domain.Extended, Domain.Finite)
-]
+p3109_binary8_formats = (
+    [
+        format_info_p3109(8, 1, Signedness.Signed, Domain.Extended),
+        format_info_p3109(8, 1, Signedness.Unsigned, Domain.Extended),
+    ]
+    + [
+        format_info_p3109(8, p, signedness, domain)
+        for p in (3, 4)
+        for signedness in (Signedness.Signed, Signedness.Unsigned)
+        for domain in (Domain.Extended, Domain.Finite)
+    ]
+    + [
+        format_info_p3109(8, 7, Signedness.Signed, Domain.Finite),
+        format_info_p3109(8, 8, Signedness.Unsigned, Domain.Finite),
+    ]
+)
 
 _fp8_formats = [
     format_info_ocp_e4m3,
@@ -238,7 +249,7 @@ _fp16_formats = [
     format_info_bfloat16,
 ]
 
-all_formats = [
+sample_formats = [
     *_tiny_formats,
     *_fp8_formats,
     *_fp16_formats,

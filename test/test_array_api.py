@@ -17,7 +17,7 @@ from gfloat.formats import *
 xp.set_array_api_strict_flags(api_version="2024.12")
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 @pytest.mark.parametrize("rnd", RoundMode)
 @pytest.mark.parametrize("sat", [True, False])
 def test_array_api(fi: FormatInfo, rnd: RoundMode, sat: bool) -> None:

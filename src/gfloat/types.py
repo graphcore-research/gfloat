@@ -257,34 +257,6 @@ class FormatInfo:
             return 2 ** (emax - self.bias) * (1.0 + isig * 2**-self.tSignificandBits)
 
     @property
-    def e_and_sig_of_max(self) -> float:
-        """
-        Exponent and significand of the largest representable number.
-        """
-        num_non_finites = self.num_high_nans + self.num_posinfs
-        if num_non_finites == 2**self.tSignificandBits:
-            # All-bits-one exponent field is full, value is in the
-            # binade below, so significand is 0xFFF..F
-            isig = 2**self.tSignificandBits - 1
-            emax = 2**self.expBits - 2
-        elif num_non_finites == 2 ** (self.tSignificandBits + 1):
-            # Top two binades are full, value is in the
-            # binade below them. Significand is still 0xFFF..F
-            isig = 2**self.tSignificandBits - 1
-            emax = 2**self.expBits - 3
-        else:
-            assert num_non_finites < 2**self.tSignificandBits
-            # All-bits-one exponent field is not full, value is in the
-            # final binade, so significand is 0xFFF..F - num_non_finites
-            isig = 2**self.tSignificandBits - 1 - num_non_finites
-            emax = 2**self.expBits - 1
-
-        if self.is_all_subnormal:
-            return 2 ** (emax - self.bias) * (isig * 2 ** (1 - self.tSignificandBits))
-        else:
-            return 2 ** (emax - self.bias) * (1.0 + isig * 2**-self.tSignificandBits)
-
-    @property
     def maxexp(self) -> int:
         """
         The smallest positive power of the base (2) that causes overflow.
