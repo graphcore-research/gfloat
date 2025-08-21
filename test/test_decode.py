@@ -247,14 +247,14 @@ p3109_formats_to_test = (
 
 @pytest.mark.parametrize("k,p", p3109_formats_to_test)
 def test_p3109_specials_signed(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p, Domain.Extended)
+    fi = format_info_p3109(k, p, Signedness.Signed, Domain.Extended)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
     assert fi.code_of_posinf == 2 ** (k - 1) - 1
     assert fi.code_of_neginf == 2**k - 1
     assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
 
-    fi = format_info_p3109(k, p, Domain.Finite)
+    fi = format_info_p3109(k, p, Signedness.Signed, Domain.Finite)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
     assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
@@ -266,7 +266,7 @@ def test_p3109_specials_signed(k: int, p: int) -> None:
 
 @pytest.mark.parametrize("k,p", p3109_formats_to_test)
 def test_p3109_specials_unsigned(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p, Domain.Extended, signedness=False)
+    fi = format_info_p3109(k, p, Signedness.Unsigned, Domain.Extended)
     assert fi.code_of_nan == 2**k - 1
     assert fi.code_of_zero == 0
     assert fi.code_of_posinf == 2**k - 2

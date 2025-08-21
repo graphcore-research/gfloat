@@ -45,6 +45,15 @@ class Domain(Enum):
     Extended = 2  #: Finite values and infinities
 
 
+class Signedness(Enum):
+    """
+    Enum for domain of values
+    """
+
+    Signed = 1  #: Positive and negative values
+    Unsigned = 2  #: Positive values only
+
+
 class FloatClass(Enum):
     """
     Enum for the classification of a FloatValue.
