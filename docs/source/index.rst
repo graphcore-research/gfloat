@@ -66,7 +66,7 @@ As well as block formats from |ocp_mx_link|.
 
 .. |p3109_link| raw:: html
 
-    <a href="https://github.com/P3109/Public/blob/main/Shared%20Reports/IEEE%20WG%20P3109%20Interim%20Report.pdf" target="_blank">
+    <a href="https://github.com/P3109/Public" target="_blank">
       IEEE P3109
     </a>
 
@@ -88,7 +88,8 @@ For fast implementations of these datatypes see, for example,
 `ml_dtypes <https://github.com/jax-ml/ml_dtypes>`_,
 `bitstring <https://github.com/scott-griffiths/bitstring>`_,
 `MX PyTorch Emulation Library <https://github.com/microsoft/microxcaling>`_,
-`APyTypes <https://apytypes.github.io/apytypes>`_.
+`APyTypes <https://apytypes.github.io/apytypes>`_,
+`TorchAO <https://github.com/pytorch/ao>`_.
 
 To get started with the library, we recommend perusing the notebooks,
 otherwise you may wish to jump straight into the API.
