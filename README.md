@@ -20,8 +20,6 @@ See https://gfloat.readthedocs.io for documentation, or dive into the notebooks 
 For example, here's a table from the [02-value-stats](docs/source/02-value-stats.ipynb) notebook:
 
 |name|B: Bits in the format|P: Precision in bits|E: Exponent field width in bits|Exact in float16?|Exact in float32?|0<x<1|1<x<Inf|minSubnormal|maxSubnormal|minNormal|maxNormal| |
-|--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |
-| name         |   B |   P |   E | rt16   | rt32   |   lt1 |   gt1 | minSubnormal   | maxSubnormal   | minNormal   | maxNormal     |
 |--------------|-----|-----|-----|--------|--------|-------|-------|----------------|----------------|-------------|---------------|
 | p3109_k3p2sf |   3 |   2 |   1 | True   | True   |     1 |     1 | 0.5            | 0.5            | 1           | 1.5           |
 | ocp_e2m1     |   4 |   2 |   2 | True   | True   |     1 |     5 | 0.5            | 0.5            | 1           | 6             |
