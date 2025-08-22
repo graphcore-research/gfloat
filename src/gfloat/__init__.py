@@ -14,7 +14,7 @@ from .encode import encode_float
 from .round_ndarray import round_ndarray
 from .encode_ndarray import encode_ndarray
 from .decode_ndarray import decode_ndarray
-from .types import FloatClass, FloatValue, FormatInfo, Domain, RoundMode
+from .types import FloatClass, FloatValue, FormatInfo, Signedness, Domain, RoundMode
 
 # Don't automatically import from .formats.
 # If the user wants them in their namespace, they can explicitly import
