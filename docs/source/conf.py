@@ -7,8 +7,8 @@
 project = "GFloat"
 copyright = "2024, Graphcore Ltd"
 author = "Andrew Fitzgibbon"
-release = "0.4"  # Set version in package.sh
-version = "0.4"  # Set version in package.sh
+release = "0.5.2"  # Set version in package.sh
+version = "0.5.2"  # Set version in package.sh
 
 # -- General configuration
 

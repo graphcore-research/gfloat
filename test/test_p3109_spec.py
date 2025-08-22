@@ -20,7 +20,11 @@ def spec_is_normal(fi: FormatInfo, x: int) -> bool:
     \end{cases}
   }
   """
-    if x in (fi.code_of_zero, fi.code_of_posinf, fi.code_of_neginf, fi.code_of_nan):
+    if x in (fi.code_of_zero, fi.code_of_nan):
+        return False
+    if fi.num_neginfs > 0 and x == fi.code_of_neginf:
+        return False
+    if fi.num_posinfs > 0 and x == fi.code_of_posinf:
         return False
 
     k_f = fi.k
@@ -52,8 +56,9 @@ _p3109_formats_to_test = (
 
 
 @pytest.mark.parametrize("k,p", _p3109_formats_to_test)
-def test_p3109_specials_signed(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p, Domain.Extended)
+@pytest.mark.parametrize("signedness", Signedness)
+def test_p3109_specials_signed(k: int, p: int, signedness: Signedness) -> None:
+    fi = format_info_p3109(k, p, signedness, Domain.Extended)
 
     for i in range(2**fi.k):
         fv = decode_float(fi, i)

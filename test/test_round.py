@@ -473,7 +473,7 @@ def test_round_ints(round_float: Callable, fi: FormatInfo, mldtype: Type) -> Non
         np.testing.assert_equal(val, mlval)
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 @pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
 def test_round_roundtrip(round_float: Callable, fi: FormatInfo) -> None:
     if fi.bits <= 8:

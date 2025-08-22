@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 from .block import BlockFormatInfo
-from .types import FormatInfo, Domain
+from .types import FormatInfo, Domain, Signedness
 
 import math
 
@@ -163,19 +163,17 @@ format_info_ocp_int8 = FormatInfo(
 def format_info_p3109(
     k: int,
     precision: int,
+    signedness: Signedness = Signedness.Signed,
     domain: Domain = Domain.Extended,
-    signedness: bool = True,
-    may25bias: bool = False,
 ) -> FormatInfo:
     """
-    FormatInfo for P3109 K{k} P{p} formats
+    FormatInfo for P3109 K{k} P{p} [su] [ef] formats
 
     Args:
       k (int): Format width in bits
       p (int): Precision in bits
+      signedness (Signedness): Signed (default) or Unsigned
       domain (Domain): Extended (default) or finite
-      signedness (bool): True (default) if signed, False if unsigned
-      may25bias (bool): False (default) for may25 bias
 
     Returns:
        FormatInfo class describing the format
@@ -189,18 +187,14 @@ def format_info_p3109(
 
     if k < 2:
         raise ValueError(f"P3109 format not defined for k={k} < 2")
-
+    is_signed = signedness == Signedness.Signed
+    sstr = "s" if is_signed else "u"
     estr = "e" if domain == Domain.Extended else "f"
-    sstr = "s" if signedness else "u"
-    v = "" if not may25bias else "mtfb_"
-    name = f"{v}p3109_k{k}p{precision}{estr}{sstr}"
-    if may25bias:
-        bias = math.floor(2 ** (k - precision - 1) - 1)
+    name = f"p3109_k{k}p{precision}{sstr}{estr}"
+    if is_signed:
+        bias = math.floor(2 ** (k - precision - 1))
     else:
-        if signedness:
-            bias = math.floor(2 ** (k - precision - 1))
-        else:
-            bias = 2 ** (k - precision)
+        bias = 2 ** (k - precision)
 
     return FormatInfo(
         name,
@@ -209,29 +203,40 @@ def format_info_p3109(
         bias=bias,
         has_nz=False,
         domain=domain,
-        num_high_nans=0 if signedness else 1,
+        num_high_nans=0 if is_signed else 1,
         has_subnormals=True,
-        is_signed=signedness,
+        is_signed=is_signed,
         is_twos_complement=False,
     )
 
 
 # Collections of formats
 _tiny_formats = [
+    format_info_p3109(3, 2, Signedness.Signed, Domain.Finite),
     format_info_ocp_e2m1,
-    format_info_p3109(4, 2, Domain.Finite),
+    format_info_p3109(4, 2, Signedness.Signed, Domain.Finite),
     format_info_ocp_e2m3,
     format_info_ocp_e3m2,
-    format_info_p3109(6, 3, Domain.Finite),
-    format_info_p3109(6, 4, Domain.Finite),
+    format_info_p3109(6, 3, Signedness.Signed, Domain.Finite),
+    format_info_p3109(6, 4, Signedness.Signed, Domain.Finite),
 ]
 
-p3109_binary8_formats = [
-    format_info_p3109(8, p, domain, signedness)
-    for p in (1, 3, 4)
-    for signedness in (True, False)
-    for domain in (Domain.Extended, Domain.Finite)
-]
+p3109_binary8_formats = (
+    [
+        format_info_p3109(8, 1, Signedness.Signed, Domain.Extended),
+        format_info_p3109(8, 1, Signedness.Unsigned, Domain.Extended),
+    ]
+    + [
+        format_info_p3109(8, p, signedness, domain)
+        for p in (3, 4)
+        for signedness in (Signedness.Signed, Signedness.Unsigned)
+        for domain in (Domain.Extended, Domain.Finite)
+    ]
+    + [
+        format_info_p3109(8, 7, Signedness.Signed, Domain.Finite),
+        format_info_p3109(8, 8, Signedness.Unsigned, Domain.Finite),
+    ]
+)
 
 _fp8_formats = [
     format_info_ocp_e4m3,
@@ -244,7 +249,7 @@ _fp16_formats = [
     format_info_bfloat16,
 ]
 
-all_formats = [
+sample_formats = [
     *_tiny_formats,
     *_fp8_formats,
     *_fp16_formats,

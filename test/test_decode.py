@@ -247,14 +247,14 @@ p3109_formats_to_test = (
 
 @pytest.mark.parametrize("k,p", p3109_formats_to_test)
 def test_p3109_specials_signed(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p, Domain.Extended)
+    fi = format_info_p3109(k, p, Signedness.Signed, Domain.Extended)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
     assert fi.code_of_posinf == 2 ** (k - 1) - 1
     assert fi.code_of_neginf == 2**k - 1
     assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
 
-    fi = format_info_p3109(k, p, Domain.Finite)
+    fi = format_info_p3109(k, p, Signedness.Signed, Domain.Finite)
     assert fi.code_of_nan == 2 ** (k - 1)
     assert fi.code_of_zero == 0
     assert decode_float(fi, 2 ** (k - 2)).fval == 1.0
@@ -266,7 +266,7 @@ def test_p3109_specials_signed(k: int, p: int) -> None:
 
 @pytest.mark.parametrize("k,p", p3109_formats_to_test)
 def test_p3109_specials_unsigned(k: int, p: int) -> None:
-    fi = format_info_p3109(k, p, Domain.Extended, signedness=False)
+    fi = format_info_p3109(k, p, Signedness.Unsigned, Domain.Extended)
     assert fi.code_of_nan == 2**k - 1
     assert fi.code_of_zero == 0
     assert fi.code_of_posinf == 2**k - 2
@@ -275,7 +275,7 @@ def test_p3109_specials_unsigned(k: int, p: int) -> None:
         fi.code_of_neginf
 
 
-@pytest.mark.parametrize("fi", all_formats)
+@pytest.mark.parametrize("fi", sample_formats)
 @pytest.mark.parametrize("method", methods)
 def test_specials_decode(method: str, fi: FormatInfo) -> None:
     dec = decode_for_method(method, fi)
@@ -335,7 +335,7 @@ def test_except(v: int) -> None:
         decode_float(format_info_binary16, v)
 
 
-@pytest.mark.parametrize("fi", [fi for fi in all_formats if fi.bits <= 8])
+@pytest.mark.parametrize("fi", [fi for fi in sample_formats if fi.bits <= 8])
 def test_dense(fi: FormatInfo) -> None:
     fvs = [decode_float(fi, i) for i in range(0, 2**fi.bits)]
 

@@ -45,6 +45,15 @@ class Domain(Enum):
     Extended = 2  #: Finite values and infinities
 
 
+class Signedness(Enum):
+    """
+    Enum for domain of values
+    """
+
+    Signed = 1  #: Positive and negative values
+    Unsigned = 2  #: Positive values only
+
+
 class FloatClass(Enum):
     """
     Enum for the classification of a FloatValue.
@@ -97,23 +106,23 @@ class FormatInfo:
     #: Exponent bias
     bias: int
 
+    #: Signedness: True if the format encodes negative numbers
+    is_signed: bool
+
+    #: Domain: Finite or Extended
+    #: If Extended, the non-nan value with the highest encoding for each sign (s)
+    #: is replaced by (s)Inf.
+    domain: Domain
+
     #: Set if format encodes -0 at (sgn=1,exp=0,significand=0).
     #: If False, that encoding decodes to a NaN labelled NaN_0
     has_nz: bool
-
-    #: Set if format includes +/- Infinity.
-    #: If set, the non-nan value with the highest encoding for each sign (s)
-    #: is replaced by (s)Inf.
-    domain: Domain
 
     #: Number of NaNs that are encoded in the highest encodings for each sign
     num_high_nans: int
 
     #: Set if format encodes subnormals
     has_subnormals: bool
-
-    #: Set if the format has a sign bit
-    is_signed: bool
 
     #: Set if the format uses two's complement encoding for the significand
     is_twos_complement: bool
@@ -125,22 +134,22 @@ class FormatInfo:
         precision: int,
         *,
         bias: int,
-        has_nz: bool,
+        is_signed: bool,
         domain: Domain,
+        has_nz: bool,
         num_high_nans: int,
         has_subnormals: bool,
-        is_signed: bool,
         is_twos_complement: bool,
     ):
         self.name = name
         self.k = k
         self.precision = precision
         self.bias = bias
-        self.has_nz = has_nz
+        self.is_signed = is_signed
         self.domain = domain
+        self.has_nz = has_nz
         self.num_high_nans = num_high_nans
         self.has_subnormals = has_subnormals
-        self.is_signed = is_signed
         self.is_twos_complement = is_twos_complement
 
     #: ## Derived values
@@ -223,34 +232,6 @@ class FormatInfo:
     def max(self) -> float:
         """
         The largest representable number.
-        """
-        num_non_finites = self.num_high_nans + self.num_posinfs
-        if num_non_finites == 2**self.tSignificandBits:
-            # All-bits-one exponent field is full, value is in the
-            # binade below, so significand is 0xFFF..F
-            isig = 2**self.tSignificandBits - 1
-            emax = 2**self.expBits - 2
-        elif num_non_finites == 2 ** (self.tSignificandBits + 1):
-            # Top two binades are full, value is in the
-            # binade below them. Significand is still 0xFFF..F
-            isig = 2**self.tSignificandBits - 1
-            emax = 2**self.expBits - 3
-        else:
-            assert num_non_finites < 2**self.tSignificandBits
-            # All-bits-one exponent field is not full, value is in the
-            # final binade, so significand is 0xFFF..F - num_non_finites
-            isig = 2**self.tSignificandBits - 1 - num_non_finites
-            emax = 2**self.expBits - 1
-
-        if self.is_all_subnormal:
-            return 2 ** (emax - self.bias) * (isig * 2 ** (1 - self.tSignificandBits))
-        else:
-            return 2 ** (emax - self.bias) * (1.0 + isig * 2**-self.tSignificandBits)
-
-    @property
-    def e_and_sig_of_max(self) -> float:
-        """
-        Exponent and significand of the largest representable number.
         """
         num_non_finites = self.num_high_nans + self.num_posinfs
         if num_non_finites == 2**self.tSignificandBits:
