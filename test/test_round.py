@@ -2,12 +2,25 @@
 
 from typing import Type, Callable, Iterator, Tuple
 
+import array_api_compat
 import ml_dtypes
 import numpy as np
 import pytest
 
 from gfloat import RoundMode, decode_float, decode_ndarray, round_float, round_ndarray
 from gfloat.formats import *
+
+from gfloat.round_ndarray import _rnito, _rnite
+
+
+@pytest.mark.parametrize("int_type", [np.int64, np.int16])
+def test_rnito_rnite(int_type):
+
+    xp = array_api_compat.array_namespace(np.array(0.0))
+    np.testing.assert_equal(_rnito(xp.array(3.5), int_type), 3.0)
+    np.testing.assert_equal(_rnito(xp.array(2.5), int_type), 3.0)
+    np.testing.assert_equal(_rnite(xp.array(3.5), int_type), 4.0)
+    np.testing.assert_equal(_rnite(xp.array(2.5), int_type), 2.0)
 
 
 def rnd_scalar(

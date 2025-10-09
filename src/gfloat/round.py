@@ -12,6 +12,27 @@ def _isodd(v: int) -> bool:
     return v & 0x1 == 1
 
 
+def _iseven(v: int) -> bool:
+    return v & 0x1 == 0
+
+
+def _rnitp(x: float, pred) -> int:
+    """Round to nearest integer, ties to predicate"""
+    floored = math.floor(x)
+    should_round_away = (x > floored + 0.5) | ((x == floored + 0.5) & ~pred(floored))
+    return floored + int(should_round_away)
+
+
+def _rnite(x: float) -> int:
+    """Round to nearest integer, ties to even"""
+    return _rnitp(x, _iseven)
+
+
+def _rnito(x: float) -> int:
+    """Round to nearest integer, ties to odd"""
+    return _rnitp(x, _isodd)
+
+
 def round_float(
     fi: FormatInfo,
     v: float,
@@ -106,28 +127,28 @@ def round_float(
                 should_round_away = delta + 0.5 >= 1.0
             case RoundMode.TiesToEven:
                 should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
-            case RoundMode.Stochastic:
-                ## RTNE delta to srbits
-                d = delta * 2.0**srnumbits
-                floord = np.floor(d).astype(np.int64)
-                d = floord + (
-                    (d - floord > 0.5) or ((d - floord == 0.5) and _isodd(floord))
-                )
 
-                should_round_away = d + srbits >= 2.0**srnumbits
-            case RoundMode.StochasticOdd:
-                ## RTNE delta to srbits
-                d = delta * 2.0**srnumbits
-                floord = np.floor(d).astype(np.int64)
-                d = floord + (
-                    (d - floord > 0.5) or ((d - floord == 0.5) and not _isodd(floord))
-                )
-
-                should_round_away = d + srbits >= 2.0**srnumbits
-            case RoundMode.StochasticFast:
-                should_round_away = delta + (0.5 + srbits) * 2.0**-srnumbits >= 1.0
             case RoundMode.StochasticFastest:
-                should_round_away = delta + srbits * 2.0**-srnumbits >= 1.0
+                assert srbits is not None
+                exp2r = 2**srnumbits
+                should_round_away = math.floor(delta * exp2r) + srbits >= exp2r
+
+            case RoundMode.StochasticFast:
+                assert srbits is not None
+                exp2rp1 = 2 ** (1 + srnumbits)
+                should_round_away = (
+                    math.floor(delta * exp2rp1) + (2 * srbits + 1) >= exp2rp1
+                )
+
+            case RoundMode.Stochastic:
+                assert srbits is not None
+                exp2r = 2**srnumbits
+                should_round_away = _rnite(delta * exp2r) + srbits >= exp2r
+
+            case RoundMode.StochasticOdd:
+                assert srbits is not None
+                exp2r = 2**srnumbits
+                should_round_away = _rnito(delta * exp2r) + srbits >= exp2r
 
         if should_round_away:
             # This may increase isignificand to 2**p,

@@ -7,8 +7,38 @@ import numpy.typing as npt
 import array_api_compat
 
 
+def _ifloor(x, int_type):
+    xp = array_api_compat.array_namespace(x)
+    floored = xp.floor(x)
+    return xp.astype(floored, int_type)
+
+
 def _isodd(v: npt.NDArray) -> npt.NDArray:
     return v & 0x1 == 1
+
+
+def _iseven(v: npt.NDArray) -> npt.NDArray:
+    return v & 0x1 == 0
+
+
+def _rnitp(x, pred, int_type):
+    """Round to nearest integer, ties to predicate"""
+    xp = array_api_compat.array_namespace(x)
+    floored = xp.floor(x)
+    ifloored = xp.astype(floored, int_type)
+
+    should_round_away = (x > floored + 0.5) | ((x == floored + 0.5) & ~pred(ifloored))
+    return ifloored + xp.astype(should_round_away, int_type)
+
+
+def _rnite(x, int_type):
+    """Round to nearest integer, ties to even"""
+    return _rnitp(x, _iseven, int_type)
+
+
+def _rnito(x, int_type):
+    """Round to nearest integer, ties to odd"""
+    return _rnitp(x, _isodd, int_type)
 
 
 def _ldexp(v: npt.NDArray, s: npt.NDArray) -> npt.NDArray:
@@ -95,12 +125,6 @@ def round_ndarray(
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
 
-    def to_int(x: npt.NDArray) -> npt.NDArray:
-        return xp.astype(x, int_type)
-
-    def to_float(x: npt.NDArray) -> npt.NDArray:
-        return xp.astype(x, v.dtype)
-
     expval = _frexp(absv_masked)[1] - 1
 
     if fi.has_subnormals:
@@ -110,7 +134,7 @@ def round_ndarray(
     fsignificand = _ldexp(absv_masked, -expval)
 
     floorfsignificand = xp.floor(fsignificand)
-    isignificand = to_int(floorfsignificand)
+    isignificand = xp.astype(floorfsignificand, int_type)
     delta = fsignificand - floorfsignificand
 
     if fi.precision > 1:
@@ -134,41 +158,31 @@ def round_ndarray(
         case RoundMode.TiesToEven:
             should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
 
-        case RoundMode.Stochastic:
+        case RoundMode.StochasticFastest:
             assert srbits is not None
-            ## RTNE delta to srbits
-            d = delta * 2.0 ** float(srnumbits)
-            floord = to_int(xp.floor(d))
-            dd = d - xp.floor(d)
-            should_round_away_tne = (dd > 0.5) | ((dd == 0.5) & _isodd(floord))
-            drnd = floord + xp.astype(should_round_away_tne, floord.dtype)
-
-            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
-
-        case RoundMode.StochasticOdd:
-            assert srbits is not None
-            ## RTNO delta to srbits
-            d = delta * 2.0 ** float(srnumbits)
-            floord = to_int(xp.floor(d))
-            dd = d - xp.floor(d)
-            should_round_away_tno = (dd > 0.5) | ((dd == 0.5) & ~_isodd(floord))
-            drnd = floord + xp.astype(should_round_away_tno, floord.dtype)
-
-            should_round_away = drnd + srbits >= int(2.0 ** float(srnumbits))
+            exp2r = 2**srnumbits
+            should_round_away = _ifloor(delta * exp2r, int_type) + srbits >= exp2r
 
         case RoundMode.StochasticFast:
             assert srbits is not None
+            exp2rp1 = 2 ** (1 + srnumbits)
             should_round_away = (
-                delta + to_float(2 * srbits + 1) * 2.0 ** -float(1 + srnumbits) >= 1.0
+                _ifloor(delta * exp2rp1, int_type) + (2 * srbits + 1) >= exp2rp1
             )
 
-        case RoundMode.StochasticFastest:
+        case RoundMode.Stochastic:
             assert srbits is not None
-            should_round_away = delta + to_float(srbits) * 2.0**-srnumbits >= 1.0
+            exp2r = 2**srnumbits
+            should_round_away = _rnite(delta * exp2r, int_type) + srbits >= exp2r
+
+        case RoundMode.StochasticOdd:
+            assert srbits is not None
+            exp2r = 2**srnumbits
+            should_round_away = _rnito(delta * exp2r, int_type) + srbits >= exp2r
 
     isignificand = xp_where(should_round_away, isignificand + 1, isignificand)
 
-    fresult = _ldexp(to_float(isignificand), expval)
+    fresult = _ldexp(xp.astype(isignificand, v.dtype), expval)
 
     result = xp_where(finite_nonzero, fresult, absv)
 
