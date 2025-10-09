@@ -124,6 +124,7 @@ def round_ndarray(
     absv_masked = xp_where(finite_nonzero, absv, 1.0)
 
     int_type = xp.int64 if fi.k > 8 or srnumbits > 8 else xp.int16
+    ifloor = lambda x: _ifloor(x, int_type)
 
     expval = _frexp(absv_masked)[1] - 1
 
@@ -161,14 +162,12 @@ def round_ndarray(
         case RoundMode.StochasticFastest:
             assert srbits is not None
             exp2r = 2**srnumbits
-            should_round_away = _ifloor(delta * exp2r, int_type) + srbits >= exp2r
+            should_round_away = ifloor(delta * exp2r) + srbits >= exp2r
 
         case RoundMode.StochasticFast:
             assert srbits is not None
             exp2rp1 = 2 ** (1 + srnumbits)
-            should_round_away = (
-                _ifloor(delta * exp2rp1, int_type) + (2 * srbits + 1) >= exp2rp1
-            )
+            should_round_away = ifloor(delta * exp2rp1) + (2 * srbits + 1) >= exp2rp1
 
         case RoundMode.Stochastic:
             assert srbits is not None
