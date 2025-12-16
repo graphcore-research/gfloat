@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!bash
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 PATTERN='Copyright \(c\) 202[0-9] Graphcore Ltd\. +All rights reserved\.'
