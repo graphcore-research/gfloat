@@ -1,13 +1,13 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 from .types import FormatInfo, RoundMode, Domain
 
 import numpy.typing as npt
 import array_api_compat
 
 
-def _ifloor(x, int_type):
+def _ifloor(x: npt.NDArray, int_type: npt.DTypeLike) -> npt.NDArray:
     xp = array_api_compat.array_namespace(x)
     floored = xp.floor(x)
     return xp.astype(floored, int_type)
@@ -21,7 +21,7 @@ def _iseven(v: npt.NDArray) -> npt.NDArray:
     return v & 0x1 == 0
 
 
-def _rnitp(x, pred, int_type):
+def _rnitp(x: npt.NDArray, pred: Callable[[npt.NDArray], npt.NDArray], int_type: npt.DTypeLike) -> npt.NDArray:
     """Round to nearest integer, ties to predicate"""
     xp = array_api_compat.array_namespace(x)
     floored = xp.floor(x)
@@ -31,12 +31,12 @@ def _rnitp(x, pred, int_type):
     return ifloored + xp.astype(should_round_away, int_type)
 
 
-def _rnite(x, int_type):
+def _rnite(x: npt.NDArray, int_type: npt.DTypeLike) -> npt.NDArray:
     """Round to nearest integer, ties to even"""
     return _rnitp(x, _iseven, int_type)
 
 
-def _rnito(x, int_type):
+def _rnito(x: npt.NDArray, int_type: npt.DTypeLike) -> npt.NDArray:
     """Round to nearest integer, ties to odd"""
     return _rnitp(x, _isodd, int_type)
 

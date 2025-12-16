@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+from typing import Callable
 
 import math
 
@@ -16,7 +17,7 @@ def _iseven(v: int) -> bool:
     return v & 0x1 == 0
 
 
-def _rnitp(x: float, pred) -> int:
+def _rnitp(x: float, pred: Callable) -> int:
     """Round to nearest integer, ties to predicate"""
     floored = math.floor(x)
     should_round_away = (x > floored + 0.5) | ((x == floored + 0.5) & ~pred(floored))
