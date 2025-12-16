@@ -15,7 +15,7 @@ from gfloat.round_ndarray import _rnito, _rnite
 
 
 @pytest.mark.parametrize("int_type", [np.int64, np.int16])
-def test_rnito_rnite(int_type : npt.DTypeLike) -> None:
+def test_rnito_rnite(int_type: npt.DTypeLike) -> None:
 
     xp = array_api_compat.array_namespace(np.array(0.0))
     np.testing.assert_equal(_rnito(xp.array(3.5), int_type), 3.0)

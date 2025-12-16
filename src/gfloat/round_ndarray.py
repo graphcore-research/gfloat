@@ -21,7 +21,9 @@ def _iseven(v: npt.NDArray) -> npt.NDArray:
     return v & 0x1 == 0
 
 
-def _rnitp(x: npt.NDArray, pred: Callable[[npt.NDArray], npt.NDArray], int_type: npt.DTypeLike) -> npt.NDArray:
+def _rnitp(
+    x: npt.NDArray, pred: Callable[[npt.NDArray], npt.NDArray], int_type: npt.DTypeLike
+) -> npt.NDArray:
     """Round to nearest integer, ties to predicate"""
     xp = array_api_compat.array_namespace(x)
     floored = xp.floor(x)
