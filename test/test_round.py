@@ -34,7 +34,6 @@ def test_rnito_rnite(int_type: npt.DTypeLike) -> None:
     np.testing.assert_equal(_rnito(xp.array(-2.5), int_type), -3.0)
 
 
-
 def rnd_scalar(
     fi: FormatInfo, v: float, mode: RoundMode = RoundMode.TiesToEven, sat: bool = False
 ) -> float:
