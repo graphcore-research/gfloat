@@ -18,10 +18,21 @@ from gfloat.round_ndarray import _rnito, _rnite
 def test_rnito_rnite(int_type: npt.DTypeLike) -> None:
 
     xp = array_api_compat.array_namespace(np.array(0.0))
-    np.testing.assert_equal(_rnito(xp.array(3.5), int_type), 3.0)
-    np.testing.assert_equal(_rnito(xp.array(2.5), int_type), 3.0)
+
     np.testing.assert_equal(_rnite(xp.array(3.5), int_type), 4.0)
     np.testing.assert_equal(_rnite(xp.array(2.5), int_type), 2.0)
+    np.testing.assert_equal(_rnite(xp.array(0.5), int_type), 0.0)
+    np.testing.assert_equal(_rnite(xp.array(-0.5), int_type), 0.0)
+    np.testing.assert_equal(_rnite(xp.array(-2.5), int_type), -2.0)
+    np.testing.assert_equal(_rnite(xp.array(-3.5), int_type), -4.0)
+
+    np.testing.assert_equal(_rnito(xp.array(3.5), int_type), 3.0)
+    np.testing.assert_equal(_rnito(xp.array(2.5), int_type), 3.0)
+    np.testing.assert_equal(_rnito(xp.array(0.5), int_type), 1.0)
+    np.testing.assert_equal(_rnito(xp.array(-0.5), int_type), -1.0)
+    np.testing.assert_equal(_rnito(xp.array(-3.5), int_type), -3.0)
+    np.testing.assert_equal(_rnito(xp.array(-2.5), int_type), -3.0)
+
 
 
 def rnd_scalar(
