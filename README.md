@@ -7,7 +7,7 @@ handling various current and proposed floating point types:
 
  - [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754): Binary16, Binary32
  - [OCP Float8](https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-06-20-pdf): E5M2, E4M3
- - [IEEE WG P3109](https://github.com/P3109/Public/blob/main/Shared%20Reports/IEEE%20WG%20P3109%20Interim%20Report.pdf): P3109_{K}p{P} for K > 2, and 1 <= P < K.
+ - [IEEE WG P3109](https://github.com/P3109/Public/blob/main/IEEE%20WG%20P3109%20Interim%20Report%20(latest).pdf): P3109_{K}p{P} for K > 2, and 1 <= P < K.
  - [OCP MX Formats](https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf): E2M1, M2M3, E3M2, E8M0, INT8, and the MX block formats.
 
 The library favours readability and extensibility over speed (although the *_ndarray functions are reasonably fast for large arrays, see the [benchmarking  notebook](docs/source/04-benchmark.ipynb)).
