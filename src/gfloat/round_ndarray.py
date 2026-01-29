@@ -161,6 +161,9 @@ def round_ndarray(
         case RoundMode.TiesToEven:
             should_round_away = (delta > 0.5) | ((delta == 0.5) & code_is_odd)
 
+        case RoundMode.ToOdd:
+            should_round_away = (delta > 0) & ~code_is_odd
+
         case RoundMode.StochasticFastest:
             assert srbits is not None
             exp2r = 2**srnumbits
