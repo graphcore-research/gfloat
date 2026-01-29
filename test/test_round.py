@@ -81,7 +81,7 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi, 224.1, RoundMode.ToOdd) == np.inf
 
     fi_binary4p2se = format_info_p3109(4, 2, Signedness.Signed, Domain.Extended)
-    # †op 3 are 1.0, 1.5, 2.0; even, odd, even
+    # Top three values are 1.0, 1.5, 2.0; even, odd, even
     assert fi_binary4p2se.max == 2.0
     assert not _isodd(fi_binary4p2se.code_of_max)
 
@@ -93,7 +93,7 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi_binary4p2se, 2.01, RoundMode.ToOdd) == np.inf
 
     fi_binary4p2ue = format_info_p3109(4, 2, Signedness.Unsigned, Domain.Extended)
-    # †op 2 are 4.0, 6.0, then would be 8.0; even, odd, even
+    # Top two values are 4.0, 6.0, then would be 8.0; even, odd, even
     assert fi_binary4p2ue.max == 6.0
     assert _isodd(fi_binary4p2ue.code_of_max)
 
