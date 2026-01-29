@@ -24,6 +24,7 @@ class RoundMode(Enum):
     may be some efficiency advantage in using StochasticFast or StochasticFastest.
 
     """
+
     TowardZero = auto()  #: Return the largest :math:`r` such that :math:`|r| \le |v|`
     TowardNegative = auto()  #: Return the largest :math:`r` such that :math:`r \le v`
     TowardPositive = auto()  #: Return the smallest :math:`r` such that :math:`r \ge v`

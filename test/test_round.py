@@ -89,7 +89,7 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi_binary4p2se, 1.01, RoundMode.ToOdd) == 1.5
     assert round_float(fi_binary4p2se, 1.5, RoundMode.ToOdd) == 1.5
     assert round_float(fi_binary4p2se, 1.99, RoundMode.ToOdd) == 1.5
-    assert round_float(fi_binary4p2se, 2.0, RoundMode.ToOdd) == 2.0 # max
+    assert round_float(fi_binary4p2se, 2.0, RoundMode.ToOdd) == 2.0  # max
     assert round_float(fi_binary4p2se, 2.01, RoundMode.ToOdd) == np.inf
 
     fi_binary4p2ue = format_info_p3109(4, 2, Signedness.Unsigned, Domain.Extended)
@@ -99,13 +99,13 @@ def test_round_p3109(round_float: Callable) -> None:
 
     assert round_float(fi_binary4p2ue, 4.00, RoundMode.ToOdd) == 4.0
     assert round_float(fi_binary4p2ue, 4.01, RoundMode.ToOdd) == 6.0
-    assert round_float(fi_binary4p2ue, 6.0, RoundMode.ToOdd) == 6.0 # max
+    assert round_float(fi_binary4p2ue, 6.0, RoundMode.ToOdd) == 6.0  # max
     assert round_float(fi_binary4p2ue, 6.01, RoundMode.ToOdd) == 6.0
     assert round_float(fi_binary4p2ue, 7.99, RoundMode.ToOdd) == 6.0
-    assert round_float(fi_binary4p2ue, 8.0, RoundMode.ToOdd) == np.inf # max + 1 ulp
+    assert round_float(fi_binary4p2ue, 8.0, RoundMode.ToOdd) == np.inf  # max + 1 ulp
 
     fi_binary4p2uf = format_info_p3109(4, 2, Signedness.Unsigned, Domain.Finite)
-    # top 3 are 4.0, 6.0, 8.0; even, odd, even; sat must be true
+    # top 3 are 4.0, 6.0, 8.0; even, odd, even; sat must be true
     assert fi_binary4p2uf.max == 8.0
     assert not _isodd(fi_binary4p2uf.code_of_max)
 
@@ -115,6 +115,7 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi_binary4p2uf, 7.99, RoundMode.ToOdd, True) == 6.0
     assert round_float(fi_binary4p2uf, 8.0, RoundMode.ToOdd, True) == 8.0
     assert round_float(fi_binary4p2uf, 8.01, RoundMode.ToOdd, True) == 8.0
+
 
 p4min = 2**-10  # smallest subnormal in 8p4
 
