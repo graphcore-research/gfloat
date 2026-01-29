@@ -50,6 +50,8 @@ def rnd_array(
 @pytest.mark.parametrize("round_float", (rnd_scalar, rnd_array))
 def test_round_p3109(round_float: Callable) -> None:
     fi = format_info_p3109(8, 4)
+
+    assert fi.max == 224.0
     assert round_float(fi, 0.0068359375) == 0.0068359375
     assert round_float(fi, 0.0029296875) == 0.0029296875
     assert round_float(fi, 0.0078125) == 0.0078125
@@ -72,6 +74,47 @@ def test_round_p3109(round_float: Callable) -> None:
     assert round_float(fi, -232.0, RoundMode.TowardPositive) == -224.0
 
     assert round_float(fi, 232.1) == np.inf
+
+    def _isodd(v: int) -> bool:
+        return v & 0x1 == 1
+
+    assert round_float(fi, 224.1, RoundMode.ToOdd) == np.inf
+
+    fi_binary4p2se = format_info_p3109(4, 2, Signedness.Signed, Domain.Extended)
+    # Top three values are 1.0, 1.5, 2.0; even, odd, even
+    assert fi_binary4p2se.max == 2.0
+    assert not _isodd(fi_binary4p2se.code_of_max)
+
+    assert round_float(fi_binary4p2se, 1.0, RoundMode.ToOdd) == 1.0
+    assert round_float(fi_binary4p2se, 1.01, RoundMode.ToOdd) == 1.5
+    assert round_float(fi_binary4p2se, 1.5, RoundMode.ToOdd) == 1.5
+    assert round_float(fi_binary4p2se, 1.99, RoundMode.ToOdd) == 1.5
+    assert round_float(fi_binary4p2se, 2.0, RoundMode.ToOdd) == 2.0  # max
+    assert round_float(fi_binary4p2se, 2.01, RoundMode.ToOdd) == np.inf
+
+    fi_binary4p2ue = format_info_p3109(4, 2, Signedness.Unsigned, Domain.Extended)
+    # Top two values are 4.0, 6.0, then would be 8.0; even, odd, even
+    assert fi_binary4p2ue.max == 6.0
+    assert _isodd(fi_binary4p2ue.code_of_max)
+
+    assert round_float(fi_binary4p2ue, 4.00, RoundMode.ToOdd) == 4.0
+    assert round_float(fi_binary4p2ue, 4.01, RoundMode.ToOdd) == 6.0
+    assert round_float(fi_binary4p2ue, 6.0, RoundMode.ToOdd) == 6.0  # max
+    assert round_float(fi_binary4p2ue, 6.01, RoundMode.ToOdd) == 6.0
+    assert round_float(fi_binary4p2ue, 7.99, RoundMode.ToOdd) == 6.0
+    assert round_float(fi_binary4p2ue, 8.0, RoundMode.ToOdd) == np.inf  # max + 1 ulp
+
+    fi_binary4p2uf = format_info_p3109(4, 2, Signedness.Unsigned, Domain.Finite)
+    # top 3 are 4.0, 6.0, 8.0; even, odd, even; sat must be true
+    assert fi_binary4p2uf.max == 8.0
+    assert not _isodd(fi_binary4p2uf.code_of_max)
+
+    assert round_float(fi_binary4p2uf, 3.99, RoundMode.ToOdd, True) == 3.0
+    assert round_float(fi_binary4p2uf, 4.01, RoundMode.ToOdd, True) == 6.0
+    assert round_float(fi_binary4p2uf, 6.01, RoundMode.ToOdd, True) == 6.0
+    assert round_float(fi_binary4p2uf, 7.99, RoundMode.ToOdd, True) == 6.0
+    assert round_float(fi_binary4p2uf, 8.0, RoundMode.ToOdd, True) == 8.0
+    assert round_float(fi_binary4p2uf, 8.01, RoundMode.ToOdd, True) == 8.0
 
 
 p4min = 2**-10  # smallest subnormal in 8p4
@@ -167,6 +210,26 @@ p4min = 2**-10  # smallest subnormal in 8p4
                 (-64.0, -64.0),
                 (-63.0, -64.0),
                 (-62.0, -64.0),
+                (-61.0, -60.0),
+                (-58.0, -60.0),
+            ),
+        ),
+        (
+            RoundMode.ToOdd,
+            (
+                (p4min, p4min),
+                (p4min / 4, p4min),
+                (p4min / 2, p4min),
+                (-p4min, -p4min),
+                (-p4min / 4, -p4min),
+                (-p4min / 2, -p4min),
+                (64.0, 64.0),
+                (63.0, 60.0),
+                (62.0, 60.0),
+                (61.0, 60.0),
+                (-64.0, -64.0),
+                (-63.0, -60.0),
+                (-62.0, -60.0),
                 (-61.0, -60.0),
                 (-58.0, -60.0),
             ),
@@ -309,6 +372,32 @@ p4maxhalfup = (p4max + p4maxup) / 2
         ),
         (
             (RoundMode.TiesToAway, False),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, np.inf),
+                (p4maxup, np.inf),
+                (np.inf, np.inf),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -np.inf),
+                (-p4maxup, -np.inf),
+                (-np.inf, -np.inf),
+            ),
+        ),
+        (
+            (RoundMode.ToOdd, True),
+            (
+                (p4max, p4max),
+                (p4maxhalfup, p4max),
+                (p4maxup, p4max),
+                (np.inf, p4max),
+                (-p4max, -p4max),
+                (-p4maxhalfup, -p4max),
+                (-p4maxup, -p4max),
+                (-np.inf, -p4max),
+            ),
+        ),
+        (
+            (RoundMode.ToOdd, False),
             (
                 (p4max, p4max),
                 (p4maxhalfup, np.inf),
