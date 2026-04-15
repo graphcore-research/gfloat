@@ -21,6 +21,7 @@ fi
 if [[ "${GFLOAT_LINUX386_REBUILD:-0}" == "1" ]] || ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
     echo "Building test image ${IMAGE} for ${PLATFORM} (cached after first build)"
     docker buildx build \
+    --progress=plain \
     --platform "${PLATFORM}" \
     --load \
     -t "${IMAGE}" \
