@@ -8,6 +8,11 @@ pip install -e .
 # Install packages for testing - will install JAX, Torch, etc.
 pip install -r requirements-dev.txt
 pytest .
+
+# Full unit test suite (test/) on 32-bit linux/386 in Docker
+bash etc/test-linux-386.sh
+# Rebuild the cached linux/386 test image when dependencies change
+GFLOAT_LINUX386_REBUILD=1 bash etc/test-linux-386.sh
 ```
 
 #### Pushing

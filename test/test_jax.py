@@ -1,9 +1,10 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 import numpy as np
+import pytest
 
-import jax
-import jax.numpy as jnp
+jax = pytest.importorskip("jax")
+jnp = pytest.importorskip("jax.numpy")
 
 import ml_dtypes
 

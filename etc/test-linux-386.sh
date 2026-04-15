@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2024 Graphcore Ltd. All rights reserved.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+IMAGE="gfloat-linux-386:py310-uv"
+PLATFORM="linux/386"
+DOCKERFILE="etc/linux-386.Dockerfile"
+
+echo "Running full unit tests in Docker (${PLATFORM})"
+
+if ! docker info >/dev/null 2>&1; then
+    echo "Docker daemon is not running; start Docker and rerun this script." >&2
+    exit 1
+fi
+
+if [[ "${GFLOAT_LINUX386_REBUILD:-0}" == "1" ]] || ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
+    echo "Building test image ${IMAGE} for ${PLATFORM} (cached after first build)"
+    docker buildx build \
+    --platform "${PLATFORM}" \
+    --load \
+    -t "${IMAGE}" \
+    -f "${REPO_DIR}/${DOCKERFILE}" \
+    "${REPO_DIR}"
+fi
+
+docker run --rm \
+--platform "${PLATFORM}" \
+-v "${REPO_DIR}:/work" \
+-w /work \
+"${IMAGE}" \
+bash -lc '
+    set -euo pipefail
+    export PYTHONPATH="/work/src${PYTHONPATH:+:${PYTHONPATH}}"
+    python -m pytest -vv test
+'

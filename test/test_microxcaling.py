@@ -5,14 +5,14 @@ import pytest
 import numpy as np
 from numpy.typing import NDArray
 
-import torch
+torch = pytest.importorskip("torch")
+mx_tensor_module = pytest.importorskip("torchao.prototype.mx_formats.mx_tensor")
+mx_constants_module = pytest.importorskip("torchao.prototype.mx_formats.constants")
 
-from torchao.prototype.mx_formats.mx_tensor import MXTensor
-from torchao.prototype.mx_formats.constants import (
-    DTYPE_FP6_E2M3,
-    DTYPE_FP6_E3M2,
-    DTYPE_FP4,
-)
+MXTensor = mx_tensor_module.MXTensor
+DTYPE_FP6_E2M3 = mx_constants_module.DTYPE_FP6_E2M3
+DTYPE_FP6_E3M2 = mx_constants_module.DTYPE_FP6_E3M2
+DTYPE_FP4 = mx_constants_module.DTYPE_FP4
 
 from gfloat import (
     BlockFormatInfo,

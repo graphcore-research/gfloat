@@ -3,7 +3,8 @@
 import pytest
 
 import numpy.typing as npt
-import torch
+
+torch = pytest.importorskip("torch")
 
 from gfloat import FormatInfo, RoundMode, round_ndarray
 from gfloat.formats import format_info_ocp_e5m2, format_info_p3109
