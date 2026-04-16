@@ -10,9 +10,14 @@ pip install -r requirements-dev.txt
 pytest .
 
 # Run tests on 32-bit linux/386 in Docker
+# Build image if missing, then run tests
 bash etc/test-linux-386.sh
-# Rebuild the cached linux/386 test image when dependencies change
-GFLOAT_LINUX386_REBUILD=1 bash etc/test-linux-386.sh
+# Build image if missing
+bash etc/test-linux-386.sh load
+# Force rebuild image
+bash etc/test-linux-386.sh build
+# Run tests only (requires existing image)
+bash etc/test-linux-386.sh run
 ```
 
 #### Pushing
