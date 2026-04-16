@@ -24,7 +24,7 @@ bash etc/test-linux-386.sh run
 
 #### Packaging for pypi release:
 
-Edit version number in
+Edit version number in etc/package.sh and run
 ```sh
 sh etc/package.sh
 ```
