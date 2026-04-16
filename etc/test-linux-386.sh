@@ -20,6 +20,16 @@ usage() {
     echo "  (no arg) Build image if missing, then run tests"
 }
 
+build_image() {
+    docker buildx build \
+    --progress=plain \
+    --platform "${PLATFORM}" \
+    --load \
+    -t "${IMAGE}" \
+    -f "${REPO_DIR}/${DOCKERFILE}" \
+    "${REPO_DIR}"
+}
+
 if [[ "${MODE}" != "all" && "${MODE}" != "load" && "${MODE}" != "build" && "${MODE}" != "run" ]]; then
     usage
     exit 2
@@ -34,25 +44,13 @@ fi
 
 if [[ "${MODE}" == "build" ]]; then
     echo "Force-building test image ${IMAGE} for ${PLATFORM}"
-    docker buildx build \
-    --progress=plain \
-    --platform "${PLATFORM}" \
-    --load \
-    -t "${IMAGE}" \
-    -f "${REPO_DIR}/${DOCKERFILE}" \
-    "${REPO_DIR}"
+    build_image
 fi
 
 if [[ "${MODE}" == "load" || "${MODE}" == "all" ]]; then
     if ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
         echo "Building test image ${IMAGE} for ${PLATFORM} (cached after first build)"
-        docker buildx build \
-        --progress=plain \
-        --platform "${PLATFORM}" \
-        --load \
-        -t "${IMAGE}" \
-        -f "${REPO_DIR}/${DOCKERFILE}" \
-        "${REPO_DIR}"
+        build_image
     fi
 fi
 

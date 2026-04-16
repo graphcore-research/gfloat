@@ -69,9 +69,13 @@ jobs:
             docker load -i /tmp/gfloat-linux-386-image.tar
           fi
 
+      - name: Ensure linux/386 test image is available
+        run: |
+          bash etc/test-linux-386.sh load
+
       - name: Run full unit tests on linux/386
         run: |
-          bash etc/test-linux-386.sh
+          bash etc/test-linux-386.sh run
 
       - name: Save linux/386 docker image to cache path
         if: always()
