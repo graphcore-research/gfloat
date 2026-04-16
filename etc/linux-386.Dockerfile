@@ -8,10 +8,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN NINJAFLAGS='-v' python -m pip install -v --no-build-isolation --no-cache-dir \
-    "numpy<2" \
+RUN NINJAFLAGS='-v' python -m pip install -v --no-cache-dir \
+    "numpy<2"
+
+RUN NINJAFLAGS='-v' python -m pip install -v --no-build-isolation --no-deps --no-cache-dir \
+    ml_dtypes
+
+RUN NINJAFLAGS='-v' python -m pip install -v --no-cache-dir \
     psutil \
-    ml_dtypes \
     pytest \
     nbval \
     array-api-compat \
