@@ -72,6 +72,6 @@ if [[ "${MODE}" == "run" || "${MODE}" == "all" ]]; then
         echo "Image ${IMAGE} not found. Run 'bash etc/test-linux-386.sh load' first." >&2
         exit 1
     fi
-    
+
     run_tests
 fi
