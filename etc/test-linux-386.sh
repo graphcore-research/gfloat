@@ -30,6 +30,19 @@ build_image() {
     "${REPO_DIR}"
 }
 
+run_tests() {
+    docker run --rm \
+    --platform "${PLATFORM}" \
+    -v "${REPO_DIR}:/work" \
+    -w /work \
+    "${IMAGE}" \
+    bash -lc '
+        set -euo pipefail
+        export PYTHONPATH="/work/src${PYTHONPATH:+:${PYTHONPATH}}"
+        python -m pytest -vv test
+    '
+}
+
 if [[ "${MODE}" != "all" && "${MODE}" != "load" && "${MODE}" != "build" && "${MODE}" != "run" ]]; then
     usage
     exit 2
@@ -59,15 +72,6 @@ if [[ "${MODE}" == "run" || "${MODE}" == "all" ]]; then
         echo "Image ${IMAGE} not found. Run 'bash etc/test-linux-386.sh load' first." >&2
         exit 1
     fi
-
-    docker run --rm \
-    --platform "${PLATFORM}" \
-    -v "${REPO_DIR}:/work" \
-    -w /work \
-    "${IMAGE}" \
-    bash -lc '
-        set -euo pipefail
-        export PYTHONPATH="/work/src${PYTHONPATH:+:${PYTHONPATH}}"
-        python -m pytest -vv test
-    '
+    
+    run_tests
 fi
