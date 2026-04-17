@@ -25,7 +25,7 @@ def test_array_api(fi: FormatInfo, rnd: RoundMode, sat: bool) -> None:
     a = xp.asarray(a0)
 
     srnumbits = 32
-    srbits0 = np.random.randint(0, 2**srnumbits, a.shape)
+    srbits0 = np.random.randint(0, 2**srnumbits, a.shape, dtype=np.int64)
     srbits = xp.asarray(srbits0)
 
     round_ndarray(fi, a, rnd, sat, srbits=srbits, srnumbits=srnumbits)  # type: ignore

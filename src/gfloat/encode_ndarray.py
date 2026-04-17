@@ -66,11 +66,11 @@ def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
         biased_exp = exp.astype(np.int64) + (fi.bias - 1)
         subnormal_mask = (biased_exp < 1) & fi.has_subnormals
 
-        biased_exp_safe = np.where(subnormal_mask, biased_exp, 0)
+        biased_exp_safe = np.where(subnormal_mask, biased_exp, 0).astype(np.int32)
         tsig = np.where(subnormal_mask, np.ldexp(sig, biased_exp_safe), sig * 2 - 1.0)
         biased_exp[subnormal_mask] = 0
 
-        isig = np.floor(np.ldexp(tsig, t)).astype(np.int64)
+        isig = np.floor(np.ldexp(tsig, np.int32(t))).astype(np.int64)
 
         zero_mask = fi.has_zero & (isig == 0) & (biased_exp == 0)
         if not fi.has_nz:
@@ -80,8 +80,9 @@ def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
         if fi.is_twos_complement:
             isig[finite_sign] = (1 << t) - isig[finite_sign]
 
-        code[finite_mask] = (
-            (finite_sign.astype(int) << (k - 1)) | (biased_exp << t) | (isig << 0)
-        )
+        sign_field = np.left_shift(finite_sign.astype(np.uint64), np.uint64(k - 1))
+        exp_field = np.left_shift(biased_exp.astype(np.uint64), np.uint64(t))
+        sig_field = isig.astype(np.uint64)
+        code[finite_mask] = sign_field | exp_field | sig_field
 
     return code
