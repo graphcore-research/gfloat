@@ -128,6 +128,8 @@ def round_float(
                 should_round_away = delta + 0.5 >= 1.0
             case RoundMode.TiesToEven:
                 should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
+            case RoundMode.ToOdd:
+                should_round_away = delta > 0 and not code_is_odd
 
             case RoundMode.StochasticFastest:
                 assert srbits is not None

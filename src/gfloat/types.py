@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Graphcore Ltd. All rights reserved.
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, auto
 import math
 
 
@@ -25,15 +25,16 @@ class RoundMode(Enum):
 
     """
 
-    TowardZero = 1  #: Return the largest :math:`r` such that :math:`|r| \le |v|`
-    TowardNegative = 2  #: Return the largest :math:`r` such that :math:`r \le v`
-    TowardPositive = 3  #: Return the smallest :math:`r` such that :math:`r \ge v`
-    TiesToEven = 4  #: Round to nearest, ties to even
-    TiesToAway = 5  #: Round to nearest, ties away from zero
-    Stochastic = 6  #: Stochastic rounding, RTNE before comparison
-    StochasticOdd = 7  #: Stochastic rounding, RTNO before comparison
-    StochasticFast = 8  #: Stochastic rounding - faster, but biased
-    StochasticFastest = 9  #: Stochastic rounding - even faster, but more biased
+    TowardZero = auto()  #: Return the largest :math:`r` such that :math:`|r| \le |v|`
+    TowardNegative = auto()  #: Return the largest :math:`r` such that :math:`r \le v`
+    TowardPositive = auto()  #: Return the smallest :math:`r` such that :math:`r \ge v`
+    TiesToEven = auto()  #: Round to nearest, ties to even
+    TiesToAway = auto()  #: Round to nearest, ties away from zero
+    ToOdd = auto()  #: Round to odd
+    Stochastic = auto()  #: Stochastic rounding, RTNE before comparison
+    StochasticOdd = auto()  #: Stochastic rounding, RTNO before comparison
+    StochasticFast = auto()  #: Stochastic rounding - faster, but biased
+    StochasticFastest = auto()  #: Stochastic rounding - even faster, but more biased
 
 
 class Domain(Enum):
