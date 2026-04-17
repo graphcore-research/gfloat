@@ -78,10 +78,12 @@ def decode_ndarray(
 
     issubnormal = (exp == 0) & (significand != 0) & fi.has_subnormals
     expval = np.where(issubnormal, 1 - bias, exp - bias)
-    fsignificand = np.where(issubnormal, 0.0, 1.0) + np.ldexp(significand, -t)
+    fsignificand = np.where(issubnormal, 0.0, 1.0) + np.ldexp(
+        significand.astype(np.float64), np.int32(-t)
+    )
 
     # Normal/Subnormal/Zero case, other values will be overwritten
-    expval_safe = np.where(isspecial | iszero, 0, expval)
+    expval_safe = np.where(isspecial | iszero, 0, expval).astype(np.int32)
     fval_finite_safe = sign * np.ldexp(fsignificand, expval_safe)
     fval = np.where(~(iszero | isspecial), fval_finite_safe, fval)
 

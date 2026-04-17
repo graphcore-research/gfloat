@@ -537,7 +537,7 @@ def test_stochastic_rounding(
     n = 10_000
     expected_up_count = expected_up * n
 
-    srbits = np.random.randint(0, 2**srnumbits, size=(n,))
+    srbits = np.random.randint(0, 2**srnumbits, size=(n,), dtype=np.int64)
     if impl == "scalar":
         count_v1 = 0
         for k in range(n):
@@ -591,7 +591,7 @@ def test_stochastic_rounding_scalar_eq_array(
     for alpha in (0, 0.3, 0.5, 0.6, 0.7, 0.9, 1.25):
         v = _linterp(v0, v1, alpha)
         assert np.isfinite(v).all()
-        srbits = np.random.randint(0, 2**srnumbits, v.shape)
+        srbits = np.random.randint(0, 2**srnumbits, v.shape, dtype=np.int64)
 
         val_array = round_ndarray(
             fi,
