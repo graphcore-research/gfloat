@@ -72,7 +72,7 @@ jobs:
 
       - name: Run full unit tests on linux/386
         run: |
-          bash etc/test-linux-386.sh run
+          bash etc/test-linux-386.sh run -vv test
 
       - name: Save linux/386 docker image to cache path
         if: always()
