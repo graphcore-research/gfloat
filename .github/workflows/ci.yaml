@@ -48,34 +48,72 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Restore cached linux/386 docker image
+      - name: Restore cached test image (linux/386)
         id: cache-linux-386-image
         uses: actions/cache@v5
         with:
           path: /tmp/gfloat-linux-386-image.tar
-          key: ${{ runner.os }}-linux-386-image-${{ hashFiles('etc/linux-386.Dockerfile', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
+          key: ${{ runner.os }}-linux-386-image-${{ hashFiles('etc/linux-container.Dockerfile', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
 
-      - name: Enable QEMU for 32-bit emulation
+      - name: Enable QEMU emulation (linux/386)
         uses: docker/setup-qemu-action@v4
         with:
           platforms: 386
 
-      - name: Load cached linux/386 docker image
+      - name: Load cached test image (linux/386)
         run: |
           if [ -f /tmp/gfloat-linux-386-image.tar ]; then
             docker load -i /tmp/gfloat-linux-386-image.tar
           fi
 
-      - name: Ensure linux/386 test image is available
+      - name: Ensure test image is available (linux/386)
         run: |
           bash etc/test-linux-386.sh load
 
-      - name: Run full unit tests on linux/386
+      - name: Run unit tests (linux/386)
         run: |
           bash etc/test-linux-386.sh run -vv test
 
-      - name: Save linux/386 docker image to cache path
+      - name: Save test image to cache path (linux/386)
         if: always()
         run: |
           docker image inspect gfloat-linux-386:py310-uv >/dev/null 2>&1
           docker save gfloat-linux-386:py310-uv -o /tmp/gfloat-linux-386-image.tar
+
+  pytest-linux-arm32:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore cached test image (linux/arm32)
+        id: cache-linux-arm32-image
+        uses: actions/cache@v5
+        with:
+          path: /tmp/gfloat-linux-arm32-image.tar
+          key: ${{ runner.os }}-linux-arm32-image-${{ hashFiles('etc/linux-container.Dockerfile', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
+
+      - name: Enable QEMU emulation (linux/arm32)
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm
+
+      - name: Load cached test image (linux/arm32)
+        run: |
+          if [ -f /tmp/gfloat-linux-arm32-image.tar ]; then
+            docker load -i /tmp/gfloat-linux-arm32-image.tar
+          fi
+
+      - name: Ensure test image is available (linux/arm32)
+        run: |
+          bash etc/test-linux-arm32.sh load
+
+      - name: Run unit tests (linux/arm32)
+        run: |
+          bash etc/test-linux-arm32.sh run -vv test
+
+      - name: Save test image to cache path (linux/arm32)
+        if: always()
+        run: |
+          docker image inspect gfloat-linux-arm32:py310-uv >/dev/null 2>&1
+          docker save gfloat-linux-arm32:py310-uv -o /tmp/gfloat-linux-arm32-image.tar
