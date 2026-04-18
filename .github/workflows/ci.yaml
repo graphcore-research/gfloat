@@ -42,40 +42,56 @@ jobs:
         run: |
           cd docs && make html
 
-  pytest-linux-386:
+  pytest-linux-container:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch_name: linux/386
+            qemu_platform: 386
+            image_name: gfloat-linux-386:py310-uv
+            image_tar: /tmp/gfloat-linux-386-image.tar
+            cache_prefix: linux-386-image
+            test_script: etc/test-linux-386.sh
+          - arch_name: linux/arm32
+            qemu_platform: arm
+            image_name: gfloat-linux-arm32:py310-uv
+            image_tar: /tmp/gfloat-linux-arm32-image.tar
+            cache_prefix: linux-arm32-image
+            test_script: etc/test-linux-arm32.sh
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Restore cached linux/386 docker image
-        id: cache-linux-386-image
+      - name: Restore cached test image (${{ matrix.arch_name }})
+        id: cache-test-image
         uses: actions/cache@v5
         with:
-          path: /tmp/gfloat-linux-386-image.tar
-          key: ${{ runner.os }}-linux-386-image-${{ hashFiles('etc/linux-386.Dockerfile', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
+          path: ${{ matrix.image_tar }}
+          key: ${{ runner.os }}-${{ matrix.cache_prefix }}-${{ hashFiles('etc/linux-container.Dockerfile', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
 
-      - name: Enable QEMU for 32-bit emulation
+      - name: Enable QEMU emulation (${{ matrix.arch_name }})
         uses: docker/setup-qemu-action@v4
         with:
-          platforms: 386
+          platforms: ${{ matrix.qemu_platform }}
 
-      - name: Load cached linux/386 docker image
+      - name: Load cached test image (${{ matrix.arch_name }})
         run: |
-          if [ -f /tmp/gfloat-linux-386-image.tar ]; then
-            docker load -i /tmp/gfloat-linux-386-image.tar
+          if [ -f "${{ matrix.image_tar }}" ]; then
+            docker load -i "${{ matrix.image_tar }}"
           fi
 
-      - name: Ensure linux/386 test image is available
+      - name: Ensure test image is available (${{ matrix.arch_name }})
         run: |
-          bash etc/test-linux-386.sh load
+          bash "${{ matrix.test_script }}" load
 
-      - name: Run full unit tests on linux/386
+      - name: Run unit tests (${{ matrix.arch_name }})
         run: |
-          bash etc/test-linux-386.sh run -vv test
+          bash "${{ matrix.test_script }}" run -vv test
 
-      - name: Save linux/386 docker image to cache path
+      - name: Save test image to cache path (${{ matrix.arch_name }})
         if: always()
         run: |
-          docker image inspect gfloat-linux-386:py310-uv >/dev/null 2>&1
-          docker save gfloat-linux-386:py310-uv -o /tmp/gfloat-linux-386-image.tar
+          docker image inspect "${{ matrix.image_name }}" >/dev/null 2>&1
+          docker save "${{ matrix.image_name }}" -o "${{ matrix.image_tar }}"
