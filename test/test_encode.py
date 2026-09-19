@@ -62,3 +62,20 @@ def test_encode_edges(fi: FormatInfo, enc: Callable) -> None:
             if fi.domain == Domain.Extended
             else fi.code_of_nan if fi.num_nans > 0 else fi.code_of_min
         )
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        [0.0, -0.0],
+        [[-0.0, 0.0], [1.0, -1.0]],
+        [1.0, -1.0],  # The zero selection is empty, as in issue #63.
+        [],
+    ],
+)
+def test_encode_binary64_signed_zero(values: npt.ArrayLike) -> None:
+    v = np.array(values, dtype=np.float64)
+    codes = encode_ndarray(format_info_binary64, v)
+    assert codes.dtype == np.dtype(np.uint64)
+    assert codes.shape == v.shape
+    np.testing.assert_array_equal(codes, v.view(np.uint64))

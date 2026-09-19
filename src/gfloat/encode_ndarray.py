@@ -51,7 +51,10 @@ def encode_ndarray(fi: FormatInfo, v: npt.NDArray) -> npt.NDArray:
 
     if fi.has_zero:
         if fi.has_nz:
-            code[v == 0] = np.where(sign[v == 0], fi.code_of_negzero, fi.code_of_zero)
+            # binary64's negative-zero code exceeds the signed int64 range.
+            code[v == 0] = np.where(
+                sign[v == 0], np.uint64(fi.code_of_negzero), np.uint64(fi.code_of_zero)
+            )
         else:
             code[v == 0] = fi.code_of_zero
 
