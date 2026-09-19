@@ -79,3 +79,33 @@ def test_encode_binary64_signed_zero(values: npt.ArrayLike) -> None:
     assert codes.dtype == np.dtype(np.uint64)
     assert codes.shape == v.shape
     np.testing.assert_array_equal(codes, v.view(np.uint64))
+
+
+@pytest.mark.parametrize("bias", [-3, 0, 3])
+@pytest.mark.parametrize("precision", [2, 3])
+@pytest.mark.parametrize(
+    "signed, negative_zero", [(False, False), (True, False), (True, True)]
+)
+def test_encode_zero_without_subnormals(
+    bias: int, precision: int, signed: bool, negative_zero: bool
+) -> None:
+    fi = FormatInfo(
+        name="no_subnormals",
+        k=5,
+        precision=precision,
+        bias=bias,
+        is_signed=signed,
+        domain=Domain.Finite,
+        has_nz=negative_zero,
+        num_high_nans=0,
+        has_subnormals=False,
+        is_twos_complement=False,
+    )
+    values = np.array([0.0, -0.0])
+    expected = [fi.code_of_zero, fi.code_of_negzero if negative_zero else fi.code_of_zero]
+    assert [encode_float(fi, value) for value in values] == expected
+    np.testing.assert_array_equal(encode_ndarray(fi, values), expected)
+    for code, value in zip(expected, values):
+        decoded = decode_float(fi, code).fval
+        assert decoded == 0.0
+        assert np.signbit(decoded) == (negative_zero and np.signbit(value))

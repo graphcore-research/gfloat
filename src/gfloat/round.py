@@ -48,7 +48,10 @@ def round_float(
     An input NaN will convert to a NaN in the target.
     An input Infinity will convert to the largest float if :paramref:`sat`,
     otherwise to an Inf, if present, otherwise to a NaN.
-    Negative zero will be returned if the format has negative zero, otherwise zero.
+    If the format has zero, negative zero will be returned if it has negative zero,
+    otherwise zero. Formats without zero clamp finite values below the smallest
+    magnitude to that magnitude, preserving the sign for signed formats, regardless
+    of :paramref:`sat` and :paramref:`rnd`.
 
     Args:
       fi (FormatInfo): Describes the target format
@@ -87,6 +90,9 @@ def round_float(
     sign = np.signbit([v]).item() and fi.is_signed
     vpos = -v if sign else v
 
+    if not fi.has_zero and math.isfinite(vpos) and vpos < fi.smallest:
+        return -fi.smallest if sign else fi.smallest
+
     if math.isinf(vpos):
         result = np.inf
 
@@ -106,6 +112,12 @@ def round_float(
 
         # use ldexp instead of vpos*2**-expval to avoid overflow
         fsignificand = math.ldexp(vpos, -expval)
+
+        # Without subnormals, code points 0 and 1 may be separated by
+        # more than one significand step. Round across that whole gap.
+        zero_gap = not fi.has_subnormals and fi.has_zero and vpos < fi.smallest
+        if zero_gap:
+            fsignificand = vpos / fi.smallest
 
         # Round
         isignificand = math.floor(fsignificand)
@@ -160,7 +172,7 @@ def round_float(
             isignificand += 1
 
         # Reconstruct rounded result to float
-        result = isignificand * (2.0**expval)
+        result = isignificand * (fi.smallest if zero_gap else 2.0**expval)
 
     if result == 0:
         if sign and fi.has_nz:

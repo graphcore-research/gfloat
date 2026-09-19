@@ -90,7 +90,10 @@ def round_ndarray(
     Input NaNs will convert to NaNs in the target, not necessarily preserving payload.
     An input Infinity will convert to the largest float if :paramref:`sat`,
     otherwise to an Inf, if present, otherwise to a NaN.
-    Negative zero will be returned if the format has negative zero, otherwise zero.
+    If the format has zero, negative zero will be returned if it has negative zero,
+    otherwise zero. Formats without zero clamp finite values below the smallest
+    magnitude to that magnitude, preserving the sign for signed formats, regardless
+    of :paramref:`sat` and :paramref:`rnd`.
 
     Args:
       fi (FormatInfo): Describes the target format
@@ -120,6 +123,9 @@ def round_ndarray(
     is_negative = xp.signbit(v) & fi.is_signed
     absv = xp_where(is_negative, -v, v)
 
+    if not fi.has_zero:
+        absv = xp_where(xp.isfinite(absv) & (absv < fi.smallest), fi.smallest, absv)
+
     finite_nonzero = ~(xp.isnan(v) | xp.isinf(v) | (v == 0))
 
     # Place 1.0 where finite_nonzero is False, to avoid log of {0,inf,nan}
@@ -135,6 +141,10 @@ def round_ndarray(
 
     expval = expval - p + 1
     fsignificand = _ldexp(absv_masked, -expval)
+
+    if not fi.has_subnormals and fi.has_zero:
+        zero_gap = absv_masked < fi.smallest
+        fsignificand = xp_where(zero_gap, absv_masked / fi.smallest, fsignificand)
 
     floorfsignificand = xp.floor(fsignificand)
     isignificand = xp.astype(floorfsignificand, int_type)
@@ -187,6 +197,10 @@ def round_ndarray(
     isignificand = xp_where(should_round_away, isignificand + 1, isignificand)
 
     fresult = _ldexp(xp.astype(isignificand, v.dtype), expval)
+    if not fi.has_subnormals and fi.has_zero:
+        fresult = xp_where(
+            zero_gap, xp.astype(isignificand, v.dtype) * fi.smallest, fresult
+        )
 
     result = xp_where(finite_nonzero, fresult, absv)
 

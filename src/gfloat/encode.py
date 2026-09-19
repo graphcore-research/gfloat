@@ -53,6 +53,10 @@ def encode_float(fi: FormatInfo, v: float) -> int:
     sign = fi.is_signed and np.signbit(v)
     vpos = -v if sign else v
 
+    # Zero has its own code point even when the format has no subnormals.
+    if fi.has_zero and vpos == 0:
+        return fi.code_of_negzero if sign and fi.has_nz else fi.code_of_zero
+
     if fi.has_subnormals and vpos <= fi.smallest_subnormal / 2:
         isig = 0
         biased_exp = 0
