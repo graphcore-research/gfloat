@@ -83,6 +83,7 @@ jobs:
           fi
 
       - name: Ensure test image is available (${{ matrix.arch_name }})
+        id: ensure-test-image
         run: |
           bash "${{ matrix.test_script }}" load
 
@@ -91,7 +92,7 @@ jobs:
           bash "${{ matrix.test_script }}" run -vv test
 
       - name: Save test image to cache path (${{ matrix.arch_name }})
-        if: always()
+        if: ${{ !cancelled() && steps.ensure-test-image.outcome == 'success' }}
         run: |
           docker image inspect "${{ matrix.image_name }}" >/dev/null 2>&1
           docker save "${{ matrix.image_name }}" -o "${{ matrix.image_tar }}"
