@@ -2,12 +2,14 @@
 
 from typing import Callable
 
+import math
+
 import numpy as np
 import pytest
 
-from gfloat import FormatInfo, RoundMode, decode_float, encode_float
+from gfloat import FormatInfo, RoundMode, Signedness, decode_float, encode_float
 from gfloat import round_float, round_ndarray
-from gfloat.formats import Domain, format_info_ocp_e8m0
+from gfloat.formats import Domain, format_info_ocp_e8m0, format_info_p3109
 
 
 def scalar_round(
@@ -39,6 +41,21 @@ def no_subnormal_format(precision: int, signed: bool = False) -> FormatInfo:
         has_subnormals=False,
         is_twos_complement=False,
     )
+
+
+@pytest.mark.parametrize("rounder", [scalar_round, array_round])
+@pytest.mark.parametrize("sign", [1, -1])
+@pytest.mark.parametrize("direction", [0.0, 0.5, 1.0])
+def test_round_ties_to_away_subnormal_midpoint(
+    rounder: Callable, sign: int, direction: float
+) -> None:
+    fi = format_info_p3109(8, 3, Signedness.Signed, Domain.Extended)
+    midpoint = fi.smallest / 2
+    value = math.nextafter(midpoint, direction * fi.smallest)
+    expected = 0.0 if direction == 0.0 else sign * fi.smallest
+    actual = rounder(fi, sign * value, RoundMode.TiesToAway, False, 0)
+    assert actual == expected
+    assert np.signbit(actual) == np.signbit(expected)
 
 
 @pytest.mark.parametrize("rounder", [scalar_round, array_round])
