@@ -137,7 +137,7 @@ def round_float(
             case RoundMode.TowardNegative:
                 should_round_away = sign and delta > 0
             case RoundMode.TiesToAway:
-                should_round_away = delta + 0.5 >= 1.0
+                should_round_away = delta >= 0.5
             case RoundMode.TiesToEven:
                 should_round_away = delta > 0.5 or (delta == 0.5 and code_is_odd)
             case RoundMode.ToOdd:
