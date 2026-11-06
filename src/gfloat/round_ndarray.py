@@ -70,7 +70,13 @@ def _frexp(v: npt.NDArray) -> Tuple[None, npt.NDArray]:
 
     # Beware #49
     expval = xp.astype(xp.floor(xp.log2(v)), xp.int64)
-    return (None, expval)
+    # log2 can round up just below a power of two. Scale positive exponents
+    # before checking the estimate so that the power stays finite at the largest input.
+    shift = xp.astype(expval > 0, xp.int64)
+    power = 2.0 ** xp.astype(expval - shift, v.dtype)
+    below_power = v / 2.0 ** xp.astype(shift, v.dtype) < power
+    expval = expval - xp.astype(below_power, xp.int64)
+    return (None, expval + 1)
 
 
 def round_ndarray(
