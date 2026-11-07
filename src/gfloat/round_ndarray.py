@@ -76,7 +76,8 @@ def _frexp(v: npt.NDArray) -> Tuple[None, npt.NDArray]:
     # only if exp > 0 (roughly the upper half of the floats)
     shift = xp.astype(exp > 0, xp.int64)
     two_to_e_maybe_shifted = 2.0 ** xp.astype(exp - shift, v.dtype)
-    v_maybe_shifted = v * 2.0 ** xp.astype(-shift, v.dtype)
+    # Multiplication by 1 can flush float32 subnormals to zero on ARM32.
+    v_maybe_shifted = v / 2.0 ** xp.astype(shift, v.dtype)
     exp = exp - xp.astype(two_to_e_maybe_shifted > v_maybe_shifted, xp.int64)
     return (None, exp + 1)
 
