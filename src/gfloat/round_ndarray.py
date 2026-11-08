@@ -68,9 +68,18 @@ def _frexp(v: npt.NDArray) -> Tuple[None, npt.NDArray]:
     ):
         return xp.frexp(v)
 
-    # Beware #49
-    expval = xp.astype(xp.floor(xp.log2(v)), xp.int64)
-    return (None, expval)
+    exp = xp.astype(xp.floor(xp.log2(v)), xp.int64)
+    # log2 can round up just below a power of two.
+    # Check if 2**exp is greater than v, and decrement if so
+    # But 2**exp might overflow, so check if 2**(exp-1) > v/2
+    # But halving is inexact for subnormal v, so do that shift
+    # only if exp > 0 (roughly the upper half of the floats)
+    shift = xp.astype(exp > 0, xp.int64)
+    two_to_e_maybe_shifted = 2.0 ** xp.astype(exp - shift, v.dtype)
+    # Multiplication by 1 can flush float32 subnormals to zero on ARM32.
+    v_maybe_shifted = v / 2.0 ** xp.astype(shift, v.dtype)
+    exp = exp - xp.astype(two_to_e_maybe_shifted > v_maybe_shifted, xp.int64)
+    return (None, exp + 1)
 
 
 def round_ndarray(
